@@ -4,7 +4,7 @@ import {Button, Drawer} from "@heroui/react";
 import {ChevronDown, Menu} from "lucide-react";
 import Link from "next/link";
 import {usePathname} from "next/navigation";
-import {useState} from "react";
+import {useEffect, useRef, useState} from "react";
 import {navigationGroups, routeEntries} from "@/content";
 import type {PublicPath} from "@/content";
 
@@ -15,6 +15,16 @@ function CurrentMarker() {
 export function MobileNavigation({currentPath}: {currentPath?: PublicPath}) {
   const pathname = usePathname();
   const activePath = currentPath ?? pathname;
+  const previousPathname = useRef(pathname);
+
+  useEffect(() => {
+    if (previousPathname.current === pathname) return;
+    previousPathname.current = pathname;
+    const focusTimer = window.setTimeout(() => {
+      document.getElementById("main-content")?.focus();
+    }, 0);
+    return () => window.clearTimeout(focusTimer);
+  }, [pathname]);
 
   return <MobileNavigationContent activePath={activePath} key={`${pathname}:${activePath}`} />;
 }

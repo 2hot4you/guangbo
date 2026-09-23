@@ -7,10 +7,10 @@ export function SiteFooter() {
       <div className="mx-auto max-w-7xl px-4 py-10 sm:px-6 lg:px-8">
         <nav aria-label="页脚导航">
           <ul className="flex flex-wrap gap-x-5 gap-y-3">
-            <li><Link className="link" href={routeEntries[0].path}>{routeEntries[0].navLabel}</Link></li>
+            <li><Link className="link inline-flex min-h-11 min-w-11 items-center justify-center px-2" href={routeEntries[0].path}>{routeEntries[0].navLabel}</Link></li>
             {navigationGroups.map((item) => (
               <li key={item.label}>
-                <Link className="link" href={item.kind === "group" ? item.overviewPath : item.path}>
+                <Link className="link inline-flex min-h-11 min-w-11 items-center justify-center px-2" href={item.kind === "group" ? item.overviewPath : item.path}>
                   {item.label}
                 </Link>
               </li>

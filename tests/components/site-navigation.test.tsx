@@ -65,13 +65,15 @@ describe("mobile navigation", () => {
 
   it("closes when the pathname changes while the drawer is open", async () => {
     const user = userEvent.setup();
-    const view = render(<MobileNavigation />);
+    const view = render(<><main id="main-content" tabIndex={-1} /><MobileNavigation /></>);
+    const main = screen.getByRole("main");
     await user.click(screen.getByRole("button", {name: "打开导航菜单"}));
     expect(screen.getByRole("dialog", {name: "网站导航"})).toBeInTheDocument();
     pathname = "/about";
-    view.rerender(<MobileNavigation />);
+    view.rerender(<><main id="main-content" tabIndex={-1} /><MobileNavigation /></>);
     await waitFor(() => expect(screen.queryByRole("dialog", {name: "网站导航"})).not.toBeInTheDocument());
     expect(screen.getByRole("button", {name: "打开导航菜单"})).toBeInTheDocument();
+    await waitFor(() => expect(main).toHaveFocus());
   });
 
   it("dismisses on Escape and restores focus to the menu button", async () => {
