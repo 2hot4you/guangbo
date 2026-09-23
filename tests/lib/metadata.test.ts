@@ -4,7 +4,7 @@ import {createPageMetadata} from "@/lib/metadata";
 import sitemap from "@/app/sitemap";
 import robots from "@/app/robots";
 
-const origin = "https://www.guangbo.example";
+const origin = "https://www.guangbo.cn";
 
 beforeEach(() => {
   vi.stubEnv("NODE_ENV", "production");
@@ -28,6 +28,7 @@ describe("public SEO metadata", () => {
       expect(metadata.openGraph?.description).toBe(route.description);
       expect(metadata.twitter?.title).toBe(route.title);
       expect(metadata.twitter?.description).toBe(route.description);
+      expect(metadata.robots).toEqual({index: true, follow: true});
       expect(metadata.openGraph).not.toHaveProperty("images");
       expect(metadata.twitter).not.toHaveProperty("images");
     }
@@ -49,8 +50,17 @@ describe("public SEO metadata", () => {
     });
   });
 
-  it("disallows crawling without a configured origin", () => {
+  it("marks every page noindex and allows crawlers to observe it without a configured origin", () => {
     vi.stubEnv("NEXT_PUBLIC_SITE_URL", " ");
-    expect(robots()).toEqual({rules: {userAgent: "*", disallow: "/"}});
+    for (const path of PUBLIC_PATHS) {
+      expect(createPageMetadata(path).robots).toEqual({index: false, follow: false});
+    }
+    expect(robots()).toEqual({rules: {userAgent: "*", allow: "/"}});
+  });
+
+  it("marks placeholder origins noindex and omits the sitemap from robots", () => {
+    vi.stubEnv("NEXT_PUBLIC_SITE_URL", "https://www.example.com");
+    expect(createPageMetadata("/").robots).toEqual({index: false, follow: false});
+    expect(robots()).toEqual({rules: {userAgent: "*", allow: "/"}});
   });
 });

@@ -1,6 +1,6 @@
 import type {Metadata} from "next";
 import {getRouteByPath, type PublicPath} from "@/content";
-import {getSiteOrigin} from "./site-url";
+import {getSiteOrigin, isIndexable} from "./site-url";
 
 export function createPageMetadata(path: PublicPath): Metadata {
   const route = getRouteByPath(path);
@@ -10,6 +10,7 @@ export function createPageMetadata(path: PublicPath): Metadata {
     title: route.title,
     description: route.description,
     alternates: {canonical},
+    robots: isIndexable() ? {index: true, follow: true} : {index: false, follow: false},
     openGraph: {
       title: route.title,
       description: route.description,
