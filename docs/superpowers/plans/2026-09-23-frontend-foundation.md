@@ -100,7 +100,7 @@ Expected: 虚拟环境、`tmp/`、`extracted/`、`product/` 和大型 Office 原
   "version": "0.1.0",
   "private": true,
   "packageManager": "pnpm@9.15.4",
-  "engines": {"node": ">=22.0.0"},
+  "engines": {"node": ">=22.22.2"},
   "scripts": {
     "dev": "next dev -p 43187",
     "build": "next build",
