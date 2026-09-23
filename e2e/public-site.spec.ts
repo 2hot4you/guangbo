@@ -23,8 +23,35 @@ for (const path of publicPaths) {
     expect(response?.status()).toBe(200);
     await expect(page.locator("h1")).toHaveCount(1);
     await expect(page.locator("h1")).toBeVisible();
+    if (path === "/") {
+      await expect(page.getByRole("navigation", {name: "面包屑导航"})).toHaveCount(0);
+    } else {
+      const breadcrumbs = page.getByRole("navigation", {name: "面包屑导航"});
+      await expect(breadcrumbs).toBeVisible();
+      await expect(breadcrumbs.locator('[aria-current="page"]')).toHaveText(getRouteLabel(path));
+    }
     await expectNoHorizontalOverflow(page);
   });
+}
+
+function getRouteLabel(path: (typeof publicPaths)[number]) {
+  const labels: Record<(typeof publicPaths)[number], string> = {
+    "/": "首页",
+    "/ai": "大模型与AIGC",
+    "/ai/llm": "LLM与多模态理解",
+    "/ai/image": "图像生成与编辑",
+    "/ai/video": "视频生成与编辑",
+    "/idc": "IDC与算力",
+    "/idc/vps": "全国VPS租赁",
+    "/idc/bare-metal": "全国裸金属服务器租赁",
+    "/idc/colocation": "全国机房机柜租赁",
+    "/idc/gpu": "GPU算力服务",
+    "/madeinchina": "信创与企业数字化",
+    "/network": "全国专线租赁",
+    "/energy": "绿电与清洁能源",
+    "/about": "关于我们",
+  };
+  return labels[path];
 }
 
 test("sample pages fit all required CSS viewport widths", async ({page}) => {
@@ -35,6 +62,11 @@ test("sample pages fit all required CSS viewport widths", async ({page}) => {
       expect(response?.status(), `${path} at ${width}px`).toBe(200);
       await expectNoHorizontalOverflow(page);
       await expect(page.locator("footer")).toBeVisible();
+      const undersizedFooterLinks = await page.locator("footer a").evaluateAll((links) => links.flatMap((link) => {
+        const rect = link.getBoundingClientRect();
+        return rect.width < 44 || rect.height < 44 ? [`${link.textContent}: ${rect.width}×${rect.height}`] : [];
+      }));
+      expect(undersizedFooterLinks, `footer touch targets at ${path}, ${width}px`).toEqual([]);
       if (width >= 1280) {
         await expect(page.getByRole("navigation", {name: "主导航"})).toBeVisible();
         await expect(page.getByRole("button", {name: "打开导航菜单"})).toBeHidden();
@@ -80,6 +112,7 @@ test("mobile AI and IDC navigation exposes overview and children and closes afte
   await drawer.getByRole("link", {name: "全国机房机柜租赁"}).click();
   await expect(page).toHaveURL(/\/idc\/colocation$/);
   await expect(drawer).not.toBeVisible();
+  await expect(page.locator("#main-content")).toBeFocused();
 });
 
 test("desktop dropdown opens and navigates with keyboard, with visible keyboard focus", async ({page}) => {
@@ -105,6 +138,10 @@ test("unknown route responds 404 with the intended H1", async ({page}) => {
   const response = await page.goto("/missing-page");
   expect(response?.status()).toBe(404);
   await expect(page.getByRole("heading", {level: 1, name: "页面未找到"})).toBeVisible();
+  await expect(page.locator('meta[name="robots"]')).toHaveAttribute("content", /noindex/i);
+  await expect(page.locator('link[rel="canonical"]')).toHaveCount(0);
+  await expect(page.locator('meta[property="og:url"]')).toHaveCount(0);
+  await expect(page).not.toHaveTitle("光波互联｜大模型、算力与企业数字化服务");
 });
 
 test("sitemap lists exactly the fourteen public paths", async ({request}) => {

@@ -9,7 +9,7 @@ The following commands ran in this order after the browser acceptance suite and 
 | Command | Exit | Evidence |
 | --- | ---: | --- |
 | `pnpm verify:heroui` | 0 | MCP server exposed 6 tools; component list and Button documentation returned content. |
-| `pnpm test` | 0 | 7 test files passed; 64 unit/component tests passed. |
+| `pnpm test` | 0 | 7 test files passed; 66 unit/component tests passed. |
 | `pnpm typecheck` | 0 | `tsc --noEmit` reported no errors. |
 | `pnpm lint` | 0 | `eslint .` reported no errors. |
 | `pnpm build` | 0 | Next.js compiled, completed TypeScript, and generated 18 static pages, including all 14 public routes plus metadata routes and 404. |
@@ -17,10 +17,10 @@ The following commands ran in this order after the browser acceptance suite and 
 
 ## Browser acceptance scope
 
-- All 14 exact public paths returned HTTP 200, had exactly one visible H1, and had no document-level horizontal overflow on both configured projects: `/`, `/ai`, `/ai/llm`, `/ai/image`, `/ai/video`, `/idc`, `/idc/vps`, `/idc/bare-metal`, `/idc/colocation`, `/idc/gpu`, `/madeinchina`, `/network`, `/energy`, `/about`.
-- `/`, `/ai/llm`, `/idc/colocation`, `/network`, `/energy`, and `/about` were exercised at each of 320, 375, 390, 768, 1024, and 1440 CSS px on both projects: 72 sampled page/viewport combinations. The suite checked the header transition (mobile opener at 1024px, desktop menu at 1440px), loaded logo, cards, footer, topology bounds, and horizontal overflow. All 14 routes were also checked at each project's default representative viewport.
-- Mobile navigation exposed separate AI and IDC overview links and expandable child lists; selecting the IDC colocation child changed route and closed the drawer. Desktop dropdown opened through keyboard input, showed `:focus-visible` on its trigger, moved focus with ArrowDown, and navigated on Enter.
-- `/missing-page` returned HTTP 404 with H1 `页面未找到`. `/sitemap.xml` contained exactly the 14 public paths. With no configured real origin, `/robots.txt` allowed crawling and omitted `Sitemap:`, while sampled public HTML contained `noindex, nofollow` so the directive remains observable to crawlers.
+- All 14 exact public paths returned HTTP 200, had exactly one visible H1, and had no document-level horizontal overflow on both configured projects: `/`, `/ai`, `/ai/llm`, `/ai/image`, `/ai/video`, `/idc`, `/idc/vps`, `/idc/bare-metal`, `/idc/colocation`, `/idc/gpu`, `/madeinchina`, `/network`, `/energy`, `/about`. Every inner page exposed a registry-derived breadcrumb with the correct current page; the home page intentionally had no breadcrumb.
+- `/`, `/ai/llm`, `/idc/colocation`, `/network`, `/energy`, and `/about` were exercised at each of 320, 375, 390, 768, 1024, and 1440 CSS px on both projects: 72 sampled page/viewport combinations. The suite checked the header transition (mobile opener at 1024px, desktop menu at 1440px), loaded logo, cards, footer, topology bounds, 44×44 CSS px footer link targets, and horizontal overflow. All 14 routes were also checked at each project's default representative viewport.
+- Mobile navigation exposed separate AI and IDC overview links and expandable child lists; selecting the IDC colocation child changed route, closed the drawer, and focused `main#main-content`. Desktop dropdown opened through keyboard input, showed `:focus-visible` on its trigger, moved focus with ArrowDown, and navigated on Enter.
+- `/missing-page` returned HTTP 404 with H1 `页面未找到`, `noindex`, and no inherited home canonical or Open Graph URL. `/sitemap.xml` contained exactly the 14 public paths. With no configured real origin, `/robots.txt` allowed crawling and omitted `Sitemap:`, while sampled public HTML contained `noindex, nofollow` so the directive remains observable to crawlers.
 - Initial response HTML contained H1 and lead text for home, network, and about before hydration. The action audit found no `/console`, auth, payment, fake pricing, or online-generation link or action on any public route.
 
 ## Visual check and limits
