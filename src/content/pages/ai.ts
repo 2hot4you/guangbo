@@ -9,7 +9,7 @@ export const ai = {
       {title: "图像生成与编辑", body: "围绕文本描述或参考图片生成视觉素材，按模型能力开展图片编辑、风格调整与多版本创作，服务商品展示、营销设计和内容生产。", href: "/ai/image"},
       {title: "视频生成与编辑", body: "从文字脚本、参考图片或视频素材出发，开展镜头创作、画面动态化及视频编辑。参考输入、音频、时长与输出规格随具体型号而不同。", href: "/ai/video"},
     ]},
-    {id: "ecosystem", title: "探索国内外模型生态", body: "以上为模型生态介绍；当前可调用型号、开放能力及价格请查看可用模型目录，其他需求可咨询接入。", items: [
+    {id: "ecosystem", title: "探索国内外模型生态", body: "以上为模型生态介绍；当前可调用型号、开放能力及价格以接入咨询时的实际信息为准。", items: [
       {title: "国内语言与多模态系列", body: "DeepSeek、GLM、Kimi、MiniMax、Qwen、腾讯混元HY、MiMo、Doubao／Seed、ERNIE、讯飞星火、Step。"},
       {title: "国际语言与多模态系列", body: "OpenAI GPT、Anthropic Claude、Google Gemini，以及xAI Grok、Meta Llama、Mistral、Google Gemma、Cohere Command。"},
       {title: "图像生成系列", body: "Seedream、Qwen Image、Wan图像模型、混元图像模型、MiniMax图像模型，以及GPT Image、Gemini图像模型、FLUX、Stable Image／Stable Diffusion等。"},

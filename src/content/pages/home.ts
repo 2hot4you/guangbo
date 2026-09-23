@@ -10,7 +10,7 @@ export const home = {
   sections: [
     {
       id: "ai",
-      title: "大模型与AIGC：网站第一业务板块",
+      title: "大模型与AIGC",
       items: [
         {title: "LLM与多模态理解", body: "围绕问答、写作、代码、推理与内容分析选择模型，将理解与表达能力连接到企业应用。代表系列：DeepSeek、GLM、Kimi、MiniMax、Qwen、HY混元、MiMo、Doubao／Seed，以及OpenAI GPT、Anthropic Claude、Google Gemini、xAI Grok等。", href: "/ai/llm"},
         {title: "AI图像生成与编辑", body: "将文字或参考图片转为视觉素材，服务商品展示、创意设计与营销内容生产。代表系列：Seedream、Qwen Image、Wan图像模型、HY混元图像模型，以及GPT Image、Gemini图像模型、FLUX、Stable Diffusion等。", href: "/ai/image"},
