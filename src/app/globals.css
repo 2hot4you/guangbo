@@ -1,2 +1,79 @@
 @import "tailwindcss";
 @import "@heroui/styles";
+
+@layer base {
+  :root {
+    color-scheme: light;
+    --background: #ffffff;
+    --surface: #ffffff;
+    --surface-foreground: #10243e;
+    --surface-secondary: #f5f9ff;
+    --surface-secondary-foreground: #10243e;
+    --foreground: #10243e;
+    --muted: #475569;
+    --accent: #2563eb;
+    --accent-foreground: #ffffff;
+    --link: #1d4ed8;
+    --border: #dce6f2;
+    --separator: var(--border);
+    --focus-ring: #1d4ed8;
+    --focus: var(--focus-ring);
+    --content-width: 75rem;
+    --section-gap: clamp(3.5rem, 7vw, 6.5rem);
+    --radius: 0.875rem;
+  }
+
+  html { scroll-behavior: smooth; }
+  body {
+    min-width: 0;
+    font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    font-size: 1rem;
+    line-height: 1.65;
+  }
+  :where(h1, h2, h3, p, a) { overflow-wrap: anywhere; }
+  :where(a, button, [tabindex]):focus-visible {
+    outline: 3px solid var(--focus-ring);
+    outline-offset: 3px;
+  }
+}
+
+@layer components {
+  .site-container { width: min(100% - 2rem, var(--content-width)); margin-inline: auto; }
+  .section-space { padding-block: var(--section-gap); }
+  .text-balance { text-wrap: balance; }
+  .marketing-hero { background: var(--surface-secondary); }
+  .marketing-hero__title { max-width: 22ch; font-size: clamp(2.25rem, 5vw, 4.5rem); line-height: 1.15; font-weight: 700; letter-spacing: -0.035em; }
+  .marketing-hero__lead { max-width: 70ch; font-size: clamp(1rem, 1.6vw, 1.25rem); color: var(--muted); }
+  .marketing-hero__layout { display: grid; align-items: center; gap: 2.5rem; }
+  .capability-visual { display: grid; grid-template-columns: repeat(3, 1fr); align-items: center; gap: 0.6rem; min-height: 13rem; padding: 1rem; border: 1px solid var(--border); border-radius: calc(var(--radius) * 1.4); background: var(--surface); }
+  .capability-visual span { display: grid; place-items: center; aspect-ratio: 1; min-width: 0; border: 1px solid var(--border); border-radius: 50%; background: var(--surface-secondary); color: var(--accent); font-weight: 700; }
+  .marketing-section:nth-of-type(even) { background: var(--surface-secondary); }
+  .marketing-section__title { font-size: clamp(1.7rem, 3vw, 2.75rem); line-height: 1.25; font-weight: 650; letter-spacing: -0.025em; }
+  .marketing-section__body { max-width: 80ch; color: var(--muted); }
+  .marketing-card { min-width: 0; height: 100%; border: 1px solid var(--border); border-radius: var(--radius); background: var(--surface); box-shadow: none; }
+  .marketing-card__title { font-size: 1.2rem; line-height: 1.4; }
+  .marketing-card__body { line-height: 1.65; }
+  .marketing-card__link { color: var(--link); text-decoration: underline; text-underline-offset: 0.2em; }
+  .marketing-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 16rem), 1fr)); gap: 1.25rem; }
+  .marketing-note { border-inline-start: 3px solid var(--accent); padding: 1rem 1.25rem; background: var(--surface-secondary); color: var(--muted); }
+  .home-capabilities .marketing-card { border-top: 3px solid var(--accent); }
+  .overview-ai#capabilities .marketing-card { border-top: 3px solid var(--accent); }
+  .overview-idc#services .marketing-card { background: var(--surface); }
+  .model-series .marketing-grid { grid-template-columns: repeat(auto-fit, minmax(min(100%, 14rem), 1fr)); }
+  .model-series .marketing-card__title { color: var(--accent); }
+  .solution-delivery .site-container, .company-collaboration .site-container { border-inline-start: 3px solid var(--accent); padding-inline-start: clamp(1rem, 3vw, 2rem); }
+  .related-services { border-top: 1px solid var(--border); }
+}
+
+@media (min-width: 40rem) {
+  .site-container { width: min(100% - 3rem, var(--content-width)); }
+}
+
+@media (min-width: 56rem) {
+  .marketing-hero__layout { grid-template-columns: minmax(0, 3fr) minmax(15rem, 2fr); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  html { scroll-behavior: auto; }
+  *, *::before, *::after { animation-duration: 0.01ms !important; transition-duration: 0.01ms !important; }
+}
