@@ -50,9 +50,9 @@ describe("mobile navigation", () => {
     await waitFor(() => expect(screen.queryByRole("dialog", {name: "网站导航"})).not.toBeInTheDocument());
   });
 
-  it("closes when a navigation link is clicked and after the route changes", async () => {
+  it("closes when a navigation link is clicked", async () => {
     const user = userEvent.setup();
-    const view = render(<MobileNavigation />);
+    render(<MobileNavigation />);
     const opener = screen.getByRole("button", {name: "打开导航菜单"});
     await user.click(opener);
     expect(screen.getByRole("dialog", {name: "网站导航"})).toBeInTheDocument();
@@ -61,6 +61,13 @@ describe("mobile navigation", () => {
     destination.addEventListener("click", (event) => event.preventDefault());
     await user.click(destination);
     await waitFor(() => expect(screen.queryByRole("dialog", {name: "网站导航"})).not.toBeInTheDocument());
+  });
+
+  it("closes when the pathname changes while the drawer is open", async () => {
+    const user = userEvent.setup();
+    const view = render(<MobileNavigation />);
+    await user.click(screen.getByRole("button", {name: "打开导航菜单"}));
+    expect(screen.getByRole("dialog", {name: "网站导航"})).toBeInTheDocument();
     pathname = "/about";
     view.rerender(<MobileNavigation />);
     await waitFor(() => expect(screen.queryByRole("dialog", {name: "网站导航"})).not.toBeInTheDocument());
