@@ -1,5 +1,6 @@
 import {getRouteByPath} from "@/content";
 import type {MarketingPage, PageTemplate} from "@/content";
+import {MarketingBreadcrumbs} from "./breadcrumbs";
 import {CompanyPage} from "./company-page";
 import {HomePage} from "./home-page";
 import {ModelPage} from "./model-page";
@@ -25,5 +26,5 @@ export function MarketingPageView({page}: {page: MarketingPage}) {
     default: return assertNever(template);
   }
 
-  return <>{content}<RelatedServices paths={route.relatedPaths} /></>;
+  return <><MarketingBreadcrumbs path={page.path} />{content}<RelatedServices paths={route.relatedPaths} /></>;
 }

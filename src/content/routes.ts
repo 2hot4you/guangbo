@@ -15,7 +15,7 @@ export const routeEntries = [
     path: "/ai",
     navLabel: "大模型与AIGC",
     title: "大模型与AIGC服务｜光波互联",
-    description: "围绕语言、图像与视频模型生态，提供能力介绍、API接入咨询与使用管理入口。",
+    description: "围绕语言、图像与视频模型生态，提供能力介绍与API接入咨询。",
     template: "overview",
     relatedPaths: ["/ai/llm", "/ai/image", "/ai/video"],
   },

@@ -19,6 +19,11 @@ describe("public route registry", () => {
     }
   });
 
+  it("describes the AI overview within the released consultation scope", () => {
+    expect(getRouteByPath("/ai").description).toContain("API接入咨询");
+    expect(getRouteByPath("/ai").description).not.toContain("使用管理入口");
+  });
+
   it("makes AI and IDC overview pages reachable beside their children", () => {
     expect(navigationGroups.find((group) => group.label === "大模型与AIGC")?.overviewPath).toBe("/ai");
     expect(navigationGroups.find((group) => group.label === "IDC与算力")?.overviewPath).toBe("/idc");

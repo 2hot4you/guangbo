@@ -45,6 +45,8 @@ describe("visitor content", () => {
     const ecosystem = marketingPages.ai.sections.find((section) => section.id === "ecosystem");
     expect(ecosystem?.body).not.toContain("请查看可用模型目录");
     expect(ecosystem?.body).toContain("当前可调用型号、开放能力及价格");
+    expect(marketingPages.ai.hero.lead).toContain("API接入咨询");
+    expect(marketingPages.ai.hero.lead).not.toContain("使用管理入口");
   });
 
   it("retains representative inner heroes and complete first modules from the source", () => {

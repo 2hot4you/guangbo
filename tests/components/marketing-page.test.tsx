@@ -28,6 +28,29 @@ describe("marketing page templates", () => {
     expect(screen.queryByRole("link", {name: /联系项目顾问|立即咨询/})).not.toBeInTheDocument();
   });
 
+  it("shows registry-based, accessible breadcrumbs on every inner page", () => {
+    for (const path of PUBLIC_PATHS) {
+      const view = render(<MarketingPageView page={getPageByPath(path)} />);
+      if (path === "/") {
+        expect(screen.queryByRole("navigation", {name: "面包屑导航"})).not.toBeInTheDocument();
+      } else {
+        const nav = screen.getByRole("navigation", {name: "面包屑导航"});
+        const parents = PUBLIC_PATHS.filter((candidate) => candidate !== "/" && path.startsWith(`${candidate}/`));
+        const expected = ["/", ...parents, path];
+        expect(within(nav).getAllByRole("listitem")).toHaveLength(expected.length);
+        const links = within(nav).getAllByRole("link").filter((link) => link.hasAttribute("href"));
+        expect(links.map((link) => link.getAttribute("href"))).toEqual(expected.slice(0, -1));
+        expect(links.map((link) => link.textContent)).toEqual(
+          expected.slice(0, -1).map((candidate) => getRouteByPath(candidate as PublicPath).navLabel),
+        );
+        const current = within(nav).getByText(getRouteByPath(path).navLabel);
+        expect(current).toHaveAttribute("aria-current", "page");
+        expect(current).not.toHaveAttribute("href");
+      }
+      view.unmount();
+    }
+  });
+
   it("renders every route with one H1, complete sections, and approved internal links", () => {
     for (const path of PUBLIC_PATHS) {
       const page = getPageByPath(path);
