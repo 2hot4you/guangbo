@@ -6,7 +6,7 @@
   "risk": "medium",
   "domain": "frontend",
   "currentPhase": "implementation",
-  "nextAction": "执行 Task 7 主题与五类营销页面模板",
+  "nextAction": "执行 Task 8 十四个公开路由集成",
   "createdAt": "2026-09-23T08:43:18Z",
   "branch": "feat/frontend-foundation"
 }
