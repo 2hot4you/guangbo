@@ -33,7 +33,7 @@ function MobileNavigationContent({activePath}: {activePath: string}) {
   }
 
   return (
-    <div className="lg:hidden">
+    <div className="xl:hidden">
       <Button
         aria-label="打开导航菜单"
         className="min-h-11 min-w-11"

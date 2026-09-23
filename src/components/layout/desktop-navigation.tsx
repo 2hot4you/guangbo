@@ -16,7 +16,7 @@ export function DesktopNavigation({currentPath}: {currentPath?: PublicPath}) {
   const activePath = currentPath ?? pathname;
 
   return (
-    <nav aria-label="主导航" className="hidden lg:block">
+    <nav aria-label="主导航" className="hidden xl:block">
       <ul className="flex items-center gap-1">
         {navigationGroups.map((item) => {
           if (item.kind === "link") {
