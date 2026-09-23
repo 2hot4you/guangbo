@@ -16,12 +16,17 @@ export function MobileNavigation({currentPath}: {currentPath?: PublicPath}) {
   const pathname = usePathname();
   const activePath = currentPath ?? pathname;
 
-  return <MobileNavigationContent activePath={activePath} key={pathname} />;
+  return <MobileNavigationContent activePath={activePath} key={`${pathname}:${activePath}`} />;
 }
 
 function MobileNavigationContent({activePath}: {activePath: string}) {
   const [isOpen, setIsOpen] = useState(false);
-  const [expanded, setExpanded] = useState<Record<string, boolean>>({});
+  const [expanded, setExpanded] = useState<Record<string, boolean>>(() => {
+    const currentGroup = navigationGroups.find(
+      (item) => item.kind === "group" && item.children.some((child) => child.path === activePath),
+    );
+    return currentGroup?.kind === "group" ? {[currentGroup.overviewPath]: true} : {};
+  });
 
   function closeMenu() {
     setIsOpen(false);

@@ -49,27 +49,32 @@ export function DesktopNavigation({currentPath}: {currentPath?: PublicPath}) {
                   <ChevronDown aria-hidden="true" className="size-4" />
                 </Button>
                 <Dropdown.Popover>
-                  <nav aria-label={`${item.label}子导航`} className="min-w-56 rounded-lg bg-overlay p-2 shadow-lg">
-                    <ul>
-                      {[
-                        {label: `${item.label}总览`, path: item.overviewPath},
-                        ...item.children,
-                      ].map((entry) => {
-                        const current = activePath === entry.path;
-                        return (
-                          <li key={entry.path}>
+                  <Dropdown.Menu aria-label={`${item.label}子导航`} className="min-w-56 p-2">
+                    {[
+                      {label: `${item.label}总览`, path: item.overviewPath},
+                      ...item.children,
+                    ].map((entry) => {
+                      const current = activePath === entry.path;
+                      return (
+                        <Dropdown.Item
+                          className="min-h-11 text-sm"
+                          href={entry.path}
+                          id={entry.path}
+                          key={entry.path}
+                          render={(props) => (
                             <Link
+                              {...(props as React.ComponentProps<typeof Link>)}
                               aria-current={current ? "page" : undefined}
-                              className="link flex min-h-11 items-center rounded-md px-3 py-2 text-sm text-foreground focus-visible:outline-2 focus-visible:outline-accent"
                               href={entry.path}
-                            >
-                              {entry.label}{current && <CurrentMarker />}
-                            </Link>
-                          </li>
-                        );
-                      })}
-                    </ul>
-                  </nav>
+                            />
+                          )}
+                          textValue={entry.label}
+                        >
+                          {entry.label}{current && <CurrentMarker />}
+                        </Dropdown.Item>
+                      );
+                    })}
+                  </Dropdown.Menu>
                 </Dropdown.Popover>
               </Dropdown>
             </li>
