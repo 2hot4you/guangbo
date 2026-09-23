@@ -1,0 +1,138 @@
+import type {PublicPath, RouteEntry} from "./types";
+
+export const routeEntries = [
+  {
+    key: "home",
+    path: "/",
+    navLabel: "首页",
+    title: "光波互联｜大模型、算力与企业数字化服务",
+    description: "从LLM语言理解到AI生图、生视频，以算力、网络和绿色能源支撑业务发展。",
+    template: "home",
+    relatedPaths: ["/ai", "/idc", "/madeinchina", "/network", "/energy"],
+  },
+  {
+    key: "ai",
+    path: "/ai",
+    navLabel: "大模型与AIGC",
+    title: "大模型与AIGC服务｜光波互联",
+    description: "围绕语言、图像与视频模型生态，提供能力介绍、API接入咨询与使用管理入口。",
+    template: "overview",
+    relatedPaths: ["/ai/llm", "/ai/image", "/ai/video"],
+  },
+  {
+    key: "aiLlm",
+    path: "/ai/llm",
+    navLabel: "LLM与多模态理解",
+    title: "LLM与多模态理解｜光波互联",
+    description: "围绕文本、代码与多模态内容，按业务场景选择理解、推理与表达能力。",
+    template: "model",
+    relatedPaths: ["/ai", "/ai/image", "/ai/video"],
+  },
+  {
+    key: "aiImage",
+    path: "/ai/image",
+    navLabel: "图像生成与编辑",
+    title: "图像生成与编辑｜光波互联",
+    description: "从文字描述、商品图片或设计参考出发，组织图像生成、编辑与多版本创作。",
+    template: "model",
+    relatedPaths: ["/ai", "/ai/llm", "/ai/video"],
+  },
+  {
+    key: "aiVideo",
+    path: "/ai/video",
+    navLabel: "视频生成与编辑",
+    title: "视频生成与编辑｜光波互联",
+    description: "围绕文字、图片与视频输入，评估适合的镜头生成与编辑模型。",
+    template: "model",
+    relatedPaths: ["/ai", "/ai/llm", "/ai/image"],
+  },
+  {
+    key: "idc",
+    path: "/idc",
+    navLabel: "IDC与算力",
+    title: "IDC与算力服务｜光波互联",
+    description: "从虚拟服务器到机柜与GPU集群，匹配部署地点、计算性能、供电与网络条件。",
+    template: "overview",
+    relatedPaths: ["/idc/vps", "/idc/bare-metal", "/idc/colocation", "/idc/gpu"],
+  },
+  {
+    key: "idcVps",
+    path: "/idc/vps",
+    navLabel: "全国VPS租赁",
+    title: "全国VPS租赁｜光波互联",
+    description: "面向网站、接口服务、开发测试和轻量业务提供VPS选型与租赁咨询。",
+    template: "solution",
+    relatedPaths: ["/idc", "/idc/bare-metal", "/idc/colocation", "/idc/gpu"],
+  },
+  {
+    key: "idcBareMetal",
+    path: "/idc/bare-metal",
+    navLabel: "全国裸金属服务器租赁",
+    title: "全国裸金属服务器租赁｜光波互联",
+    description: "面向数据库、企业应用和持续计算任务提供独享物理服务器选型。",
+    template: "solution",
+    relatedPaths: ["/idc", "/idc/vps", "/idc/colocation", "/idc/gpu"],
+  },
+  {
+    key: "idcColocation",
+    path: "/idc/colocation",
+    navLabel: "全国机房机柜租赁",
+    title: "全国机房机柜租赁｜光波互联",
+    description: "面向服务器、网络设备及计算集群提供机柜、托管、网络和配套服务对接。",
+    template: "solution",
+    relatedPaths: ["/idc", "/idc/vps", "/idc/bare-metal", "/idc/gpu"],
+  },
+  {
+    key: "idcGpu",
+    path: "/idc/gpu",
+    navLabel: "GPU算力服务",
+    title: "GPU算力服务｜光波互联",
+    description: "围绕训练、推理、渲染及行业计算组合GPU、显存、存储、网络和运行环境。",
+    template: "solution",
+    relatedPaths: ["/idc", "/idc/vps", "/idc/bare-metal", "/idc/colocation"],
+  },
+  {
+    key: "madeInChina",
+    path: "/madeinchina",
+    navLabel: "信创与企业数字化",
+    title: "信创与企业数字化｜光波互联",
+    description: "围绕企业计算环境、业务应用和数据保护开展方案对接与系统集成。",
+    template: "solution",
+    relatedPaths: ["/idc", "/network"],
+  },
+  {
+    key: "network",
+    path: "/network",
+    navLabel: "全国专线租赁",
+    title: "全国专线租赁｜光波互联",
+    description: "面向多地办公、数据中心互联及云网连接开展专线、光纤和组网方案对接。",
+    template: "solution",
+    relatedPaths: ["/idc", "/madeinchina"],
+  },
+  {
+    key: "energy",
+    path: "/energy",
+    navLabel: "绿电与清洁能源",
+    title: "绿电与清洁能源｜光波互联",
+    description: "围绕采购用电、绿色用能和节能项目开展方案咨询与项目对接。",
+    template: "solution",
+    relatedPaths: ["/idc", "/madeinchina"],
+  },
+  {
+    key: "about",
+    path: "/about",
+    navLabel: "关于我们",
+    title: "关于光波互联｜成都光波互联科技有限公司",
+    description: "了解光波互联在光纤网络、数据中心互联、算力租赁和系统集成方面的业务实践。",
+    template: "company",
+    relatedPaths: ["/ai", "/idc", "/madeinchina", "/network", "/energy"],
+  },
+] as const satisfies readonly RouteEntry[];
+
+export const PUBLIC_PATHS: readonly PublicPath[] = routeEntries.map((entry) => entry.path);
+
+export function getRouteByPath(path: PublicPath): RouteEntry {
+  const route = routeEntries.find((entry) => entry.path === path);
+  if (!route) throw new Error(`Unknown public path: ${path}`);
+  return route;
+}
