@@ -24,6 +24,33 @@ describe("public route registry", () => {
     expect(navigationGroups.find((group) => group.label === "IDC与算力")?.overviewPath).toBe("/idc");
   });
 
+  it("links all seven AI and IDC child pages from their groups", () => {
+    const groups = navigationGroups.filter((item) => item.kind === "group");
+    expect(groups.map((group) => ({
+      overviewPath: group.overviewPath,
+      childPaths: group.children.map((child) => child.path),
+    }))).toEqual([
+      {overviewPath: "/ai", childPaths: ["/ai/llm", "/ai/image", "/ai/video"]},
+      {overviewPath: "/idc", childPaths: ["/idc/vps", "/idc/bare-metal", "/idc/colocation", "/idc/gpu"]},
+    ]);
+  });
+
+  it("links the four direct pages without duplicate or unregistered destinations", () => {
+    const directPaths = navigationGroups
+      .filter((item) => item.kind === "link")
+      .map((item) => item.path);
+    expect(directPaths).toEqual(["/madeinchina", "/network", "/energy", "/about"]);
+
+    const allPaths = navigationGroups.flatMap((item) =>
+      item.kind === "group"
+        ? [item.overviewPath, ...item.children.map((child) => child.path)]
+        : [item.path],
+    );
+    expect(allPaths).toHaveLength(13);
+    expect(new Set(allPaths).size).toBe(allPaths.length);
+    expect(allPaths.every((path) => PUBLIC_PATHS.includes(path))).toBe(true);
+  });
+
   it("throws for an unregistered path", () => {
     expect(() => getRouteByPath("/console" as never)).toThrow("Unknown public path");
   });
