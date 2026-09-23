@@ -1,4 +1,4 @@
-import {cleanup, render, screen} from "@testing-library/react";
+import {cleanup, render, screen, within} from "@testing-library/react";
 import {afterEach, describe, expect, it} from "vitest";
 import {renderToStaticMarkup} from "react-dom/server";
 import {getPageByPath, getRouteByPath, PUBLIC_PATHS} from "@/content";
@@ -38,6 +38,12 @@ describe("marketing page templates", () => {
         expect(document.getElementById(section.id)).toHaveAttribute("aria-labelledby", `${section.id}-heading`);
         expect(screen.getByRole("heading", {level: 2, name: section.title})).toBeInTheDocument();
         if (section.body) expect(screen.getByText(section.body)).toBeInTheDocument();
+        const renderedSection = document.getElementById(section.id);
+        for (const item of section.items ?? []) {
+          expect(within(renderedSection!).getByRole("heading", {level: 3, name: item.title})).toBeInTheDocument();
+          expect(within(renderedSection!).getAllByText(item.body, {exact: true}).length).toBeGreaterThan(0);
+          if (item.meta) expect(within(renderedSection!).getAllByText(item.meta, {exact: true}).length).toBeGreaterThan(0);
+        }
       }
       const approved = new Set<string>(PUBLIC_PATHS);
       for (const anchor of document.querySelectorAll<HTMLAnchorElement>("a[href]")) {
@@ -64,5 +70,28 @@ describe("marketing page templates", () => {
     expect(html).toContain("让大模型走进应用，让创意成为内容");
     expect(html).toContain('href="/ai/llm"');
     expect(html).toContain("模型名称用于能力介绍");
+  });
+
+  it("shows a semantic station connection route with the source explanation", () => {
+    render(<MarketingPageView page={getPageByPath("/network")} />);
+    const topology = document.getElementById("topology");
+    expect(topology).not.toBeNull();
+    expect(within(topology!).getByText(/客户站点通过本地接入连接区域汇聚资源/)).toBeInTheDocument();
+    expect(within(topology!).getByRole("figure", {name: "站点连接结构"})).toBeInTheDocument();
+    const route = within(topology!).getByRole("list", {name: "站点连接路径"});
+    expect(within(route).getAllByRole("listitem").map((item) => item.textContent)).toEqual([
+      "客户站点", "本地接入", "区域汇聚资源", "骨干传输", "目标区域与站点",
+    ]);
+    const html = renderToStaticMarkup(<MarketingPageView page={getPageByPath("/network")} />);
+    expect(html).toContain("站点连接路径");
+    expect(html).toContain("目标区域与站点");
+  });
+
+  it("introduces the company on home and links to the real about page", () => {
+    render(<MarketingPageView page={getPageByPath("/")} />);
+    const aboutSection = document.getElementById("about");
+    expect(aboutSection).not.toBeNull();
+    expect(within(aboutSection!).getByText(getPageByPath("/about").hero.lead)).toBeInTheDocument();
+    expect(within(aboutSection!).getByRole("link", {name: "了解光波互联"})).toHaveAttribute("href", "/about");
   });
 });
