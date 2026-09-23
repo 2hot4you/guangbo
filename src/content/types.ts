@@ -19,3 +19,26 @@ export interface RouteEntry {
   template: PageTemplate;
   relatedPaths: readonly PublicPath[];
 }
+
+export interface ContentItem {
+  title: string;
+  body: string;
+  href?: PublicPath;
+  meta?: string;
+}
+
+export interface ContentSection {
+  id: string;
+  eyebrow?: string;
+  title: string;
+  body?: string;
+  items?: readonly ContentItem[];
+}
+
+export interface MarketingPage {
+  key: PageKey;
+  path: PublicPath;
+  hero: {title: string; lead: string};
+  sections: readonly ContentSection[];
+  contactEnabled: false;
+}
