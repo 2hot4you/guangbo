@@ -1,0 +1,161 @@
+import {expect, test} from "@playwright/test";
+
+const publicPaths = [
+  "/", "/ai", "/ai/llm", "/ai/image", "/ai/video",
+  "/idc", "/idc/vps", "/idc/bare-metal", "/idc/colocation", "/idc/gpu",
+  "/madeinchina", "/network", "/energy", "/about",
+] as const;
+
+const sampledPaths = ["/", "/ai/llm", "/idc/colocation", "/network", "/energy", "/about"] as const;
+const viewportWidths = [320, 375, 390, 768, 1024, 1440] as const;
+
+async function expectNoHorizontalOverflow(page: import("@playwright/test").Page) {
+  const overflow = await page.evaluate(() => {
+    const root = document.documentElement;
+    return {scrollWidth: root.scrollWidth, clientWidth: root.clientWidth};
+  });
+  expect(overflow.scrollWidth, `horizontal overflow: ${page.url()} at ${overflow.clientWidth}px`).toBeLessThanOrEqual(overflow.clientWidth);
+}
+
+for (const path of publicPaths) {
+  test(`${path} responds with one visible H1 and fits the project viewport`, async ({page}) => {
+    const response = await page.goto(path);
+    expect(response?.status()).toBe(200);
+    await expect(page.locator("h1")).toHaveCount(1);
+    await expect(page.locator("h1")).toBeVisible();
+    await expectNoHorizontalOverflow(page);
+  });
+}
+
+test("sample pages fit all required CSS viewport widths", async ({page}) => {
+  for (const width of viewportWidths) {
+    await page.setViewportSize({width, height: 900});
+    for (const path of sampledPaths) {
+      const response = await page.goto(path);
+      expect(response?.status(), `${path} at ${width}px`).toBe(200);
+      await expectNoHorizontalOverflow(page);
+      await expect(page.locator("footer")).toBeVisible();
+      if (width >= 1280) {
+        await expect(page.getByRole("navigation", {name: "主导航"})).toBeVisible();
+        await expect(page.getByRole("button", {name: "打开导航菜单"})).toBeHidden();
+      } else {
+        await expect(page.getByRole("navigation", {name: "主导航"})).toBeHidden();
+        await expect(page.getByRole("button", {name: "打开导航菜单"})).toBeVisible();
+      }
+      await expect(page.locator("header img")).toBeVisible();
+      const logoLoaded = await page.locator("header img").evaluate((image: HTMLImageElement) => image.complete && image.naturalWidth > 0);
+      expect(logoLoaded, `logo failed to load at ${path}, ${width}px`).toBe(true);
+      const clipped = await page.locator(".marketing-card, footer, .network-topology").evaluateAll((elements) => elements.flatMap((element) => {
+        const rect = element.getBoundingClientRect();
+        return rect.left < -1 || rect.right > window.innerWidth + 1 || element.scrollWidth > element.clientWidth + 1
+          ? [`${element.className || element.tagName}: ${rect.left}..${rect.right}, ${element.scrollWidth}/${element.clientWidth}`]
+          : [];
+      }));
+      expect(clipped, `cards, footer, or topology overflow at ${path}, ${width}px`).toEqual([]);
+      if (path === "/network") {
+        const topology = page.locator(".network-topology");
+        await expect(topology).toBeVisible();
+        const bounds = await topology.boundingBox();
+        expect(bounds, `network topology has no bounds at ${width}px`).not.toBeNull();
+        expect(bounds!.x).toBeGreaterThanOrEqual(0);
+        expect(bounds!.x + bounds!.width).toBeLessThanOrEqual(width + 1);
+      }
+    }
+  }
+});
+
+test("mobile AI and IDC navigation exposes overview and children and closes after navigation", async ({page}) => {
+  await page.setViewportSize({width: 320, height: 800});
+  await page.goto("/");
+  const opener = page.getByRole("button", {name: "打开导航菜单"});
+  await opener.click();
+  const drawer = page.getByRole("dialog", {name: "网站导航"});
+  await expect(drawer).toBeVisible();
+  await expect(drawer.getByRole("link", {name: "大模型与AIGC总览"})).toHaveAttribute("href", "/ai");
+  await expect(drawer.getByRole("link", {name: "IDC与算力总览"})).toHaveAttribute("href", "/idc");
+  await drawer.getByRole("button", {name: "展开大模型与AIGC子菜单"}).click();
+  await expect(drawer.getByRole("link", {name: "LLM与多模态理解"})).toBeVisible();
+  await drawer.getByRole("button", {name: "展开IDC与算力子菜单"}).click();
+  await expect(drawer.getByRole("link", {name: "全国机房机柜租赁"})).toBeVisible();
+  await drawer.getByRole("link", {name: "全国机房机柜租赁"}).click();
+  await expect(page).toHaveURL(/\/idc\/colocation$/);
+  await expect(drawer).not.toBeVisible();
+});
+
+test("desktop dropdown opens and navigates with keyboard, with visible keyboard focus", async ({page}) => {
+  await page.setViewportSize({width: 1440, height: 900});
+  await page.goto("/");
+  const trigger = page.getByRole("button", {name: "大模型与AIGC菜单"});
+  for (let attempt = 0; attempt < 8 && !(await trigger.evaluate((element) => element === document.activeElement)); attempt++) {
+    await page.keyboard.press("Tab");
+  }
+  await expect(trigger).toBeFocused();
+  expect(await trigger.evaluate((element) => element.matches(":focus-visible"))).toBe(true);
+  await page.keyboard.press("Enter");
+  const menu = page.getByRole("menu", {name: "大模型与AIGC菜单"});
+  await expect(menu).toBeVisible();
+  await expect(menu.getByRole("menuitem", {name: "大模型与AIGC总览"})).toBeFocused();
+  await page.keyboard.press("ArrowDown");
+  await expect(menu.getByRole("menuitem", {name: "LLM与多模态理解"})).toBeFocused();
+  await page.keyboard.press("Enter");
+  await expect(page).toHaveURL(/\/ai\/llm$/);
+});
+
+test("unknown route responds 404 with the intended H1", async ({page}) => {
+  const response = await page.goto("/missing-page");
+  expect(response?.status()).toBe(404);
+  await expect(page.getByRole("heading", {level: 1, name: "页面未找到"})).toBeVisible();
+});
+
+test("sitemap lists exactly the fourteen public paths", async ({request}) => {
+  const response = await request.get("/sitemap.xml");
+  expect(response.status()).toBe(200);
+  const xml = await response.text();
+  const urls = [...xml.matchAll(/<loc>([^<]+)<\/loc>/g)].map((match) => new URL(match[1]).pathname);
+  expect(urls).toHaveLength(14);
+  expect(urls.sort()).toEqual([...publicPaths].sort());
+});
+
+test("unconfigured origin allows crawling but omits sitemap and marks pages noindex", async ({request}) => {
+  const robots = await request.get("/robots.txt");
+  expect(robots.status()).toBe(200);
+  const text = await robots.text();
+  expect(text).toMatch(/User-agent:\s*\*/i);
+  expect(text).toMatch(/Allow:\s*\//i);
+  expect(text).not.toMatch(/Sitemap:/i);
+  for (const path of ["/", "/ai/llm", "/idc/colocation", "/network", "/energy", "/about"]) {
+    const response = await request.get(path);
+    expect(response.status()).toBe(200);
+    expect(await response.text()).toMatch(/<meta[^>]+name="robots"[^>]+content="noindex, nofollow"/i);
+  }
+});
+
+test("initial HTML contains public headings and leads without client hydration", async ({request}) => {
+  const cases = [
+    ["/", "让大模型走进应用，让创意成为内容", "从LLM语言理解"],
+    ["/network", "连接分支、机房与云端业务", "面向企业多地办公"],
+    ["/about", "以光为媒，连接世界；以算为基，赋能未来", "成都光波互联科技有限公司成立于2019年"],
+  ] as const;
+  for (const [path, heading, lead] of cases) {
+    const response = await request.get(path);
+    expect(response.status()).toBe(200);
+    const html = await response.text();
+    expect(html).toContain(`<h1`);
+    expect(html).toContain(heading);
+    expect(html).toContain(lead);
+  }
+});
+
+test("public pages expose no console, auth, payment, fake pricing, or online generation actions", async ({page}) => {
+  for (const path of publicPaths) {
+    await page.goto(path);
+    const actions = await page.locator("a[href], button, form[action]").evaluateAll((elements) => elements.map((element) => ({
+      label: element.textContent?.trim() ?? "",
+      destination: element.getAttribute("href") ?? element.getAttribute("action") ?? "",
+    })));
+    expect(actions, `forbidden action at ${path}`).not.toEqual(expect.arrayContaining([
+      expect.objectContaining({destination: expect.stringMatching(/\/(?:console|login|register|payment|checkout)(?:[/?#]|$)/i)}),
+    ]));
+    expect(actions.some(({label, destination}) => /在线(?:生图|生成|视频生成)|立即支付|立即充值|查看(?:可用模型与)?价格/i.test(label) || /\/(?:generate|pricing|billing)(?:[/?#]|$)/i.test(destination)), `forbidden action at ${path}`).toBe(false);
+  }
+});
