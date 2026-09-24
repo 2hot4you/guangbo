@@ -1,0 +1,12 @@
+{
+  "id": "distinct-inner-pages",
+  "title": "重构六个差异化业务内页并完善内容",
+  "status": "in_progress",
+  "complexity": "L+",
+  "risk": "medium",
+  "domain": "frontend",
+  "currentPhase": "planning",
+  "nextAction": "按已确认设计并行实施共享基础、AI/IDC与四个业务内页",
+  "createdAt": "2026-09-24T03:30:00Z",
+  "branch": "feat/frontend-foundation"
+}
