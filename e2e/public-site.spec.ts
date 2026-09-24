@@ -378,3 +378,176 @@ test("public pages expose no console, auth, payment, fake pricing, or online gen
     expect(actions.some(({label, destination}) => /在线(?:生图|生成|视频生成)|立即支付|立即充值|查看(?:可用模型与)?价格/i.test(label) || /\/(?:generate|pricing|billing)(?:[/?#]|$)/i.test(destination)), `forbidden action at ${path}`).toBe(false);
   }
 });
+
+const homeHeroDomains = ["ai", "compute", "xinchang", "link", "energy"] as const;
+const preservedHomeSections = ["ai", "idc", "madeinchina", "network", "energy", "delivery", "about"] as const;
+
+async function expectActiveHomeHero(page: Page, domain: (typeof homeHeroDomains)[number]) {
+  await expect.poll(async () => page.getByTestId("home-hero-slide").evaluateAll((slides) =>
+    slides.filter((slide) => slide.getAttribute("data-active") === "true").map((slide) => slide.getAttribute("data-domain")),
+  )).toEqual([domain]);
+  await expect(page.getByRole("navigation", {name: "业务领域进度"}).locator('[aria-current="step"]')).toHaveCount(1);
+}
+
+async function expectSettledHomeHeroVisual(page: Page) {
+  await expect.poll(async () => page.getByTestId("home-hero-slide").evaluateAll((slides) =>
+    slides.every((slide) => Number(getComputedStyle(slide).opacity) ===
+      (slide.getAttribute("data-active") === "true" ? 1 : 0)),
+  )).toBe(true);
+}
+
+async function jumpToHomeHeroStep(page: Page, index: number) {
+  await page.locator("[data-home-hero-step]").nth(index).evaluate((step) => {
+    const rect = step.getBoundingClientRect();
+    const center = window.scrollY + rect.top + rect.height / 2 - window.innerHeight / 2;
+    document.scrollingElement!.scrollTop = center;
+  });
+}
+
+test("desktop and mobile route changes land at the absolute page top", async ({page}) => {
+  for (const width of [390, 1440]) {
+    await page.setViewportSize({width, height: 900});
+    await page.goto("/ai");
+    await page.evaluate(() => { document.scrollingElement!.scrollTop = 1400; });
+    await expect.poll(() => page.evaluate(() => window.scrollY)).toBeGreaterThan(500);
+    if (width < 1280) {
+      await page.getByRole("button", {name: "打开导航菜单"}).click();
+      await page.getByRole("navigation", {name: "移动导航"})
+        .getByRole("link", {name: "IDC与算力", exact: true}).click();
+    } else {
+      await page.getByRole("navigation", {name: "主导航"})
+        .getByRole("link", {name: "IDC与算力", exact: true}).click();
+    }
+    await expect(page).toHaveURL(/\/idc$/);
+    await expect.poll(() => page.evaluate(() => window.scrollY), {message: `route top at ${width}px`}).toBe(0);
+    await expect(page.locator("#main-content")).toBeFocused();
+  }
+});
+
+test("home hero follows all five states forward and reverse through natural scrolling", async ({page}) => {
+  await page.goto("/");
+  await expect(page.getByTestId("home-hero-story")).toHaveAttribute("data-enhanced", "true");
+  await expect(page.locator("[data-home-hero-step]")).toHaveCount(5);
+  for (const [index, domain] of homeHeroDomains.entries()) {
+    await jumpToHomeHeroStep(page, index);
+    await expectActiveHomeHero(page, domain);
+  }
+  for (let index = homeHeroDomains.length - 1; index >= 0; index--) {
+    await jumpToHomeHeroStep(page, index);
+    await expectActiveHomeHero(page, homeHeroDomains[index]);
+  }
+});
+
+test("home hero resolves quick jumps and progress navigation to the reached state", async ({page}) => {
+  await page.goto("/");
+  await expect(page.getByTestId("home-hero-story")).toHaveAttribute("data-enhanced", "true");
+  for (const [index, domain] of [[0, "ai"], [4, "energy"], [2, "xinchang"]] as const) {
+    await jumpToHomeHeroStep(page, index);
+    await expectActiveHomeHero(page, domain);
+  }
+  await page.getByRole("navigation", {name: "业务领域进度"}).getByRole("button", {name: /04\s*LINK/}).click();
+  await expectActiveHomeHero(page, "link");
+});
+
+test("home hero pauses inactive motion and disables all motion for reduced-motion users", async ({page}) => {
+  await page.emulateMedia({reducedMotion: "no-preference"});
+  await page.goto("/");
+  await expect(page.getByTestId("home-hero-story")).toHaveAttribute("data-enhanced", "true");
+  await jumpToHomeHeroStep(page, 2);
+  await expectActiveHomeHero(page, "xinchang");
+  const states = await page.getByTestId("home-hero-slide").evaluateAll((slides) => slides.map((slide) => ({
+    domain: slide.getAttribute("data-domain"),
+    active: slide.getAttribute("data-active") === "true",
+    layers: [...slide.querySelectorAll("[data-motion-layer]")].map((layer) => ({
+      name: getComputedStyle(layer).animationName,
+      state: getComputedStyle(layer).animationPlayState,
+    })),
+  })));
+  for (const slide of states) {
+    expect(slide.layers.length, `${slide.domain} motion layers`).toBeGreaterThanOrEqual(3);
+    expect(slide.layers.every((layer) => layer.name !== "none" && layer.state === (slide.active ? "running" : "paused")), slide.domain ?? "unknown domain").toBe(true);
+  }
+  await page.emulateMedia({reducedMotion: "reduce"});
+  await page.reload();
+  await expect(page.locator("[data-motion-layer]")).not.toHaveCount(0);
+  expect(await page.locator("[data-motion-layer]").evaluateAll((layers) =>
+    layers.every((layer) => getComputedStyle(layer).animationName === "none"),
+  )).toBe(true);
+});
+
+test("home hero releases into the preserved full home sections without console errors", async ({page}) => {
+  const errors: string[] = [];
+  page.on("pageerror", (error) => errors.push(error.message));
+  page.on("console", (message) => { if (message.type() === "error") errors.push(message.text()); });
+  for (const width of viewportWidths) {
+    await page.setViewportSize({width, height: 900});
+    await page.goto("/");
+    await expect(page.getByTestId("home-hero-story")).toHaveAttribute("data-enhanced", "true");
+    await jumpToHomeHeroStep(page, 4);
+    await expectActiveHomeHero(page, "energy");
+    for (const id of preservedHomeSections) await expect(page.locator(`section#${id}`)).toHaveCount(1);
+    await page.locator("section#ai").scrollIntoViewIfNeeded();
+    await expect(page.locator("section#ai")).toBeInViewport();
+  }
+  expect(errors).toEqual([]);
+});
+
+test("home hero and preserved sections have no horizontal overflow after scrolling", async ({page}) => {
+  for (const width of viewportWidths) {
+    await page.setViewportSize({width, height: 900});
+    await page.goto("/");
+    await expect(page.getByTestId("home-hero-story")).toHaveAttribute("data-enhanced", "true");
+    await jumpToHomeHeroStep(page, 4);
+    await expectActiveHomeHero(page, "energy");
+    await page.locator("section#ai").scrollIntoViewIfNeeded();
+    await expect(page.locator("section#ai")).toBeInViewport();
+    await expectNoHorizontalOverflow(page);
+  }
+});
+
+test("landing hero tones and first-section emphasis keep the header light", async ({page}) => {
+  await page.setViewportSize({width: 1440, height: 900});
+  const cases = [
+    {path: "/idc", hero: "hero", first: "service-matrix", tone: "dark", background: "rgb(8, 8, 8)"},
+    {path: "/madeinchina", hero: "madeInChina-hero", first: "diagnostic", tone: "dark", background: "rgb(8, 8, 8)"},
+    {path: "/network", hero: "network-hero", first: "products", tone: "dark", background: "rgb(8, 8, 8)"},
+    {path: "/energy", hero: "energy-hero", first: "inputs", tone: "accent", background: "rgb(223, 255, 70)"},
+    {path: "/about", hero: "about-hero", first: "identity", tone: "dark", background: "rgb(8, 8, 8)"},
+  ] as const;
+  let headerAppearance: {background: string; text: string} | undefined;
+  for (const item of cases) {
+    await page.goto(item.path);
+    const hero = page.locator(`#${item.hero}`);
+    await expect(hero).toHaveAttribute("data-tone", "light");
+    await expect(hero).toHaveCSS("background-color", "rgb(251, 251, 249)");
+    const first = page.locator("[data-content-module]").nth(1);
+    await expect(first).toHaveAttribute("id", item.first);
+    await expect(first).toHaveAttribute("data-tone", item.tone);
+    await expect(first).toHaveCSS("background-color", item.background);
+    const appearance = await page.locator(".site-header").evaluate((header) => ({
+      background: getComputedStyle(header).backgroundColor,
+      text: getComputedStyle(header.querySelector("nav a")!).color,
+    }));
+    headerAppearance ??= appearance;
+    expect(appearance, `${item.path} header`).toEqual(headerAppearance);
+    await expectNoHorizontalOverflow(page);
+  }
+});
+
+test("home hero desktop and mobile visual captures", async ({page}, testInfo) => {
+  for (const [label, width, height] of [["desktop", 1440, 900], ["mobile", 390, 844]] as const) {
+    await page.setViewportSize({width, height});
+    await page.goto("/");
+    await expect(page.getByTestId("home-hero-story")).toHaveAttribute("data-enhanced", "true");
+    await jumpToHomeHeroStep(page, 0);
+    await expectActiveHomeHero(page, "ai");
+    await expectSettledHomeHeroVisual(page);
+    await page.screenshot({path: testInfo.outputPath(`home-hero-${label}-ai.png`)});
+    await jumpToHomeHeroStep(page, 4);
+    await expectActiveHomeHero(page, "energy");
+    await expectSettledHomeHeroVisual(page);
+    await page.screenshot({path: testInfo.outputPath(`home-hero-${label}-energy.png`)});
+    await page.goto("/energy");
+    await page.screenshot({path: testInfo.outputPath(`landing-hero-${label}-energy.png`)});
+  }
+});
