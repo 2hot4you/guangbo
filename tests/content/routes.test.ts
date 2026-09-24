@@ -40,18 +40,19 @@ describe("public route registry", () => {
     ]);
   });
 
-  it("links the four direct pages without duplicate or unregistered destinations", () => {
+  it("puts Home first among five direct links without duplicate or unregistered destinations", () => {
+    expect(navigationGroups[0]).toEqual({kind: "link", label: "首页", path: "/"});
     const directPaths = navigationGroups
       .filter((item) => item.kind === "link")
       .map((item) => item.path);
-    expect(directPaths).toEqual(["/madeinchina", "/network", "/energy", "/about"]);
+    expect(directPaths).toEqual(["/", "/madeinchina", "/network", "/energy", "/about"]);
 
     const allPaths = navigationGroups.flatMap((item) =>
       item.kind === "group"
         ? [item.overviewPath, ...item.children.map((child) => child.path)]
         : [item.path],
     );
-    expect(allPaths).toHaveLength(13);
+    expect(allPaths).toHaveLength(14);
     expect(new Set(allPaths).size).toBe(allPaths.length);
     expect(allPaths.every((path) => PUBLIC_PATHS.includes(path))).toBe(true);
   });
