@@ -91,8 +91,6 @@ export function RouteTransitionFocus() {
   const previousPathname = useRef(pathname);
 
   useEffect(() => {
-    const routeChanged = previousPathname.current !== pathname;
-    previousPathname.current = pathname;
     const targetId = hashTargetId();
     if (targetId) {
       if (window.location.pathname !== pathname) return;
@@ -123,7 +121,14 @@ export function RouteTransitionFocus() {
         observer.disconnect();
       };
     }
-    if (!routeChanged) return;
+  }, [pathname, navigation]);
+
+  useEffect(() => {
+    const routeChanged = previousPathname.current !== pathname;
+    previousPathname.current = pathname;
+    if (!routeChanged || hashTargetId()) return;
+    // History publication can follow the pathname render. Only a new pathname
+    // or unmount should cancel this route's pending top correction.
     const root = document.documentElement;
     const previousBehavior = root.style.scrollBehavior;
     root.style.scrollBehavior = "auto";
@@ -137,7 +142,7 @@ export function RouteTransitionFocus() {
       window.cancelAnimationFrame(frame);
       root.style.scrollBehavior = previousBehavior;
     };
-  }, [pathname, navigation]);
+  }, [pathname]);
 
   return null;
 }

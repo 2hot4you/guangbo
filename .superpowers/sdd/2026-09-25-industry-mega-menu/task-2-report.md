@@ -109,3 +109,23 @@ No remaining W1 issue observed. Full production build and the complete e2e suite
 ### Files / concerns
 
 Changed only `desktop-navigation.tsx`, `mobile-navigation.tsx`, `route-transition-focus.tsx`, `site-navigation.test.tsx`, and this report. No CSS, landing primitives, industry content, e2e files, or CCG state were changed in this round. The separate dev server was stopped after checks. Production build and full e2e remain the integration agent's responsibility; this report does not claim a new production build. No W1–W4 behavior remains reproduced in the targeted checks.
+
+## Route-top regression — Preserve the pending correction frame
+
+### Root cause / RED
+
+Used systematic-debugging to test the integration report's specific hypothesis before changing product code. A new deterministic test renders `/ai`, changes pathname to `/idc` (scheduling the immediate top reset and correction RAF), simulates a residual 5px offset, then commits history before that RAF runs. The prior combined `[pathname, navigation]` effect calls `cancelAnimationFrame(1)` during the revision update, and its replacement effect returns because pathname has not changed again. This confirms that the new hash publication cancels the still-needed normal route correction.
+
+`pnpm test tests/components/site-navigation.test.tsx`: **RED**, 1 failed / 33 passed; the new assertion catches the unexpected correction-frame cancellation directly.
+
+### Fix
+
+Separated hash-commit focus from ordinary route-top focus into independent effects. Hash focus continues to depend on pathname and committed navigation state. The ordinary top-reset effect depends only on pathname, so history revision publication cannot cancel its pending RAF. New routes/unmount still cancel it, and the frame still checks for a hash before scrolling. No timeout, E2E threshold change, or e2e file edit was introduced.
+
+### GREEN / final checks
+
+- Navigation tests: **PASS**, 34/34, including delayed history publication, exact residual-offset correction, existing rapid-route cleanup, and hash/Drawer regressions.
+- Full `pnpm test`: **PASS**, 184/184 across 14 files.
+- `pnpm typecheck`, `pnpm lint`, `git diff --check`: **PASS**.
+- Real Chrome, mirroring the existing `desktop and mobile route changes land at the absolute page top` scenario against dev port 43188: **PASS** for Desktop Chrome and Pixel 7 contexts, each at widths 390 and 1440. All four runs start on `/ai`, scroll to 1400, navigate via the appropriate Header control to `/idc`, and assert exactly `scrollY === 0` plus `#main-content` focus.
+- Only `route-transition-focus.tsx`, `site-navigation.test.tsx`, and this report changed. The dev server was stopped afterward. The lead agent retains the fresh production build/full E2E gate; this targeted browser check does not claim a rebuilt production artifact.

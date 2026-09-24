@@ -260,6 +260,44 @@ describe("route transitions", () => {
       root.scrollTop = originalScrollTop;
     }
   });
+
+  it("preserves the pending route-top correction when history publishes a later navigation revision", async () => {
+    pathname = "/ai";
+    window.history.replaceState(null, "", "/ai");
+    const root = document.documentElement;
+    const originalBehavior = root.style.scrollBehavior;
+    const originalScrollTop = root.scrollTop;
+    root.style.scrollBehavior = "smooth";
+    const frames = new Map<number, FrameRequestCallback>();
+    let frameId = 0;
+    const cancelFrame = vi.fn((id: number) => frames.delete(id));
+    vi.stubGlobal("requestAnimationFrame", vi.fn((callback: FrameRequestCallback) => {
+      frames.set(++frameId, callback);
+      return frameId;
+    }));
+    vi.stubGlobal("cancelAnimationFrame", cancelFrame);
+    vi.stubGlobal("scrollTo", vi.fn(({top}: ScrollToOptions) => { root.scrollTop = top ?? 0; }));
+    const view = render(<><RouteTransitionFocus /><main id="main-content" tabIndex={-1} /></>);
+    try {
+      pathname = "/idc";
+      view.rerender(<><RouteTransitionFocus /><main id="main-content" tabIndex={-1} /></>);
+      expect(root.scrollTop).toBe(0);
+      expect(frames.size).toBe(1);
+      root.scrollTop = 5;
+      await act(async () => {
+        window.history.replaceState(null, "", "/idc");
+      });
+      expect(cancelFrame).not.toHaveBeenCalled();
+      expect(frames.size).toBe(1);
+      act(() => { for (const callback of frames.values()) callback(0); });
+      expect(root.scrollTop).toBe(0);
+      expect(root.style.scrollBehavior).toBe("smooth");
+    } finally {
+      view.unmount();
+      root.style.scrollBehavior = originalBehavior;
+      root.scrollTop = originalScrollTop;
+    }
+  });
 });
 
 describe("mobile navigation", () => {
