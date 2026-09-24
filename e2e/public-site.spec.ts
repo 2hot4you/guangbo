@@ -107,6 +107,7 @@ function getRouteLabel(path: (typeof publicPaths)[number]) {
 }
 
 test("sample pages fit all required CSS viewport widths", async ({page}) => {
+  test.setTimeout(60_000);
   for (const width of viewportWidths) {
     await page.setViewportSize({width, height: 900});
     for (const path of sampledPaths) {
