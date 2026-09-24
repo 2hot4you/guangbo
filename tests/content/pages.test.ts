@@ -4,6 +4,22 @@ import {getPage, getPageByPath, marketingPages, PUBLIC_PATHS} from "@/content";
 const serialized = JSON.stringify(marketingPages);
 
 describe("visitor content", () => {
+  const industryHubs = [
+    {key: "madeInChina", ids: ["diagnostic", "layers", "hardware", "local-ai", "customer-service", "online-services", "orders", "after-sales", "data", "compatibility", "industries", "delivery"], terms: ["桌面工作站", "本地模型推理", "智能客户服务", "线上业务办理", "订单与经营管理", "售后工单", "数据保护"]},
+    {key: "network", ids: ["inputs", "products", "enterprise-line", "data-center-interconnect", "fiber-cloud", "otn", "branch-network", "compute-interconnect", "industry-network", "continuity", "interfaces", "rollout"], terms: ["企业专线", "数据中心互联", "光纤资源租赁", "云网连接", "OTN", "总部与分支互联", "行业专网"]},
+    {key: "energy", ids: ["inputs", "services", "purchase", "green-power", "management", "efficiency", "solar", "storage", "charging", "carbon", "scenarios", "delivery"], terms: ["电力市场化交易", "绿电与绿证", "综合能源管理", "合同能源管理", "分布式光伏", "用户侧储能", "充换电设施", "碳资产"]},
+  ] as const;
+
+  it.each(industryHubs)("gives $key a complete, unique, material-backed section map", ({key, ids, terms}) => {
+    const page = marketingPages[key];
+    const actualIds = page.sections.map((section) => section.id);
+    const copy = JSON.stringify(page.sections);
+    expect(actualIds).toHaveLength(12);
+    expect(new Set(actualIds).size).toBe(actualIds.length);
+    expect(actualIds).toEqual(ids);
+    for (const term of terms) expect(copy).toContain(term);
+  });
+
   it("provides substantive content for all 14 public pages", () => {
     expect(Object.keys(marketingPages)).toHaveLength(14);
     for (const path of PUBLIC_PATHS) {

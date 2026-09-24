@@ -41,6 +41,20 @@ const modules = [
 }[];
 
 describe("explicit public route modules", () => {
+  const industryTargets = [
+    {path: "/madeinchina", component: MadeInChinaPage, ids: ["diagnostic", "layers", "hardware", "local-ai", "customer-service", "online-services", "orders", "after-sales", "data", "compatibility", "industries", "delivery"]},
+    {path: "/network", component: NetworkPage, ids: ["inputs", "products", "enterprise-line", "data-center-interconnect", "fiber-cloud", "otn", "branch-network", "compute-interconnect", "industry-network", "continuity", "interfaces", "rollout"]},
+    {path: "/energy", component: EnergyPage, ids: ["inputs", "services", "purchase", "green-power", "management", "efficiency", "solar", "storage", "charging", "carbon", "scenarios", "delivery"]},
+  ] as const;
+
+  it.each(industryTargets)("renders every navigation target exactly once on $path", ({component, ids}) => {
+    const html = renderToStaticMarkup(component());
+    const sectionIds = [...html.matchAll(/<section\b[^>]*data-content-module[^>]*\bid="([^"]+)"/g)].map((match) => match[1]);
+    expect(sectionIds.length).toBeGreaterThanOrEqual(12);
+    expect(new Set(sectionIds).size).toBe(sectionIds.length);
+    for (const id of ids) expect(sectionIds.filter((actual) => actual === id)).toHaveLength(1);
+  });
+
   it("covers exactly the approved route registry", () => {
     expect(modules.map(({path}) => path)).toEqual(PUBLIC_PATHS);
   });

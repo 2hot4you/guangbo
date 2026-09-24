@@ -3,7 +3,7 @@ import {HomeHeroVisual} from "./home-hero-visual";
 import {LandingHero, LandingSection, NumberedList, ProcessRail, styles} from "./landing-page-primitives";
 
 export function XinchangLandingPage({page}: {page: MarketingPage}) {
-  const [diagnostic, layers, hardware, applications, data, compatibility, industries, delivery] = page.sections;
+  const [diagnostic, layers, hardware, localAi, customerService, onlineServices, orders, afterSales, data, compatibility, industries, delivery] = page.sections;
 
   return (
     <div data-landing-page={page.key}>
@@ -58,19 +58,39 @@ export function XinchangLandingPage({page}: {page: MarketingPage}) {
         </div>
       </LandingSection>
 
-      <LandingSection id={applications.id} title={applications.title} number="04" tone="muted">
-        <ol aria-label="企业业务应用流程" className="m-0 list-none border-t border-current/20 p-0">
-          {applications.items?.map((item, index) => (
-            <li className="grid gap-3 border-b border-current/20 py-6 md:grid-cols-[4rem_minmax(0,1fr)_minmax(0,2fr)] md:gap-8" key={item.title}>
-              <span aria-hidden="true" className="font-mono text-xs opacity-65">0{index + 1}</span>
-              <h3 className="text-xl font-semibold">{item.title}</h3>
-              <p className="leading-relaxed opacity-70">{item.body}</p>
-            </li>
-          ))}
-        </ol>
+      <LandingSection id={localAi.id} title={localAi.title} body={localAi.body} number="04" tone="accent">
+        <ProcessRail label="本地 AI 环境核对" items={[
+          {title: "数据边界", body: "确认知识与业务数据的使用范围。"},
+          {title: "运行环境", body: "核对模型、计算设备与软件适配。"},
+          {title: "业务验证", body: "用实际任务检验方案。"},
+        ]} />
       </LandingSection>
 
-      <LandingSection id={data.id} title={data.title} body={data.body} number="05">
+      <LandingSection id={customerService.id} title={customerService.title} body={customerService.body} number="05" tone="muted">
+        <NumberedList label="客户服务环节" items={customerService.items ?? []} />
+      </LandingSection>
+
+      <LandingSection id={onlineServices.id} title={onlineServices.title} body={onlineServices.body} number="06">
+        <ProcessRail label="线上办理流程" items={[
+          {title: "资料提交", body: "梳理客户与业务资料。"},
+          {title: "核验授权", body: "确认适用的身份核验与授权方式。"},
+          {title: "签约变更", body: "对接签约及后续业务流程。"},
+        ]} />
+      </LandingSection>
+
+      <LandingSection id={orders.id} title={orders.title} body={orders.body} number="07" tone="dark">
+        <NumberedList label="经营系统连接点" items={orders.items ?? []} />
+      </LandingSection>
+
+      <LandingSection id={afterSales.id} title={afterSales.title} body={afterSales.body} number="08" tone="muted">
+        <ProcessRail label="售后工单流程" items={[
+          {title: "受理与派单", body: "确定入口和处理角色。"},
+          {title: "现场处理", body: "记录工程师处理与进度。"},
+          {title: "反馈与评价", body: "追踪结果和服务反馈。"},
+        ]} />
+      </LandingSection>
+
+      <LandingSection id={data.id} title={data.title} body={data.body} number="09">
         <ProcessRail label="数据保护生命周期" items={[
           {title: "识别", body: "按访问频率与保存要求梳理数据。"},
           {title: "保护", body: "明确备份和分层存储方式。"},
@@ -78,7 +98,7 @@ export function XinchangLandingPage({page}: {page: MarketingPage}) {
         ]} />
       </LandingSection>
 
-      <LandingSection id={compatibility.id} title={compatibility.title} body={compatibility.body} number="06" tone="accent">
+      <LandingSection id={compatibility.id} title={compatibility.title} body={compatibility.body} number="10" tone="accent">
         <NumberedList label="适配验证清单" items={[
           {title: "基础环境", body: "处理器、操作系统与部署位置。"},
           {title: "数据与应用", body: "数据库、业务软件版本和接口。"},
@@ -86,7 +106,7 @@ export function XinchangLandingPage({page}: {page: MarketingPage}) {
         ]} />
       </LandingSection>
 
-      <LandingSection id={industries.id} title={industries.title} number="07">
+      <LandingSection id={industries.id} title={industries.title} number="11">
         <div className="grid gap-x-12 border-t border-current/20 md:grid-cols-2">
           {industries.items?.map((item) => (
             <div className="border-b border-current/20 py-7" key={item.title}>
@@ -97,7 +117,7 @@ export function XinchangLandingPage({page}: {page: MarketingPage}) {
         </div>
       </LandingSection>
 
-      <LandingSection id={delivery.id} title={delivery.title} body={delivery.body} number="08" tone="dark">
+      <LandingSection id={delivery.id} title={delivery.title} body={delivery.body} number="12" tone="dark">
         <ProcessRail label="分阶段验证与交付" items={[
           {title: "样例验证", body: "选择明确的业务流程和适配目标。"},
           {title: "范围确认", body: "核对软件、接口与服务责任。"},

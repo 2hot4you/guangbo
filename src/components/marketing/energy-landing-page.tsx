@@ -3,7 +3,7 @@ import {HomeHeroVisual} from "./home-hero-visual";
 import {LandingHero, LandingSection, NumberedList, ProcessRail, styles} from "./landing-page-primitives";
 
 export function EnergyLandingPage({page}: {page: MarketingPage}) {
-  const [inputs, greenPower, purchase, management, projects, carbon, scenarios, delivery] = page.sections;
+  const [inputs, services, purchase, greenPower, management, efficiency, solar, storage, charging, carbon, scenarios, delivery] = page.sections;
 
   return (
     <div data-landing-page={page.key}>
@@ -44,11 +44,12 @@ export function EnergyLandingPage({page}: {page: MarketingPage}) {
         </figure>
       </LandingSection>
 
-      <LandingSection id={greenPower.id} title={greenPower.title} body={greenPower.body} number="02" tone="dark">
-        <div className="grid gap-8 border-t border-white/30 pt-7 md:grid-cols-2">
-          <div><span className="font-mono text-xs text-lime-300">PATH A</span><h3 className="mt-3 text-2xl">绿电需求</h3><p className="mt-3 leading-relaxed text-white/70">确认采购周期、需求规模与适用服务方案。</p></div>
-          <div><span className="font-mono text-xs text-lime-300">PATH B</span><h3 className="mt-3 text-2xl">绿证需求</h3><p className="mt-3 leading-relaxed text-white/70">梳理目标与资料要求，再开展方案对接。</p></div>
-        </div>
+      <LandingSection id={services.id} title={services.title} body={services.body} number="02" tone="dark">
+        <NumberedList label="能源服务方向" items={[
+          {title: "交易与绿色采购", body: "沟通电力市场化交易、绿电与绿证需求。"},
+          {title: "管理与节能", body: "结合负荷和设备运行评估服务方向。"},
+          {title: "项目与碳业务", body: "按场地、数据和实施条件开展对接。"},
+        ]} />
       </LandingSection>
 
       <LandingSection id={purchase.id} title={purchase.title} body={purchase.body} number="03" tone="muted">
@@ -59,7 +60,14 @@ export function EnergyLandingPage({page}: {page: MarketingPage}) {
         ]} />
       </LandingSection>
 
-      <LandingSection id={management.id} title={management.title} body={management.body} number="04">
+      <LandingSection id={greenPower.id} title={greenPower.title} body={greenPower.body} number="04" tone="dark">
+        <div className="grid gap-8 border-t border-white/30 pt-7 md:grid-cols-2">
+          <div><span className="font-mono text-xs text-lime-300">PATH A</span><h3 className="mt-3 text-2xl">绿电需求</h3><p className="mt-3 leading-relaxed text-white/70">确认采购周期、需求规模与适用服务方案。</p></div>
+          <div><span className="font-mono text-xs text-lime-300">PATH B</span><h3 className="mt-3 text-2xl">绿证需求</h3><p className="mt-3 leading-relaxed text-white/70">梳理目标与资料要求，再开展方案对接。</p></div>
+        </div>
+      </LandingSection>
+
+      <LandingSection id={management.id} title={management.title} body={management.body} number="05">
         <div className="grid gap-0 border-y border-current/20 md:grid-cols-3">
           {["数据汇集", "运行分析", "改造评估"].map((label, index) => (
             <div className="border-b border-current/20 py-6 last:border-b-0 md:border-b-0 md:border-r md:px-6 first:md:pl-0 last:md:border-r-0" key={label}>
@@ -69,30 +77,45 @@ export function EnergyLandingPage({page}: {page: MarketingPage}) {
         </div>
       </LandingSection>
 
-      <LandingSection id={projects.id} title={projects.title} body={projects.body} number="05" tone="accent">
-        <ol aria-label="清洁能源项目谱" className="m-0 list-none border-t border-current/30 p-0">
-          {[
-            ["分布式光伏", "核对场地与用电匹配。"],
-            ["用户侧储能", "结合负荷特点评估。"],
-            ["充换电设施", "核对使用场景与建设条件。"],
-            ["合同能源管理", "明确实施主体与合作方式。"],
-          ].map(([title, body], index) => (
-            <li className="grid gap-3 border-b border-current/30 py-5 md:grid-cols-[4rem_minmax(0,1fr)_minmax(0,2fr)]" key={title}>
-              <span aria-hidden="true" className="font-mono text-xs opacity-65">0{index + 1}</span><h3 className="text-xl font-semibold">{title}</h3><p>{body}</p>
-            </li>
-          ))}
-        </ol>
+      <LandingSection id={efficiency.id} title={efficiency.title} body={efficiency.body} number="06" tone="accent">
+        <ProcessRail label="节能项目评估路径" items={[
+          {title: "识别设备", body: "梳理运行状态和能耗数据。"},
+          {title: "确定改造", body: "讨论适用的节能措施。"},
+          {title: "明确合作", body: "确认合同能源管理的主体与分工。"},
+        ]} />
       </LandingSection>
 
-      <LandingSection id={carbon.id} title={carbon.title} body={carbon.body} number="06">
+      <LandingSection id={solar.id} title={solar.title} body={solar.body} number="07">
+        <NumberedList label="光伏项目条件" items={[
+          {title: "场地条件", body: "确认可讨论的建设位置。"},
+          {title: "用电需求", body: "结合负荷与业务安排评估。"},
+          {title: "实施资源", body: "按项目条件组织方案对接。"},
+        ]} />
+      </LandingSection>
+
+      <LandingSection id={storage.id} title={storage.title} body={storage.body} number="08" tone="muted">
+        <div className="grid border-y border-current/20 md:grid-cols-3">
+          {["负荷特点", "场地条件", "运行目标"].map((item) => <p className="border-b border-current/20 py-6 text-xl md:border-b-0 md:border-r md:px-6 first:md:pl-0 last:md:border-r-0" key={item}>{item}</p>)}
+        </div>
+      </LandingSection>
+
+      <LandingSection id={charging.id} title={charging.title} body={charging.body} number="09" tone="accent">
+        <ProcessRail label="充换电项目起点" items={[
+          {title: "使用场景", body: "梳理车辆和用户需求。"},
+          {title: "供电条件", body: "核对场地与接入条件。"},
+          {title: "方案对接", body: "确认实施资源与责任范围。"},
+        ]} />
+      </LandingSection>
+
+      <LandingSection id={carbon.id} title={carbon.title} body={carbon.body} number="10">
         <p className="max-w-3xl border-l-2 border-current pl-6 text-lg leading-relaxed">服务边界：根据项目与数据基础沟通资料准备和后续工作范围；适用条件以具体方案为准。</p>
       </LandingSection>
 
-      <LandingSection id={scenarios.id} title={scenarios.title} number="07" tone="muted">
+      <LandingSection id={scenarios.id} title={scenarios.title} number="11" tone="muted">
         <NumberedList label="适用场景" items={scenarios.items ?? []} />
       </LandingSection>
 
-      <LandingSection id={delivery.id} title={delivery.title} body={delivery.body} number="08" tone="dark">
+      <LandingSection id={delivery.id} title={delivery.title} body={delivery.body} number="12" tone="dark">
         <ProcessRail label="能源服务评估流程" items={[
           {title: "数据准备", body: "汇总地区、规模、负荷和目标。"},
           {title: "需求沟通", body: "厘清采购与项目方向。"},
