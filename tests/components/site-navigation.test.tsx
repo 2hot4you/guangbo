@@ -70,6 +70,39 @@ describe("route transitions", () => {
       root.style.scrollBehavior = originalBehavior;
     }
   });
+
+  it("clears a residual scroll offset before restoring smooth scrolling", () => {
+    const root = document.documentElement;
+    const originalBehavior = root.style.scrollBehavior;
+    const originalScrollTop = root.scrollTop;
+    root.style.scrollBehavior = "smooth";
+    const frames: FrameRequestCallback[] = [];
+    const scrollTo = vi.fn(({top}: ScrollToOptions) => { root.scrollTop = top ?? 0; });
+    vi.stubGlobal("requestAnimationFrame", vi.fn((callback: FrameRequestCallback) => {
+      frames.push(callback);
+      return frames.length;
+    }));
+    vi.stubGlobal("cancelAnimationFrame", vi.fn());
+    vi.stubGlobal("scrollTo", scrollTo);
+    const view = render(<><RouteTransitionFocus /><main id="main-content" tabIndex={-1} /></>);
+
+    try {
+      pathname = "/idc";
+      view.rerender(<><RouteTransitionFocus /><main id="main-content" tabIndex={-1} /></>);
+      expect(root.scrollTop).toBe(0);
+      expect(root.style.scrollBehavior).toBe("auto");
+
+      root.scrollTop = 8;
+      frames[0](0);
+      expect(root.scrollTop).toBe(0);
+      expect(root.style.scrollBehavior).toBe("smooth");
+      expect(scrollTo).toHaveBeenCalledTimes(2);
+    } finally {
+      view.unmount();
+      root.style.scrollBehavior = originalBehavior;
+      root.scrollTop = originalScrollTop;
+    }
+  });
 });
 
 describe("mobile navigation", () => {
