@@ -1,0 +1,64 @@
+import {cleanup, render, screen, within} from "@testing-library/react";
+import {renderToStaticMarkup} from "react-dom/server";
+import {afterEach, describe, expect, it} from "vitest";
+import {AiLandingPage} from "@/components/marketing/ai-landing-page";
+import {IdcLandingPage} from "@/components/marketing/idc-landing-page";
+import {ai} from "@/content/pages/ai";
+import {idc} from "@/content/pages/idc";
+
+afterEach(cleanup);
+
+describe("distinct AI and IDC landing pages", () => {
+  it.each([
+    {name: "AI", page: ai, Component: AiLandingPage, rootClass: "ai-landing"},
+    {name: "IDC", page: idc, Component: IdcLandingPage, rootClass: "idc-landing"},
+  ])("renders $name with one H1 and every declared section as an addressable module", ({page, Component, rootClass}) => {
+    render(<Component page={page} />);
+
+    const root = document.querySelector("[data-landing-page]");
+    expect(root).toHaveClass(rootClass);
+    expect(screen.getAllByRole("heading", {level: 1})).toHaveLength(1);
+    expect(screen.getByRole("heading", {level: 1})).toHaveTextContent(page.hero.title);
+
+    const modules = [...root!.querySelectorAll<HTMLElement>("section[data-content-module]")];
+    expect(modules.length).toBeGreaterThanOrEqual(8);
+    expect(modules.map((contentModule) => contentModule.id)).toEqual(["hero", ...page.sections.map((section) => section.id)]);
+    expect(new Set(modules.map((contentModule) => contentModule.id)).size).toBe(modules.length);
+    for (const section of page.sections) {
+      const contentModule = document.getElementById(section.id);
+      expect(contentModule).toHaveAttribute("aria-labelledby", `${section.id}-heading`);
+      expect(within(contentModule!).getByRole("heading", {level: 2, name: section.title})).toBeInTheDocument();
+    }
+  });
+
+  it("presents AI capabilities, model families, workflow, selection and availability as separate structures", () => {
+    render(<AiLandingPage page={ai} />);
+
+    const capabilities = document.getElementById("capability-map")!;
+    expect(within(capabilities).getAllByRole("link")).toHaveLength(3);
+    expect(within(capabilities).getByRole("link", {name: /LLM与多模态理解/})).toHaveAttribute("href", "/ai/llm");
+    expect(within(capabilities).getByRole("link", {name: /图像生成与编辑/})).toHaveAttribute("href", "/ai/image");
+    expect(within(capabilities).getByRole("link", {name: /视频生成与编辑/})).toHaveAttribute("href", "/ai/video");
+    expect(within(document.getElementById("ecosystem")!).getAllByRole("heading", {level: 3})).toHaveLength(4);
+    expect(within(document.getElementById("workflows")!).getByRole("list", {name: "模型任务工作流"})).toBeInTheDocument();
+    expect(within(document.getElementById("selection")!).getAllByRole("listitem")).toHaveLength(5);
+    expect(within(document.getElementById("availability")!).getByText(/实际开放型号与价格以平台目录为准/)).toBeInTheDocument();
+    expect(screen.getByRole("figure", {name: "模型能力轨道图"})).toBeInTheDocument();
+    expect(renderToStaticMarkup(<AiLandingPage page={ai} />)).toContain("模型任务工作流");
+  });
+
+  it("presents IDC service choices, workloads, infrastructure layers and delivery conditions", () => {
+    render(<IdcLandingPage page={idc} />);
+
+    const matrix = document.getElementById("service-matrix")!;
+    expect(within(matrix).getAllByRole("link")).toHaveLength(4);
+    expect(within(matrix).getByRole("link", {name: /VPS租赁/})).toHaveAttribute("href", "/idc/vps");
+    expect(within(matrix).getByRole("link", {name: /GPU算力/})).toHaveAttribute("href", "/idc/gpu");
+    expect(within(document.getElementById("workload-map")!).getByRole("figure", {name: "业务负载与资源匹配图"})).toBeInTheDocument();
+    expect(within(document.getElementById("infrastructure-stack")!).getAllByRole("listitem")).toHaveLength(5);
+    expect(within(document.getElementById("migration")!).getByRole("list", {name: "迁移与扩容步骤"})).toBeInTheDocument();
+    expect(within(document.getElementById("delivery")!).getByText(/具体配置及服务指标以选定节点和交付方案为准/)).toBeInTheDocument();
+    expect(screen.getByRole("figure", {name: "机柜与数据中心示意"})).toBeInTheDocument();
+    expect(renderToStaticMarkup(<IdcLandingPage page={idc} />)).toContain("业务负载与资源匹配图");
+  });
+});

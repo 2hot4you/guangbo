@@ -4,25 +4,54 @@ export const idc = {
   key: "idc", path: "/idc",
   hero: {title: "为业务选择合适的计算与托管方式", lead: "从虚拟服务器到独享物理设备，从单台托管到机柜与GPU集群，光波互联结合数据中心合作资源，为企业匹配部署地点、计算性能、供电条件与网络接入方案。"},
   sections: [
-    {id: "services", title: "四类服务，适配不同部署需求", items: [
+    {id: "service-matrix", title: "四类服务，适配不同部署需求", eyebrow: "01 / SERVICE MATRIX", body: "从业务负载与运维方式出发，比较虚拟资源、独享设备、托管空间和GPU算力。", items: [
       {title: "VPS租赁", body: "网站、接口服务、开发测试与轻量业务", meta: "vCPU、内存、存储、带宽和部署地域", href: "/idc/vps"},
       {title: "裸金属租赁", body: "数据库、企业核心应用及独享计算环境", meta: "CPU、内存、磁盘、网络与管理方式", href: "/idc/bare-metal"},
       {title: "机柜与托管", body: "自有设备部署、集中运维与基础设施扩容", meta: "机柜空间、供电容量、制冷和运营商接入", href: "/idc/colocation"},
       {title: "GPU算力", body: "AI训练、推理、渲染与行业计算", meta: "GPU型号、显存、互联、存储及软件环境", href: "/idc/gpu"},
     ]},
-    {id: "conditions", title: "不只看计算规格，也看整体部署条件", items: [
+    {id: "workload-map", title: "先识别负载，再匹配资源形态", eyebrow: "02 / WORKLOAD MAP", body: "同一业务可能同时需要计算、存储和网络。先定位主要负载，再展开配置讨论。", items: [
+      {title: "轻量应用", body: "网站、接口与测试环境，可从VPS资源需求开始评估。"},
+      {title: "稳定业务系统", body: "数据库和持续运行的应用，评估独享计算与存储条件。"},
+      {title: "自有设备部署", body: "已有服务器或网络设备，评估机柜、电力和现场运维。"},
+      {title: "AI与图形计算", body: "训练、推理与渲染任务，同步评估GPU、数据读写与互联。"},
+    ]},
+    {id: "deployment-conditions", title: "不只看计算规格，也看整体部署条件", eyebrow: "03 / DEPLOYMENT CONDITIONS", items: [
       {title: "部署地域", body: "结合用户分布、访问路径与运维条件，评估业务部署位置。"},
       {title: "电力与制冷", body: "根据设备功耗、机柜密度及运行负载选择承载条件，明确供电和制冷保障方案。"},
       {title: "网络连接", body: "按业务选择互联网接入、机房互联或专线连接，兼顾日常访问与数据传输需求。"},
       {title: "运行管理", body: "结合资源类型确定监控、设备维护、故障处理和服务交接方式。"},
     ]},
-    {id: "scenarios", title: "典型方案", items: [
+    {id: "locations", title: "沿访问路径考虑部署地域", eyebrow: "04 / LOCATIONS", body: "下列为选址讨论方向，不代表具体站点或资源库存。节点、线路和现场条件以项目确认为准。", items: [
+      {title: "面向用户的访问路径", body: "结合用户分布、业务时延与互联网接入方式选择目标区域。"},
+      {title: "跨区域的数据流转", body: "评估源站、目标站与数据同步路径，明确网络连接需求。"},
+      {title: "现场运维与协作", body: "考虑设备到场、驻场协助与变更窗口，匹配可执行的部署位置。"},
+    ]},
+    {id: "infrastructure-stack", title: "把五层基础条件一并确认", eyebrow: "05 / INFRASTRUCTURE STACK", body: "机房方案由多层条件共同决定，单独比较服务器型号不足以判断部署可行性。", items: [
+      {title: "计算", body: "按负载核对VPS、独享服务器或GPU资源的计算要求。"},
+      {title: "存储", body: "确认容量、读写性能、数据保护和迁移需求。"},
+      {title: "网络", body: "确认接入线路、地址、带宽和跨机房连接方式。"},
+      {title: "电力", body: "结合设备功耗与机柜密度核对供电条件。"},
+      {title: "制冷", body: "结合持续负载和设备密度确认散热条件。"},
+    ]},
+    {id: "scenarios", title: "四类常见部署场景", eyebrow: "06 / SCENARIOS", items: [
       {title: "企业应用部署", body: "按照业务规模组合计算、存储与网络资源，承载网站、接口和内部系统。"},
       {title: "跨机房互联", body: "将不同地点的服务器与数据中心通过网络连接起来，支撑数据交换与业务协同。"},
       {title: "AI计算部署", body: "将GPU服务器、存储和网络需求一并评估，避免只按显卡数量选型。"},
       {title: "托管迁移与扩容", body: "围绕上架空间、电力、布线和业务切换安排，评估迁移或扩容方案。"},
     ]},
-    {id: "delivery", title: "按实际需求确认交付", body: "提供目标地域、设备或业务配置、预计使用时间，我们将据此沟通资源可用性与实施安排。具体配置及服务指标以选定节点和交付方案为准。"},
+    {id: "migration", title: "迁移与扩容按步骤推进", eyebrow: "07 / MIGRATION", body: "涉及现网业务时，先确认依赖与切换窗口，再安排资源及实施顺序。", items: [
+      {title: "梳理现状", body: "列出设备、应用、数据、线路和当前负载。"},
+      {title: "评估目标条件", body: "核对机柜、电力、网络、存储和目标地域。"},
+      {title: "准备迁移", body: "确定数据同步、设备进场、测试和回退安排。"},
+      {title: "切换与验收", body: "按计划完成上线，核对连接、性能与责任交接。"},
+    ]},
+    {id: "delivery", title: "按实际需求确认交付", eyebrow: "08 / DELIVERY", body: "提供目标地域、设备或业务配置、预计使用时间，我们将据此沟通资源可用性与实施安排。具体配置及服务指标以选定节点和交付方案为准。", items: [
+      {title: "业务与负载", body: "说明应用用途、计算需求及预期增长。"},
+      {title: "地点与网络", body: "说明目标地域、访问范围与线路需求。"},
+      {title: "设备与环境", body: "提供设备清单、功耗、存储与运行环境要求。"},
+      {title: "时间与责任", body: "说明使用周期、交付时间和运维分工。"},
+    ]},
   ], contactEnabled: false,
 } satisfies MarketingPage;
 

@@ -4,24 +4,53 @@ export const ai = {
   key: "ai", path: "/ai",
   hero: {title: "从语言理解，到图像与视频创作", lead: "面向开发者、企业应用与内容生产场景，光波互联围绕国内外模型生态，提供模型能力介绍与API接入咨询。按任务选择语言、图像或视频模型，将所需能力连接到自己的产品与工作流程。"},
   sections: [
-    {id: "capabilities", title: "三类模型能力", items: [
+    {id: "capability-map", title: "三类模型能力", eyebrow: "01 / CAPABILITY MAP", body: "先从任务出发，再选择输入与输出能力。语言、图像和视频对应不同的创作与理解流程。", items: [
       {title: "LLM与多模态理解", body: "用于对话问答、文本写作、代码辅助、内容分析和信息提取。具备相应能力的型号还可处理图像、文档或视频输入，为业务应用提供理解与推理能力。", href: "/ai/llm"},
       {title: "图像生成与编辑", body: "围绕文本描述或参考图片生成视觉素材，按模型能力开展图片编辑、风格调整与多版本创作，服务商品展示、营销设计和内容生产。", href: "/ai/image"},
       {title: "视频生成与编辑", body: "从文字脚本、参考图片或视频素材出发，开展镜头创作、画面动态化及视频编辑。参考输入、音频、时长与输出规格随具体型号而不同。", href: "/ai/video"},
     ]},
-    {id: "ecosystem", title: "探索国内外模型生态", body: "以上为模型生态介绍；当前可调用型号、开放能力及价格以接入咨询时的实际信息为准。", items: [
+    {id: "ecosystem", title: "探索国内外模型生态", eyebrow: "02 / MODEL ECOSYSTEM", body: "以下品牌与系列用于能力介绍，不表示所有分支都已开放；当前可调用型号、开放能力及价格以平台目录为准。", items: [
       {title: "国内语言与多模态系列", body: "DeepSeek、GLM、Kimi、MiniMax、Qwen、腾讯混元HY、MiMo、Doubao／Seed、ERNIE、讯飞星火、Step。"},
       {title: "国际语言与多模态系列", body: "OpenAI GPT、Anthropic Claude、Google Gemini，以及xAI Grok、Meta Llama、Mistral、Google Gemma、Cohere Command。"},
       {title: "图像生成系列", body: "Seedream、Qwen Image、Wan图像模型、混元图像模型、MiniMax图像模型，以及GPT Image、Gemini图像模型、FLUX、Stable Image／Stable Diffusion等。"},
       {title: "视频生成系列", body: "Seedance、Wan、可灵Kling、海螺Hailuo、HunyuanVideo、CogVideoX，以及Veo、Sora、Grok Imagine Video、Runway、Luma Ray等。"},
     ]},
-    {id: "scenarios", title: "把模型能力用在实际业务中", items: [
+    {id: "workflows", title: "从任务输入到业务复核", eyebrow: "03 / WORKFLOW", body: "把模型输出放进可检查的流程，明确输入材料、生成目标与最终负责人。", items: [
+      {title: "准备输入", body: "整理任务目标、背景资料与可使用的参考素材。"},
+      {title: "选择模型", body: "根据输入类型、输出形式与业务限制验证候选型号。"},
+      {title: "生成与迭代", body: "以业务样例对比输出，并调整提示、参数或参考内容。"},
+      {title: "业务复核", body: "由业务负责人校对事实、版权、品牌表达与使用合规。"},
+    ]},
+    {id: "scenarios", title: "把模型能力用在实际业务中", eyebrow: "04 / SCENARIOS", items: [
       {title: "企业应用", body: "为客服、知识查询、信息提取和业务流程增加语言理解能力。"},
       {title: "开发与分析", body: "为代码辅助、文档整理和结构化处理选择合适的模型与上下文配置。"},
       {title: "营销与设计", body: "将文字创意转为图片，围绕商品、活动和品牌内容组织视觉素材。"},
       {title: "视频内容", body: "将脚本与参考素材转为镜头片段，支撑产品展示、分镜预演和短视频制作。"},
     ]},
-    {id: "selection", title: "按业务需求选择接入方式", body: "先确认输出目标，再比较模型效果、处理速度、输入限制和成本。通过业务样例验证后，按对应接入说明将模型连接到应用。不同类型模型的参数和调用流程可能不同。"},
+    {id: "selection", title: "按业务目标比较模型", eyebrow: "05 / SELECTION", body: "先确定输出目标，再用同一批业务样例比较候选模型。不同类型模型的参数和调用流程可能不同。", items: [
+      {title: "输出效果", body: "检查准确性、风格与可编辑程度是否满足业务目标。"},
+      {title: "输入条件", body: "核对文本长度、参考图片、文档或视频等支持范围。"},
+      {title: "处理速度", body: "按交互响应或批量生产场景评估等待时间。"},
+      {title: "集成方式", body: "确认调用方式、返回格式、错误处理与现有系统的适配。"},
+      {title: "使用成本", body: "对照目录计费规则与预估用量，计算业务运行成本。"},
+    ]},
+    {id: "integration", title: "从样例验证走向接口集成", eyebrow: "06 / INTEGRATION", body: "在正式接入前，以实际业务样例检查输出质量和应用边界。", items: [
+      {title: "提交业务样例", body: "准备典型输入、期望输出和不适用的边界情况。"},
+      {title: "验证候选型号", body: "比较效果、速度、输入限制和使用成本。"},
+      {title: "连接业务应用", body: "按所选型号的接口说明完成密钥管理、调用与错误处理。"},
+      {title: "观察运行用量", body: "结合调用记录和费用变化调整模型及流程。"},
+    ]},
+    {id: "governance", title: "把使用边界写进工作流程", eyebrow: "07 / GOVERNANCE", body: "模型是业务流程中的一环。数据范围、密钥使用与结果复核需要由应用方明确。", items: [
+      {title: "密钥与权限", body: "按岗位管理API密钥，不在前端代码或公开资料中暴露。"},
+      {title: "输入数据", body: "提交资料前确认敏感信息、授权范围与业务数据使用要求。"},
+      {title: "人工复核", body: "对对外发布或影响业务决策的结果保留人工校对。"},
+      {title: "合规责任", body: "素材版权、内容审查与最终使用方式由业务方按场景确认。"},
+    ]},
+    {id: "availability", title: "查看具体型号，再决定接入", eyebrow: "08 / AVAILABILITY", body: "本页展示的是模型生态与选型方法。实际开放型号与价格以平台目录为准，输入输出能力按具体型号确认。", items: [
+      {title: "了解语言与多模态模型", body: "查看文本、代码与多模态理解方向。", href: "/ai/llm"},
+      {title: "了解图像模型", body: "查看图像生成、编辑与参考输入方向。", href: "/ai/image"},
+      {title: "了解视频模型", body: "查看视频生成、编辑与输出规格方向。", href: "/ai/video"},
+    ]},
   ], contactEnabled: false,
 } satisfies MarketingPage;
 
