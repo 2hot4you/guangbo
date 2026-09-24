@@ -1,5 +1,5 @@
 import type {MarketingPage} from "@/content";
-import {LandingHero, LandingSection, NumberedList, ProcessRail, VisualPlaceholder} from "./landing-page-primitives";
+import {LandingHero, LandingSection, NumberedList, ProcessRail, styles} from "./landing-page-primitives";
 
 export function EnergyLandingPage({page}: {page: MarketingPage}) {
   const [inputs, greenPower, purchase, management, projects, carbon, scenarios, delivery] = page.sections;
@@ -19,7 +19,7 @@ export function EnergyLandingPage({page}: {page: MarketingPage}) {
             </ol>
             <figcaption className="mt-3 text-sm opacity-70">用能路径示意：从企业数据到可行性沟通。</figcaption>
           </figure>
-          <VisualPlaceholder label="清洁能源项目视觉占位" description="项目图片尚待确认" />
+          <figure aria-label="清洁能源抽象图形" className={styles.energyHeroArtwork} />
         </div>
       </LandingHero>
 
