@@ -85,3 +85,8 @@
 - 用户要求将首页模型生态静态名称列表替换为 React Bits `LogoLoop`，并使用 `@lobehub/icons` 同时展示 provider 与 model 标识。
 - 已在实施前并行调用 antigravity 与 Claude reviewer，重点检查 SSR、可访问语义、低动态模式、移动端、图标范围与性能风险。
 - 当前主机仍缺少 `/Users/naf/.claude/bin/codeagent-wrapper`，两路命令均退出 127；待范围确认并完成实现后，将使用本地双重审查作为回退并记录验证结果。
+
+## 轮播与完整目录实施前分析
+
+- 规格确认后按 L+ 任务再次并行调用 antigravity 与 Claude analyzer，分别请求文件影响、响应式、动画、可访问性、目录生成、性能与测试分析。
+- 当前主机仍缺少 `/Users/naf/.claude/bin/codeagent-wrapper`，两路 analyzer 均退出 127；实施计划已在本地按独立文件所有权、TDD 与分层依赖拆分，并要求完成后进行双重内部回退审查。
