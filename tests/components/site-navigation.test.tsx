@@ -1,5 +1,6 @@
 import {act, cleanup, fireEvent, render, screen, waitFor, within} from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
+import {useInsertionEffect} from "react";
 import {afterEach, describe, expect, it, vi} from "vitest";
 import {MobileNavigation} from "@/components/layout/mobile-navigation";
 import {RouteTransitionFocus} from "@/components/layout/route-transition-focus";
@@ -21,6 +22,112 @@ afterEach(() => {
 });
 
 describe("route transitions", () => {
+  it("notifies subscribers after Next-style insertion-effect history commits finish", async () => {
+    pathname = "/energy";
+    window.history.replaceState(null, "", "/energy#solar");
+    render(<DesktopNavigation />);
+    const errors = vi.spyOn(console, "error");
+    function CommitHistory() {
+      useInsertionEffect(() => {
+        window.history.replaceState(null, "", "/energy#storage");
+      }, []);
+      return null;
+    }
+    render(<CommitHistory />);
+    await waitFor(() => expect(document.querySelector('a[href="/energy#storage"]')).toHaveAttribute("aria-current", "location"));
+    expect(errors).not.toHaveBeenCalled();
+  });
+
+  it("shares history wrappers across subscribers and restores them after the last unmount", () => {
+    const originalPush = window.history.pushState;
+    const originalReplace = window.history.replaceState;
+    const first = render(<DesktopNavigation />);
+    const wrappedPush = window.history.pushState;
+    const wrappedReplace = window.history.replaceState;
+    expect(wrappedPush).not.toBe(originalPush);
+    expect(wrappedReplace).not.toBe(originalReplace);
+    const second = render(<MobileNavigation />);
+    expect(window.history.pushState).toBe(wrappedPush);
+    expect(window.history.replaceState).toBe(wrappedReplace);
+    first.unmount();
+    expect(window.history.pushState).toBe(wrappedPush);
+    second.unmount();
+    expect(window.history.pushState).toBe(originalPush);
+    expect(window.history.replaceState).toBe(originalReplace);
+  });
+
+  it("waits for an exiting navigation Drawer to be removed before focusing outside it", async () => {
+    pathname = "/energy";
+    window.history.replaceState(null, "", "/energy#solar");
+    const view = render(<><RouteTransitionFocus /><div data-navigation-drawer><button>退出中</button></div><LandingSection id="solar" title="光伏目标" /></>);
+    const target = document.getElementById("solar")!;
+    target.scrollIntoView = vi.fn();
+    act(() => screen.getByRole("button", {name: "退出中"}).focus());
+    await act(() => new Promise<void>((resolve) => requestAnimationFrame(() => resolve())));
+    expect(target).not.toHaveFocus();
+    expect(target.scrollIntoView).not.toHaveBeenCalled();
+    view.rerender(<><RouteTransitionFocus /><LandingSection id="solar" title="光伏目标" /></>);
+    document.getElementById("solar")!.scrollIntoView = vi.fn();
+    await waitFor(() => expect(document.getElementById("solar")).toHaveFocus());
+  });
+
+  it.each(["pushState", "replaceState"] as const)("tracks delayed %s commits after the click frame has passed", async (method) => {
+    pathname = "/energy";
+    window.history.replaceState(null, "", "/energy#solar");
+    const user = userEvent.setup();
+    render(<><RouteTransitionFocus /><DesktopNavigation /><a href="/energy#storage" onClick={(event) => event.preventDefault()}>延迟跳转</a><LandingSection id="solar" title="光伏目标" /><LandingSection id="storage" title="储能目标" /></>);
+    const solar = document.getElementById("solar")!;
+    const storage = document.getElementById("storage")!;
+    solar.scrollIntoView = vi.fn();
+    storage.scrollIntoView = vi.fn();
+    await waitFor(() => expect(solar).toHaveFocus());
+    await user.click(screen.getByRole("link", {name: "延迟跳转"}));
+    await act(() => new Promise<void>((resolve) => requestAnimationFrame(() => resolve())));
+    act(() => window.history[method](null, "", "/energy#storage"));
+    await waitFor(() => expect(storage).toHaveFocus());
+    expect(document.querySelector('a[href="/energy#storage"]')).toHaveAttribute("aria-current", "location");
+    expect(document.querySelector('a[href="/energy#solar"]')).not.toHaveAttribute("aria-current");
+  });
+
+  it.each(["desktop", "mobile"])("refocuses an unchanged hash after a repeated %s link activation", async (mode) => {
+    pathname = "/energy";
+    window.history.replaceState(null, "", "/energy#solar");
+    const user = userEvent.setup();
+    render(<><RouteTransitionFocus />{mode === "desktop" ? <DesktopNavigation /> : <MobileNavigation />}<LandingSection id="solar" title="光伏目标" /></>);
+    const target = document.getElementById("solar")!;
+    target.scrollIntoView = vi.fn();
+    await waitFor(() => expect(target).toHaveFocus());
+    if (mode === "mobile") await user.click(screen.getByRole("button", {name: "打开导航菜单"}));
+    else act(() => screen.getByRole("link", {name: "绿电与清洁能源"}).focus());
+    const link = screen.getByRole("link", {name: "分布式光伏"});
+    link.addEventListener("click", (event) => event.preventDefault());
+    act(() => link.focus());
+    if (mode === "desktop") await user.keyboard("{Enter}");
+    else await user.click(link);
+    await waitFor(() => expect(screen.queryByRole("dialog")).not.toBeInTheDocument());
+    await waitFor(() => expect(target).toHaveFocus());
+    expect(target.scrollIntoView).toHaveBeenCalledTimes(2);
+  });
+
+  it("closes an open Drawer on same-page history navigation before focusing its target", async () => {
+    pathname = "/energy";
+    window.history.replaceState(null, "", "/energy#storage");
+    const user = userEvent.setup();
+    render(<><RouteTransitionFocus /><MobileNavigation /><LandingSection id="solar" title="光伏目标" /><LandingSection id="storage" title="储能目标" /></>);
+    const solar = document.getElementById("solar")!;
+    const storage = document.getElementById("storage")!;
+    solar.scrollIntoView = vi.fn();
+    storage.scrollIntoView = vi.fn();
+    await waitFor(() => expect(storage).toHaveFocus());
+    await user.click(screen.getByRole("button", {name: "打开导航菜单"}));
+    act(() => {
+      window.history.replaceState(null, "", "/energy#solar");
+      window.dispatchEvent(new PopStateEvent("popstate"));
+    });
+    await waitFor(() => expect(screen.queryByRole("dialog")).not.toBeInTheDocument());
+    await waitFor(() => expect(solar).toHaveFocus());
+  });
+
   it("focuses a same-route Link hash when history changes without hashchange", async () => {
     pathname = "/energy";
     window.history.replaceState(null, "", "/energy");
@@ -264,6 +371,20 @@ describe("mobile navigation", () => {
 });
 
 describe("desktop navigation", () => {
+  it("keeps a focused child available when the mouse leaves the group", () => {
+    vi.useFakeTimers();
+    render(<DesktopNavigation />);
+    const group = screen.getByRole("link", {name: "IDC与算力"}).closest("li")!;
+    fireEvent.pointerEnter(group, {pointerType: "mouse"});
+    const child = document.querySelector<HTMLAnchorElement>('a[href="/idc/vps"]')!;
+    act(() => child.focus());
+    fireEvent.pointerLeave(group, {pointerType: "mouse"});
+    act(() => vi.advanceTimersByTime(180));
+    expect(screen.getByRole("button", {name: "收起IDC与算力子菜单"})).toHaveAttribute("aria-expanded", "true");
+    expect(child).toHaveFocus();
+    expect(document.getElementById("desktop-panel-idc")).not.toHaveAttribute("inert");
+  });
+
   it("dismisses a hovered panel with Escape even when focus is outside navigation", async () => {
     const user = userEvent.setup();
     render(<DesktopNavigation />);

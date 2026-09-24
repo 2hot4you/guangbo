@@ -20,6 +20,7 @@ function DesktopNavigationContent({activePath, hash}: {activePath: string; hash:
   const closeTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
   const returningFocus = useRef(false);
   const pointerFocus = useRef(false);
+  const hoveredPath = useRef<string | null>(null);
   const buttons = useRef<Record<string, HTMLButtonElement | null>>({});
 
   function cancelClose() {
@@ -37,9 +38,13 @@ function DesktopNavigationContent({activePath, hash}: {activePath: string; hash:
     setOpenPath(null);
   }
 
-  function scheduleClose() {
+  function scheduleClose(group: HTMLLIElement, path: string) {
     cancelClose();
-    closeTimer.current = setTimeout(() => setOpenPath(null), 180);
+    closeTimer.current = setTimeout(() => {
+      if (!group.contains(document.activeElement) && hoveredPath.current !== path) {
+        setOpenPath((current) => current === path ? null : current);
+      }
+    }, 180);
   }
 
   useEffect(() => () => {
@@ -83,11 +88,15 @@ function DesktopNavigationContent({activePath, hash}: {activePath: string; hash:
               className="site-nav__group"
               onPointerEnter={(event) => {
                 if (event.pointerType !== "mouse") return;
+                hoveredPath.current = path;
                 if (item.kind === "group") open(path);
                 else close();
               }}
               onPointerLeave={(event) => {
-                if (event.pointerType === "mouse") scheduleClose();
+                if (event.pointerType === "mouse") {
+                  hoveredPath.current = null;
+                  scheduleClose(event.currentTarget, path);
+                }
               }}
               onFocus={() => {
                 if (!returningFocus.current && !pointerFocus.current) {
@@ -96,7 +105,7 @@ function DesktopNavigationContent({activePath, hash}: {activePath: string; hash:
                 }
               }}
               onBlur={(event) => {
-                if (!event.currentTarget.contains(event.relatedTarget)) scheduleClose();
+                if (!event.currentTarget.contains(event.relatedTarget)) scheduleClose(event.currentTarget, path);
               }}
             >
               <div className="flex items-center">

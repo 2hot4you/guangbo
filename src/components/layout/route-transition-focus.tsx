@@ -3,29 +3,78 @@
 import {usePathname} from "next/navigation";
 import {useEffect, useRef, useSyncExternalStore} from "react";
 
-function subscribeToHash(onChange: () => void) {
-  let frame = 0;
-  function afterLinkClick(event: MouseEvent) {
-    if (event.button !== 0 || event.metaKey || event.ctrlKey || event.shiftKey || event.altKey) return;
-    const link = event.target instanceof Element ? event.target.closest("a[href]") : null;
-    if (!(link instanceof HTMLAnchorElement) || link.origin !== window.location.origin || link.target === "_blank") return;
-    // Next Link updates history without a native hashchange event.
-    window.cancelAnimationFrame(frame);
-    frame = window.requestAnimationFrame(onChange);
+const serverNavigation = {href: "", hash: "", revision: 0};
+let navigation = serverNavigation;
+const navigationListeners = new Set<() => void>();
+type HistoryMethod = "pushState" | "replaceState";
+const historyPatches = new Map<HistoryMethod, {original: History[HistoryMethod]; wrapper: History[HistoryMethod]}>();
+
+function readNavigation() {
+  if (navigation.href !== window.location.href) {
+    navigation = {href: window.location.href, hash: window.location.hash, revision: navigation.revision + 1};
   }
-  window.addEventListener("hashchange", onChange);
-  window.addEventListener("popstate", onChange);
-  document.addEventListener("click", afterLinkClick);
+  return navigation;
+}
+
+function publishNavigation() {
+  navigation = {href: window.location.href, hash: window.location.hash, revision: navigation.revision + 1};
+  // Next commits history from an insertion effect. Publish the committed URL
+  // immediately, but wait until that stack has finished before updating React.
+  queueMicrotask(() => {
+    for (const listener of [...navigationListeners]) listener();
+  });
+}
+
+function onAnchorActivation(event: MouseEvent) {
+  if (event.button !== 0 || event.metaKey || event.ctrlKey || event.shiftKey || event.altKey) return;
+  const link = event.target instanceof Element ? event.target.closest("a[href]") : null;
+  if (!(link instanceof HTMLAnchorElement) || (link.target && link.target !== "_self") || link.hasAttribute("download")) return;
+  // A repeated target may not produce a history commit. Treat activation as a
+  // new focus request, even when the URL snapshot itself is unchanged.
+  if (link.hash && link.href === window.location.href) publishNavigation();
+}
+
+function subscribeToNavigation(onChange: () => void) {
+  navigationListeners.add(onChange);
+  if (navigationListeners.size === 1) {
+    for (const method of ["pushState", "replaceState"] as const) {
+      if (historyPatches.has(method)) continue;
+      const original = window.history[method];
+      const wrapper: History[HistoryMethod] = function (this: History, ...args) {
+        original.apply(this, args);
+        // Notify only after the existing Next/browser implementation commits.
+        publishNavigation();
+      };
+      historyPatches.set(method, {original, wrapper});
+      window.history[method] = wrapper;
+    }
+    window.addEventListener("hashchange", publishNavigation);
+    window.addEventListener("popstate", publishNavigation);
+    document.addEventListener("click", onAnchorActivation, true);
+  }
   return () => {
-    window.cancelAnimationFrame(frame);
-    window.removeEventListener("hashchange", onChange);
-    window.removeEventListener("popstate", onChange);
-    document.removeEventListener("click", afterLinkClick);
+    navigationListeners.delete(onChange);
+    if (navigationListeners.size) return;
+    for (const [method, patch] of historyPatches) {
+      // Never overwrite a wrapper subsequently installed by Next or another
+      // consumer. If ours is in that wrapper's chain, reuse it on resubscribe.
+      if (window.history[method] === patch.wrapper) {
+        window.history[method] = patch.original;
+        historyPatches.delete(method);
+      }
+    }
+    window.removeEventListener("hashchange", publishNavigation);
+    window.removeEventListener("popstate", publishNavigation);
+    document.removeEventListener("click", onAnchorActivation, true);
   };
 }
 
 export function useNavigationHash() {
-  return useSyncExternalStore(subscribeToHash, () => window.location.hash, () => "");
+  return useSyncExternalStore(subscribeToNavigation, () => readNavigation().hash, () => "");
+}
+
+export function useNavigationCommit() {
+  return useSyncExternalStore(subscribeToNavigation, readNavigation, () => serverNavigation);
 }
 
 function hashTargetId() {
@@ -38,7 +87,7 @@ function hashTargetId() {
 
 export function RouteTransitionFocus() {
   const pathname = usePathname();
-  const hash = useNavigationHash();
+  const navigation = useNavigationCommit();
   const previousPathname = useRef(pathname);
 
   useEffect(() => {
@@ -46,9 +95,13 @@ export function RouteTransitionFocus() {
     previousPathname.current = pathname;
     const targetId = hashTargetId();
     if (targetId) {
+      if (window.location.pathname !== pathname) return;
       let frame = 0;
       const observer = new MutationObserver(scheduleFocus);
       function focusTarget() {
+        // Keep observing through the Drawer exit animation and focus-scope
+        // unmount. Its removal schedules this frame after restore-focus cleanup.
+        if (document.querySelector("[data-navigation-drawer]")) return;
         const target = document.getElementById(targetId);
         if (!target) return;
         observer.disconnect();
@@ -84,7 +137,7 @@ export function RouteTransitionFocus() {
       window.cancelAnimationFrame(frame);
       root.style.scrollBehavior = previousBehavior;
     };
-  }, [pathname, hash]);
+  }, [pathname, navigation]);
 
   return null;
 }

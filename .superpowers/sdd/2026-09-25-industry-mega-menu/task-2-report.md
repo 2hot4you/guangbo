@@ -78,3 +78,34 @@ Changed only `desktop-navigation.tsx`, `site-navigation.test.tsx`, and this repo
 ### Remaining concerns
 
 No remaining W1 issue observed. Full production build and the complete e2e suite remain the lead agent's integration checks. The existing Vite native-loader warning remains informational.
+
+## Fix round 2 — Final engineering W1–W4
+
+### Changes
+
+- **W1:** The 180ms close callback now checks both the group's current focus containment and pointer presence, and closes only its own active panel. Moving the mouse away while a keyboard user remains on a child link preserves the panel and focus. Explicit collapse and Escape remain available.
+- **W2:** Replaced the single click RAF hash read with a shared external navigation store. One wrapper per history method delegates to the existing Next/browser implementation and publishes the committed URL after `pushState` / `replaceState`; hashchange and popstate also publish. All hooks share the wrappers and listeners. The last unsubscribe restores methods only if our wrapper is still outermost, preserving later-installed Next/third-party wrappers. Server snapshots do not read browser globals.
+- **W3:** Navigation snapshots include a revision. Activating the already-current hash emits a new focus request even when neither pathname nor hash changes; ordinary changed hashes use actual history commits. Modified clicks, downloads, and other browsing targets are excluded.
+- **W4:** Mobile Drawer records the navigation revision at which it was opened; any later navigation commit/history event closes it without discarding the normal exit animation. Target focus waits while the marked Drawer DOM is present, observes its removal, then schedules focus/scroll after focus-scope cleanup. No fixed timeout is used for history completion or Drawer exit.
+- Next's insertion-effect history commits initially exposed a React warning during browser verification. Notification callbacks now run in a microtask after the actual committed URL is recorded, avoiding React state updates inside insertion effects. A dedicated regression covers that integration boundary.
+
+### RED / GREEN evidence
+
+- Initial RED: `pnpm test tests/components/site-navigation.test.tsx` returned **6 failed / 24 passed**. Separate failing cases reproduced W1; delayed pushState and replaceState after the click frame (W2); repeated desktop keyboard and mobile activation (W3); and open-Drawer same-page history navigation (W4).
+- Initial GREEN: those 30 cases passed after the four fixes. Added wrapper-sharing/restoration and pending-Drawer-removal coverage brought the focused suite to 32 passing cases.
+- Additional RED: a Next-style `useInsertionEffect` history commit test failed with `useInsertionEffect must not schedule updates` (**1 failed / 32 passed**), matching the browser log.
+- Final GREEN: the microtask notification fix passes **33/33 navigation tests**, including the insertion-effect regression. A transient TypeScript implicit-this error in the history wrapper was also fixed by explicitly typing the receiver as `History`.
+
+### Final validation
+
+- `pnpm test tests/components/site-navigation.test.tsx`: **PASS**, 33/33.
+- `pnpm test`: **PASS**, 183/183 across 14 files.
+- `pnpm typecheck`: **PASS**.
+- `pnpm lint`: **PASS**.
+- `git diff --check`: **PASS**.
+- Real installed Chrome via Playwright against a separate dev server on port 43188: **PASS** for all four scenarios. Desktop checked 1440×900 mixed pointer/keyboard focus preservation and repeated-hash Enter activation. Mobile checked 390×844 actual same-page hash/current-link update, repeated hash activation, and back/forward with the Drawer open; Drawer closes and target focus is final. The measured target top was about 104px versus an 81px Header bottom.
+- Browser validation caught the insertion-effect warning and was rerun after the fix. Final checks show no React/browser errors beyond a `/favicon.ico` 404. An initial assertion treating every console error as a navigation defect failed on that 404; its exact URL was then identified, and the final targeted browser assertion excludes only that favicon request.
+
+### Files / concerns
+
+Changed only `desktop-navigation.tsx`, `mobile-navigation.tsx`, `route-transition-focus.tsx`, `site-navigation.test.tsx`, and this report. No CSS, landing primitives, industry content, e2e files, or CCG state were changed in this round. The separate dev server was stopped after checks. Production build and full e2e remain the integration agent's responsibility; this report does not claim a new production build. No W1–W4 behavior remains reproduced in the targeted checks.

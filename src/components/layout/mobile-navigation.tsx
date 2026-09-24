@@ -7,17 +7,18 @@ import {usePathname} from "next/navigation";
 import {useState} from "react";
 import {getNavigationHref, navigationGroups} from "@/content";
 import type {PublicPath} from "@/content";
-import {useNavigationHash} from "./route-transition-focus";
+import {useNavigationCommit} from "./route-transition-focus";
 
 export function MobileNavigation({currentPath}: {currentPath?: PublicPath}) {
   const pathname = usePathname();
   const activePath = currentPath ?? pathname;
-  const hash = useNavigationHash();
-  return <MobileNavigationContent activePath={activePath} hash={hash} key={`${pathname}:${activePath}`} />;
+  const navigation = useNavigationCommit();
+  return <MobileNavigationContent activePath={activePath} hash={navigation.hash} revision={navigation.revision} key={`${pathname}:${activePath}`} />;
 }
 
-function MobileNavigationContent({activePath, hash}: {activePath: string; hash: string}) {
-  const [isOpen, setIsOpen] = useState(false);
+function MobileNavigationContent({activePath, hash, revision}: {activePath: string; hash: string; revision: number}) {
+  const [openRevision, setOpenRevision] = useState<number | null>(null);
+  const isOpen = openRevision === revision;
   const [expanded, setExpanded] = useState<Record<string, boolean>>(() => {
     const currentGroup = navigationGroups.find(
       (item) => item.kind === "group" && (item.overviewPath === activePath || item.columns.some((column) => column.links.some((child) => child.path === activePath))),
@@ -26,7 +27,7 @@ function MobileNavigationContent({activePath, hash}: {activePath: string; hash: 
   });
 
   function closeMenu() {
-    setIsOpen(false);
+    setOpenRevision(null);
   }
 
   return (
@@ -35,14 +36,14 @@ function MobileNavigationContent({activePath, hash}: {activePath: string; hash: 
         aria-label="打开导航菜单"
         className="min-h-11 min-w-11"
         isIconOnly
-        onPress={() => setIsOpen(true)}
+        onPress={() => setOpenRevision(revision)}
         variant="ghost"
       >
         <Menu aria-hidden="true" className="size-5" />
       </Button>
-      <Drawer.Backdrop isOpen={isOpen} onOpenChange={setIsOpen}>
+      <Drawer.Backdrop isOpen={isOpen} onOpenChange={(open) => setOpenRevision(open ? revision : null)}>
         <Drawer.Content placement="right">
-          <Drawer.Dialog aria-label="网站导航" className="w-full max-w-sm">
+          <Drawer.Dialog aria-label="网站导航" className="w-full max-w-sm" data-navigation-drawer>
             <Drawer.CloseTrigger aria-label="关闭导航菜单" />
             <Drawer.Header>
               <Drawer.Heading>网站导航</Drawer.Heading>
