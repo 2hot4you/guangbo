@@ -8,15 +8,112 @@ import type {PublicPath} from "@/content/types";
 afterEach(cleanup);
 
 describe("marketing page templates", () => {
+  it.each([
+    ["/ai", "ai", ["/ai/llm", "/ai/image", "/ai/video"]],
+    ["/idc", "idc", ["/idc/vps", "/idc/bare-metal", "/idc/colocation", "/idc/gpu"]],
+    ["/madeinchina", "madeInChina", ["/idc", "/network"]],
+    ["/network", "network", ["/idc", "/madeinchina"]],
+    ["/energy", "energy", ["/idc", "/madeinchina"]],
+    ["/about", "about", ["/ai", "/idc", "/madeinchina", "/network", "/energy"]],
+  ] as const)("renders %s as its dedicated landing page", (path, landing, relatedPaths) => {
+    const page = getPageByPath(path);
+    render(<MarketingPageView page={page} />);
+
+    const root = document.querySelector(`[data-landing-page="${landing}"]`);
+    expect(root).not.toBeNull();
+    const modules = [...root!.querySelectorAll<HTMLElement>("[data-content-module]")];
+    expect(modules.length).toBeGreaterThanOrEqual(8);
+    expect(new Set(modules.map((section) => section.id)).size).toBe(modules.length);
+    for (const section of modules) {
+      expect(section.id).not.toBe("");
+      expect(section).toHaveAttribute("aria-labelledby", `${section.id}-heading`);
+    }
+    expect(screen.getAllByRole("heading", {level: 1})).toHaveLength(1);
+    expect(screen.getByRole("heading", {level: 1})).toHaveTextContent(page.hero.title);
+
+    const approved = new Set<string>(PUBLIC_PATHS);
+    for (const anchor of document.querySelectorAll<HTMLAnchorElement>("a[href]")) {
+      expect(approved.has(anchor.getAttribute("href") ?? "")).toBe(true);
+    }
+    expect([...document.querySelectorAll<HTMLAnchorElement>("section#related-services a[href]")]
+      .map((anchor) => anchor.getAttribute("href"))).toEqual(relatedPaths);
+  });
+
+  it.each([
+    ["/ai/llm", "model-series"],
+    ["/idc/gpu", "solution-detail"],
+  ] as const)("keeps %s on its existing detail template", (path, templateClass) => {
+    render(<MarketingPageView page={getPageByPath(path)} />);
+    expect(document.querySelector("[data-landing-page]")).toBeNull();
+    expect(document.querySelector(`.${templateClass}`)).not.toBeNull();
+  });
+
   it("renders the real home hero, three AI capability links, and ordered sections", () => {
     render(<MarketingPageView page={getPageByPath("/")} />);
     expect(screen.getByRole("heading", {level: 1, name: "让大模型走进应用，让创意成为内容"})).toBeInTheDocument();
+    expect(screen.getByRole("link", {name: "探索大模型"})).toHaveAttribute("href", "/ai");
+    expect(screen.getByRole("link", {name: "查看IDC与算力"})).toHaveAttribute("href", "/idc");
     expect(screen.getByRole("link", {name: "LLM与多模态理解"})).toHaveAttribute("href", "/ai/llm");
     expect(screen.getByRole("link", {name: "AI图像生成与编辑"})).toHaveAttribute("href", "/ai/image");
     expect(screen.getByRole("link", {name: "AI视频生成与编辑"})).toHaveAttribute("href", "/ai/video");
     const sectionIds = [...document.querySelectorAll("section[id]")].map((section) => section.id);
-    expect(sectionIds.slice(0, 8)).toEqual(["ai", "model-ecosystem", "idc", "madeinchina", "network", "energy", "delivery", "about"]);
+    expect(sectionIds.slice(0, 7)).toEqual(["ai", "idc", "madeinchina", "network", "energy", "delivery", "about"]);
     expect(screen.getByText(/实际可调用的型号及价格以平台目录为准/)).toBeInTheDocument();
+  });
+
+  it("uses the same five-domain taxonomy in the hero graphic and numbered sections", () => {
+    render(<MarketingPageView page={getPageByPath("/")} />);
+
+    expect(document.querySelector(".home-eyebrow")).toHaveTextContent("AI · COMPUTE · XINCHUANG · LINK · ENERGY");
+    expect([...document.querySelectorAll(".home-signal__label")].map((label) => label.textContent)).toEqual([
+      "AI", "COMPUTE", "XINCHUANG", "LINK", "ENERGY",
+    ]);
+    expect([...document.querySelectorAll(".home-domain-strip span")].map((label) => label.textContent)).toEqual([
+      "大模型", "算力", "信创", "专线网络", "清洁能源",
+    ]);
+    expect(["ai", "idc", "madeinchina", "network", "energy"].map((id) =>
+      document.querySelector(`#${id} .home-section__index`)?.textContent,
+    )).toEqual(["01 / AI", "02 / COMPUTE", "03 / XINCHUANG", "04 / LINK", "05 / ENERGY"]);
+  });
+
+  it("renders every home business domain fully expanded without collapse controls", () => {
+    render(<MarketingPageView page={getPageByPath("/")} />);
+
+    const ai = document.getElementById("ai");
+    const compute = document.getElementById("idc");
+    const xinchang = document.getElementById("madeinchina");
+    const link = document.getElementById("network");
+    const energy = document.getElementById("energy");
+
+    expect(within(ai!).getByRole("heading", {level: 3, name: "模型生态"})).toBeInTheDocument();
+    expect(within(ai!).getByText("DeepSeek")).toBeInTheDocument();
+    expect(within(compute!).getByRole("link", {name: "VPS租赁"})).toBeInTheDocument();
+    expect(within(compute!).getByRole("link", {name: "GPU算力"})).toBeInTheDocument();
+    expect(within(xinchang!).getByRole("heading", {level: 3, name: "计算硬件与本地AI部署"})).toBeInTheDocument();
+    expect(within(xinchang!).getByRole("heading", {level: 3, name: "数据保护与长期归档"})).toBeInTheDocument();
+    expect(within(link!).getByRole("heading", {level: 3, name: "企业专线"})).toBeInTheDocument();
+    expect(within(link!).getByRole("heading", {level: 3, name: "云网连接"})).toBeInTheDocument();
+    expect(within(energy!).getByRole("heading", {level: 3, name: "绿电与绿证需求对接"})).toBeInTheDocument();
+    expect(within(energy!).getByRole("heading", {level: 3, name: "碳资产相关服务对接"})).toBeInTheDocument();
+    expect(document.querySelector("details")).toBeNull();
+    expect(screen.queryByRole("button", {name: /展开|收起/})).not.toBeInTheDocument();
+  });
+
+  it("keeps a circular domain graphic beside every expanded business section", () => {
+    render(<MarketingPageView page={getPageByPath("/")} />);
+
+    for (const id of ["ai", "idc", "madeinchina", "network", "energy"]) {
+      const section = document.getElementById(id);
+      expect(section?.querySelector(".home-domain__visual[aria-hidden='true']")).not.toBeNull();
+    }
+  });
+
+  it("alternates the desktop heading and detail columns between business sections", () => {
+    render(<MarketingPageView page={getPageByPath("/")} />);
+
+    expect(document.getElementById("madeinchina")).toHaveClass("home-domain--reverse");
+    expect(document.getElementById("network")).not.toHaveClass("home-domain--reverse");
+    expect(document.getElementById("energy")).toHaveClass("home-domain--reverse");
   });
 
   it("keeps the about page useful without fake contact controls", () => {
@@ -28,14 +125,14 @@ describe("marketing page templates", () => {
     expect(screen.queryByRole("link", {name: /联系项目顾问|立即咨询/})).not.toBeInTheDocument();
   });
 
-  it("shows registry-based, accessible breadcrumbs on every inner page", () => {
+  it("keeps breadcrumbs off home and top-level landing pages, but shows them on detail pages", () => {
     for (const path of PUBLIC_PATHS) {
       const view = render(<MarketingPageView page={getPageByPath(path)} />);
-      if (path === "/") {
+      const parents = PUBLIC_PATHS.filter((candidate) => candidate !== "/" && path.startsWith(`${candidate}/`));
+      if (parents.length === 0) {
         expect(screen.queryByRole("navigation", {name: "面包屑导航"})).not.toBeInTheDocument();
       } else {
         const nav = screen.getByRole("navigation", {name: "面包屑导航"});
-        const parents = PUBLIC_PATHS.filter((candidate) => candidate !== "/" && path.startsWith(`${candidate}/`));
         const expected = ["/", ...parents, path];
         expect(within(nav).getAllByRole("listitem")).toHaveLength(expected.length);
         const links = within(nav).getAllByRole("link").filter((link) => link.hasAttribute("href"));
@@ -57,15 +154,18 @@ describe("marketing page templates", () => {
       const view = render(<MarketingPageView page={page} />);
       expect(screen.getAllByRole("heading", {level: 1})).toHaveLength(1);
       expect(screen.getByRole("heading", {level: 1})).toHaveTextContent(page.hero.title);
-      for (const section of page.sections) {
-        expect(document.getElementById(section.id)).toHaveAttribute("aria-labelledby", `${section.id}-heading`);
-        expect(screen.getByRole("heading", {level: 2, name: section.title})).toBeInTheDocument();
-        if (section.body) expect(screen.getByText(section.body)).toBeInTheDocument();
-        const renderedSection = document.getElementById(section.id);
-        for (const item of section.items ?? []) {
-          expect(within(renderedSection!).getByRole("heading", {level: 3, name: item.title})).toBeInTheDocument();
-          expect(within(renderedSection!).getAllByText(item.body, {exact: true}).length).toBeGreaterThan(0);
-          if (item.meta) expect(within(renderedSection!).getAllByText(item.meta, {exact: true}).length).toBeGreaterThan(0);
+      if (!document.querySelector("[data-landing-page]")) {
+        for (const section of page.sections) {
+          expect(document.getElementById(section.id)).toHaveAttribute("aria-labelledby", `${section.id}-heading`);
+          const headingLevel = path === "/" && section.id === "model-ecosystem" ? 3 : 2;
+          expect(screen.getByRole("heading", {level: headingLevel, name: section.title})).toBeInTheDocument();
+          if (section.body) expect(screen.getByText(section.body)).toBeInTheDocument();
+          const renderedSection = document.getElementById(section.id);
+          for (const item of section.items ?? []) {
+            expect(within(renderedSection!).getByRole("heading", {level: 3, name: item.title})).toBeInTheDocument();
+            expect(within(renderedSection!).getAllByText(item.body, {exact: true}).length).toBeGreaterThan(0);
+            if (item.meta) expect(within(renderedSection!).getAllByText(item.meta, {exact: true}).length).toBeGreaterThan(0);
+          }
         }
       }
       const approved = new Set<string>(PUBLIC_PATHS);
