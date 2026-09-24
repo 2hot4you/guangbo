@@ -8,10 +8,6 @@ import {useEffect, useRef, useState} from "react";
 import {navigationGroups} from "@/content";
 import type {PublicPath} from "@/content";
 
-function CurrentMarker() {
-  return <span className="ml-1 text-xs font-medium">（当前页面）</span>;
-}
-
 export function MobileNavigation({currentPath}: {currentPath?: PublicPath}) {
   const pathname = usePathname();
   const activePath = currentPath ?? pathname;
@@ -70,11 +66,12 @@ function MobileNavigationContent({activePath}: {activePath: string}) {
                         <li key={item.path}>
                           <Link
                             aria-current={current ? "page" : undefined}
-                            className="link flex min-h-11 items-center rounded-lg px-3 text-foreground focus-visible:outline-2 focus-visible:outline-accent"
+                            className="mobile-nav__link link flex min-h-11 items-center px-3"
+                            data-current={current || undefined}
                             href={item.path}
                             onClick={closeMenu}
                           >
-                            {item.label}{current && <CurrentMarker />}
+                            {item.label}
                           </Link>
                         </li>
                       );
@@ -87,11 +84,12 @@ function MobileNavigationContent({activePath}: {activePath: string}) {
                         <div className="flex items-center gap-1">
                           <Link
                             aria-current={overviewCurrent ? "page" : undefined}
-                            className="link flex min-h-11 min-w-0 flex-1 items-center rounded-lg px-3 text-foreground focus-visible:outline-2 focus-visible:outline-accent"
+                            className="mobile-nav__link link flex min-h-11 min-w-0 flex-1 items-center px-3"
+                            data-current={overviewCurrent || undefined}
                             href={item.overviewPath}
                             onClick={closeMenu}
                           >
-                            {item.label}总览{overviewCurrent && <CurrentMarker />}
+                            {item.label}
                           </Link>
                           <Button
                             aria-controls={`mobile-children-${item.overviewPath.slice(1)}`}
@@ -116,11 +114,12 @@ function MobileNavigationContent({activePath}: {activePath: string}) {
                                 <li key={child.path}>
                                   <Link
                                     aria-current={current ? "page" : undefined}
-                                    className="link flex min-h-11 items-center rounded-lg px-3 text-sm text-foreground focus-visible:outline-2 focus-visible:outline-accent"
+                                    className="mobile-nav__link link flex min-h-11 items-center px-3 text-sm"
+                                    data-current={current || undefined}
                                     href={child.path}
                                     onClick={closeMenu}
                                   >
-                                    {child.label}{current && <CurrentMarker />}
+                                    {child.label}
                                   </Link>
                                 </li>
                               );

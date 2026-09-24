@@ -1,18 +1,20 @@
-import {Card} from "@heroui/react";
+import {ArrowUpRight} from "lucide-react";
 import Link from "next/link";
 import type {ContentItem} from "@/content";
 
 export function ContentCard({item}: {item: ContentItem}) {
   return (
-    <Card className="marketing-card" variant="default">
-      <Card.Header>
-        <Card.Title className="marketing-card__title">
-          {item.href ? <Link className="marketing-card__link" href={item.href}>{item.title}</Link> : item.title}
-        </Card.Title>
-        {item.meta && <Card.Description>{item.meta}</Card.Description>}
-      </Card.Header>
-      <Card.Content className="marketing-card__body text-muted">{item.body}</Card.Content>
-    </Card>
+    <article className="marketing-card">
+      <h3 className="marketing-card__title">
+        {item.href ? (
+          <Link className="marketing-card__link" href={item.href}>
+            <span>{item.title}</span><ArrowUpRight aria-hidden="true" />
+          </Link>
+        ) : item.title}
+      </h3>
+      {item.meta && <p className="marketing-card__meta">{item.meta}</p>}
+      <p className="marketing-card__body">{item.body}</p>
+    </article>
   );
 }
 

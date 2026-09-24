@@ -3,15 +3,15 @@ import {getRouteByPath, routeEntries} from "@/content";
 import type {PublicPath} from "@/content";
 
 export function MarketingBreadcrumbs({path}: {path: PublicPath}) {
-  if (path === "/") return null;
-
   const parents = routeEntries
     .filter((route) => route.path !== "/" && path.startsWith(`${route.path}/`))
     .sort((a, b) => a.path.length - b.path.length);
+  if (parents.length === 0) return null;
+
   const current = getRouteByPath(path);
 
   return (
-    <nav aria-label="面包屑导航" className="site-container pt-6">
+    <nav aria-label="面包屑导航" className="site-container breadcrumbs-wrap pt-6">
       <Breadcrumbs>
         <Breadcrumbs.Item href="/">{getRouteByPath("/").navLabel}</Breadcrumbs.Item>
         {parents.map((parent) => (
