@@ -247,12 +247,18 @@ test("AI stays visual-right while IDC places its infrastructure graphic on the l
   }
 });
 
-test("AI and IDC hero graphics animate unless reduced motion is requested", async ({page}) => {
+test("landing hero graphics animate unless reduced motion is requested", async ({page}) => {
   await page.setViewportSize({width: 1280, height: 900});
-  for (const path of ["/ai", "/idc"]) {
+  for (const {path, hero} of [
+    {path: "/ai", hero: "hero"},
+    {path: "/idc", hero: "hero"},
+    {path: "/madeinchina", hero: "madeInChina-hero"},
+    {path: "/network", hero: "network-hero"},
+    {path: "/energy", hero: "energy-hero"},
+  ]) {
     await page.emulateMedia({reducedMotion: "no-preference"});
     await page.goto(path);
-    const motionLayers = page.locator("#hero [data-motion-layer]");
+    const motionLayers = page.locator(`#${hero} [data-motion-layer]`);
     expect(await motionLayers.count()).toBeGreaterThanOrEqual(3);
     const runningAnimations = await motionLayers.evaluateAll((elements) => elements.filter((element) => {
       const style = getComputedStyle(element);
@@ -267,11 +273,11 @@ test("AI and IDC hero graphics animate unless reduced motion is requested", asyn
   }
 });
 
-test("energy mobile hero keeps its overview and finished abstract figure compact", async ({page}) => {
+test("energy mobile hero keeps its overview and business circle visual compact", async ({page}) => {
   await page.setViewportSize({width: 360, height: 900});
   await page.goto("/energy");
   const hero = await page.locator("#energy-hero").boundingBox();
-  const artwork = page.getByRole("figure", {name: "清洁能源抽象图形"});
+  const artwork = page.getByRole("figure", {name: "ENERGY业务动态图形"});
   await expect(artwork).toBeVisible();
   const figure = await artwork.boundingBox();
   expect(hero!.height).toBeLessThanOrEqual(1000);

@@ -79,7 +79,26 @@ describe("distinct business landing pages", () => {
     const visual = within(hero).getByRole("figure", {name: figure});
     expect(within(visual).getByText(new RegExp(caption))).toBeInTheDocument();
     const serverHero = new DOMParser().parseFromString(html, "text/html").getElementById(`${page.key}-hero`);
-    expect(serverHero?.querySelector("figure")?.textContent).toContain(caption);
+    expect(serverHero?.querySelector(`figure[aria-label="${figure}"]`)?.textContent).toContain(caption);
+  });
+
+  it.each([
+    {name: "信创", page: madeInChina, Component: XinchangLandingPage, label: "XINCHUANG业务动态图形", nodes: ["HARDWARE", "SYSTEM", "APP", "DATA"]},
+    {name: "专线", page: network, Component: NetworkLandingPage, label: "LINK业务动态图形", nodes: ["SITE", "ACCESS", "TRANSIT", "TARGET"]},
+    {name: "能源", page: energy, Component: EnergyLandingPage, label: "ENERGY业务动态图形", nodes: ["LOAD", "GREEN", "STORAGE", "CONTROL"]},
+  ])("renders the $name business circle visual with English nodes in the hero and server HTML", ({page, Component, label, nodes}) => {
+    const html = renderToStaticMarkup(<Component page={page} />);
+    render(<Component page={page} />);
+
+    const hero = document.getElementById(`${page.key}-hero`)!;
+    const visual = within(hero).getByRole("figure", {name: label});
+    expect(visual).toHaveAttribute("data-active", "true");
+    expect(within(visual).getAllByRole("listitem").map((item) => item.textContent)).toEqual(nodes);
+
+    const serverHero = new DOMParser().parseFromString(html, "text/html").getElementById(`${page.key}-hero`);
+    const serverVisual = serverHero?.querySelector(`figure[aria-label="${label}"]`);
+    expect(serverVisual?.getAttribute("data-active")).toBe("true");
+    expect([...serverVisual!.querySelectorAll("li")].map((item) => item.textContent)).toEqual(nodes);
   });
 
   it.each([
@@ -140,7 +159,8 @@ describe("distinct business landing pages", () => {
     expect(within(document.getElementById("energy-hero")!).getByRole("list", {name: "首屏用能路径"}).querySelectorAll("li")).toHaveLength(4);
     expect(within(document.getElementById("energy-hero")!).queryByText("地区 · 规模 · 负荷 · 目标")).not.toBeInTheDocument();
     const hero = document.getElementById("energy-hero")!;
-    expect(within(hero).getByRole("figure", {name: "清洁能源抽象图形"})).toBeEmptyDOMElement();
+    expect(within(hero).getByRole("figure", {name: "ENERGY业务动态图形"})).toHaveAttribute("data-active", "true");
+    expect(within(hero).queryByRole("figure", {name: "清洁能源抽象图形"})).not.toBeInTheDocument();
     expect(hero).not.toHaveTextContent(/视觉占位|图片尚待确认/);
     expect(renderToStaticMarkup(<EnergyLandingPage page={energy} />)).not.toMatch(/视觉占位|图片尚待确认/);
   });

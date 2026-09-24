@@ -1,5 +1,6 @@
 import type {MarketingPage} from "@/content";
-import {LandingHero, LandingSection, NumberedList, ProcessRail} from "./landing-page-primitives";
+import {HomeHeroVisual} from "./home-hero-visual";
+import {LandingHero, LandingSection, NumberedList, ProcessRail, styles} from "./landing-page-primitives";
 
 const stations = ["客户站点", "本地接入", "区域汇聚资源", "骨干传输", "目标区域与站点"];
 
@@ -8,15 +9,18 @@ export function NetworkLandingPage({page}: {page: MarketingPage}) {
 
   return (
     <div data-landing-page={page.key}>
-      <LandingHero id="network-hero" eyebrow="NETWORK / CONNECTION ROUTE" title={page.hero.title} lead={page.hero.lead} tone="light">
-        <figure aria-label="首屏站点连接路径" className="mt-14 border-y border-black/30 py-6 text-black">
-          <ol aria-label="首屏连接概览" className="m-0 grid list-none grid-cols-3 gap-3 p-0">
-            {["业务站点", "接入与传输", "目标业务"].map((station) => (
-              <li className="min-w-0 border-t-2 border-black/70 pt-4 text-base leading-relaxed md:text-xl" key={station}>{station}</li>
-            ))}
-          </ol>
-          <figcaption className="mt-5 text-sm text-black/65">站点路径示意：接入与传输方式按具体线路条件确认。</figcaption>
-        </figure>
+      <LandingHero id="network-hero" eyebrow="NETWORK / CONNECTION ROUTE" title={page.hero.title} lead={page.hero.lead} tone="light" layout="split" visualPosition="start">
+        <div className={styles.businessHeroVisual}>
+          <HomeHeroVisual variant="link" active />
+          <figure aria-label="首屏站点连接路径" className="border-y border-black/30 py-6 text-black">
+            <ol aria-label="首屏连接概览" className="m-0 grid list-none grid-cols-3 gap-3 p-0">
+              {["业务站点", "接入与传输", "目标业务"].map((station) => (
+                <li className="min-w-0 border-t-2 border-black/70 pt-4 text-base leading-relaxed md:text-xl" key={station}>{station}</li>
+              ))}
+            </ol>
+            <figcaption className="mt-5 text-sm text-black/65">站点路径示意：接入与传输方式按具体线路条件确认。</figcaption>
+          </figure>
+        </div>
       </LandingHero>
 
       <LandingSection id={products.id} title={products.title} number="01" tone="dark">

@@ -1,4 +1,5 @@
 import type {MarketingPage} from "@/content";
+import {HomeHeroVisual} from "./home-hero-visual";
 import {LandingHero, LandingSection, NumberedList, ProcessRail, styles} from "./landing-page-primitives";
 
 export function EnergyLandingPage({page}: {page: MarketingPage}) {
@@ -6,8 +7,9 @@ export function EnergyLandingPage({page}: {page: MarketingPage}) {
 
   return (
     <div data-landing-page={page.key}>
-      <LandingHero id="energy-hero" eyebrow="ENERGY / ENTERPRISE PATH" title={page.hero.title} lead={page.hero.lead} tone="light" compact>
-        <div className="mt-6 grid min-w-0 gap-4 lg:grid-cols-[minmax(0,1.25fr)_minmax(0,1fr)]">
+      <LandingHero id="energy-hero" eyebrow="ENERGY / ENTERPRISE PATH" title={page.hero.title} lead={page.hero.lead} tone="light" layout="split" compact>
+        <div className={styles.businessHeroVisual}>
+          <HomeHeroVisual variant="energy" active />
           <figure aria-label="首屏企业用能路径" className="min-w-0 border-y border-current/35 py-3">
             <ol aria-label="首屏用能路径" className="m-0 grid list-none grid-cols-2 gap-3 p-0">
               {["用能起点", "需求分析", "方案对接", "项目评估"].map((title, index) => (
@@ -19,7 +21,6 @@ export function EnergyLandingPage({page}: {page: MarketingPage}) {
             </ol>
             <figcaption className="mt-3 text-sm opacity-70">用能路径示意：从企业数据到可行性沟通。</figcaption>
           </figure>
-          <figure aria-label="清洁能源抽象图形" className={styles.energyHeroArtwork} />
         </div>
       </LandingHero>
 

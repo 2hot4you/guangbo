@@ -1,23 +1,27 @@
 import type {MarketingPage} from "@/content";
-import {LandingHero, LandingSection, NumberedList, ProcessRail} from "./landing-page-primitives";
+import {HomeHeroVisual} from "./home-hero-visual";
+import {LandingHero, LandingSection, NumberedList, ProcessRail, styles} from "./landing-page-primitives";
 
 export function XinchangLandingPage({page}: {page: MarketingPage}) {
   const [diagnostic, layers, hardware, applications, data, compatibility, industries, delivery] = page.sections;
 
   return (
     <div data-landing-page={page.key}>
-      <LandingHero id="madeInChina-hero" eyebrow="XINCHUANG / SYSTEM BLUEPRINT" title={page.hero.title} lead={page.hero.lead} tone="light">
-        <figure aria-label="企业系统四层架构蓝图" className="mt-12 border border-black/30">
-          <ol className="m-0 grid list-none grid-cols-2 p-0 md:grid-cols-4">
-            {layers.items?.map((item, index) => (
-              <li className="min-w-0 border-b border-black/25 px-4 py-4 md:border-b-0" key={item.title}>
-                <span className="inline-block bg-black px-1.5 py-0.5 font-mono text-xs text-[var(--accent)]">L{index + 1}</span>
-                <strong className="mt-2 block text-lg font-semibold">{item.title}</strong>
-              </li>
-            ))}
-          </ol>
-          <figcaption className="border-t border-black/25 px-5 py-3 text-sm text-black/65">架构概览：从接入到基础设施，按业务范围组合验证。</figcaption>
-        </figure>
+      <LandingHero id="madeInChina-hero" eyebrow="XINCHUANG / SYSTEM BLUEPRINT" title={page.hero.title} lead={page.hero.lead} tone="light" layout="split">
+        <div className={styles.businessHeroVisual}>
+          <HomeHeroVisual variant="xinchang" active />
+          <figure aria-label="企业系统四层架构蓝图" className="border border-black/30">
+            <ol className="m-0 grid list-none grid-cols-2 p-0 md:grid-cols-4">
+              {layers.items?.map((item, index) => (
+                <li className="min-w-0 border-b border-black/25 px-4 py-4 md:border-b-0" key={item.title}>
+                  <span className="inline-block bg-black px-1.5 py-0.5 font-mono text-xs text-[var(--accent)]">L{index + 1}</span>
+                  <strong className="mt-2 block text-lg font-semibold">{item.title}</strong>
+                </li>
+              ))}
+            </ol>
+            <figcaption className="border-t border-black/25 px-5 py-3 text-sm text-black/65">架构概览：从接入到基础设施，按业务范围组合验证。</figcaption>
+          </figure>
+        </div>
       </LandingHero>
 
       <LandingSection id={diagnostic.id} title={diagnostic.title} body={diagnostic.body} number="01" tone="dark">

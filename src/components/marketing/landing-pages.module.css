@@ -92,6 +92,13 @@
   padding-top: 1.25rem;
   border-top: 1px solid;
 }
+.businessHeroVisual {
+  display: grid;
+  min-width: 0;
+  gap: clamp(1.25rem, 3vw, 2rem);
+  padding: 0 1.25rem 1.25rem 0;
+}
+.businessHeroVisual > [data-active] { width: min(100%, 23rem); }
 .aiOrbitalGraphic,
 .idcInfrastructureGraphic {
   position: relative;
@@ -290,6 +297,7 @@
   .numberedItem { grid-template-columns: 2rem minmax(0, 1fr); }
   .processRail { grid-template-columns: 1fr; gap: 2rem; }
   .processNumber { margin-bottom: 1rem; }
+  .businessHeroVisual > [data-active] { width: min(100%, 18rem); }
 }
 
 @media (prefers-reduced-motion: reduce) {
