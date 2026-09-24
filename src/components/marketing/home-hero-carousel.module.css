@@ -11,6 +11,22 @@
 .carousel[data-domain="link"] { background: #dfff46; }
 .carousel[data-domain="energy"] { background: #e9e9e4; }
 
+.slide { animation: slide-enter 450ms ease-out both; }
+
+@keyframes slide-enter {
+  from { opacity: 0; transform: translateY(1.5rem); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.screenReaderOnly {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+}
+
 .layout {
   display: grid;
   min-height: calc(100svh - 11rem);
@@ -123,6 +139,7 @@
 }
 
 @media (prefers-reduced-motion: reduce) {
+  .slide { animation: none; }
   .cta,
   .dot::after { transition: none; }
 }

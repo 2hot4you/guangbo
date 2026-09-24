@@ -1,3 +1,5 @@
+import {readFileSync} from "node:fs";
+import {join} from "node:path";
 import {act, cleanup, createEvent, fireEvent, render, screen, within} from "@testing-library/react";
 import {renderToStaticMarkup} from "react-dom/server";
 import {afterEach, beforeEach, describe, expect, it, vi} from "vitest";
@@ -118,6 +120,53 @@ describe("home hero carousel", () => {
     fireEvent.blur(link);
     advance(6000);
     expect(heading()).toHaveTextContent("IDC与算力");
+  });
+
+  it("resumes autoplay when switching removes the focused CTA", () => {
+    render(<HomeHeroCarousel slides={slides} />);
+    const link = screen.getByRole("link", {name: /探索大模型/});
+    link.focus();
+    expect(document.activeElement).toBe(link);
+    fireEvent.keyDown(link, {key: "ArrowRight"});
+    expect(heading()).toHaveTextContent("IDC与算力");
+    expect(document.activeElement).toBe(document.body);
+    advance(6000);
+    expect(heading()).toHaveTextContent("信创与企业数字化");
+  });
+
+  it("politely announces only user-selected slides", () => {
+    render(<HomeHeroCarousel slides={slides} />);
+    const region = screen.getByRole("region", {name: "光波互联业务轮播"});
+    const status = screen.getByRole("status");
+    expect(status).toHaveAttribute("aria-live", "polite");
+    expect(status).toBeEmptyDOMElement();
+
+    fireEvent.click(screen.getByRole("button", {name: "下一项"}));
+    expect(status).toHaveTextContent("IDC与算力");
+    fireEvent.click(screen.getByRole("button", {name: "转到 XINCHUANG 业务"}));
+    expect(status).toHaveTextContent("信创与企业数字化");
+    fireEvent.keyDown(region, {key: "ArrowRight"});
+    expect(status).toHaveTextContent("专线网络");
+    fireEvent.pointerDown(region, {clientX: 260, clientY: 160, pointerId: 1});
+    fireEvent.pointerUp(region, {clientX: 180, clientY: 160, pointerId: 1});
+    expect(status).toHaveTextContent("绿电与清洁能源");
+
+    advance(6000);
+    expect(heading()).toHaveTextContent("大模型与AIGC");
+    expect(status).toHaveTextContent("绿电与清洁能源");
+  });
+
+  it("mounts a fresh slide with an entry animation disabled for reduced motion", () => {
+    render(<HomeHeroCarousel slides={slides} />);
+    const initialSlide = screen.getByTestId("home-hero-slide");
+    expect(initialSlide.className).toMatch(/slide/);
+    fireEvent.click(screen.getByRole("button", {name: "下一项"}));
+    expect(screen.getByTestId("home-hero-slide")).not.toBe(initialSlide);
+
+    const css = readFileSync(join(process.cwd(), "src/components/marketing/home-hero-carousel.module.css"), "utf8");
+    expect(css).toMatch(/\.slide\s*\{[^}]*animation:\s*slide-enter\s+450ms/);
+    expect(css).toMatch(/@keyframes slide-enter\s*\{[\s\S]*?opacity:\s*0;[\s\S]*?translateY\(1\.5rem\)/);
+    expect(css).toMatch(/@media\s*\(prefers-reduced-motion:\s*reduce\)\s*\{[\s\S]*?\.slide\s*\{\s*animation:\s*none;/);
   });
 
   it("pauses when the document is hidden and resumes when visible", () => {

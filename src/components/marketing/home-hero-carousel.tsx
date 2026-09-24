@@ -19,6 +19,8 @@ export function HomeHeroCarousel({slides, autoplayMs = 6000}: HomeHeroCarouselPr
   const [focusWithin, setFocusWithin] = useState(false);
   const [pageVisible, setPageVisible] = useState(true);
   const [reducedMotion, setReducedMotion] = useState(false);
+  const [announcement, setAnnouncement] = useState("");
+  const sectionRef = useRef<HTMLElement | null>(null);
   const pointerStart = useRef<{x: number; y: number; id: number} | null>(null);
   const slide = slides[activeIndex] ?? slides[0];
   const paused = hovered || focusWithin;
@@ -45,9 +47,19 @@ export function HomeHeroCarousel({slides, autoplayMs = 6000}: HomeHeroCarouselPr
     return () => window.clearTimeout(timer);
   }, [activeIndex, autoplayMs, paused, reducedMotion, slides.length, pageVisible]);
 
+  useEffect(() => {
+    setFocusWithin(sectionRef.current?.contains(document.activeElement) ?? false);
+  }, [activeIndex]);
+
+  function goTo(index: number): void {
+    if (!slides[index]) return;
+    setActiveIndex(index);
+    setAnnouncement(`${index + 1} / ${slides.length} ${slides[index].title}`);
+  }
+
   function go(delta: number): void {
     if (slides.length < 2) return;
-    setActiveIndex((index) => (index + delta + slides.length) % slides.length);
+    goTo((activeIndex + delta + slides.length) % slides.length);
   }
 
   function onKeyDown(event: KeyboardEvent<HTMLElement>): void {
@@ -91,20 +103,24 @@ export function HomeHeroCarousel({slides, autoplayMs = 6000}: HomeHeroCarouselPr
       onPointerCancel={() => { pointerStart.current = null; }}
       onPointerDown={onPointerDown}
       onPointerUp={onPointerUp}
+      ref={sectionRef}
       role="region"
       tabIndex={0}
     >
       {slide && (
-        <div className={`${styles.layout} site-container`}>
-          <div className={styles.copy}>
-            <p className={styles.eyebrow}><span>{slide.index} / 05</span><span>{slide.label}</span></p>
-            <h1 className={styles.title}>{slide.title}</h1>
-            <p className={styles.body}>{slide.body}</p>
-            <Link className={styles.cta} href={slide.href}>{slide.cta}<ArrowUpRight aria-hidden="true" /></Link>
+        <div className={styles.slide} data-testid="home-hero-slide" key={slide.index}>
+          <div className={`${styles.layout} site-container`}>
+            <div className={styles.copy}>
+              <p className={styles.eyebrow}><span>{slide.index} / 05</span><span>{slide.label}</span></p>
+              <h1 className={styles.title}>{slide.title}</h1>
+              <p className={styles.body}>{slide.body}</p>
+              <Link className={styles.cta} href={slide.href}>{slide.cta}<ArrowUpRight aria-hidden="true" /></Link>
+            </div>
+            <HomeHeroVisual active variant={slide.variant} />
           </div>
-          <HomeHeroVisual active variant={slide.variant} />
         </div>
       )}
+      <p aria-atomic="true" aria-live="polite" className={styles.screenReaderOnly} role="status">{announcement}</p>
       <div className={`${styles.controls} site-container`}>
         <button aria-label="上一项" className={styles.arrow} onClick={() => go(-1)} type="button"><ArrowLeft aria-hidden="true" /></button>
         <nav aria-label="业务领域进度" className={styles.progress}>
@@ -114,7 +130,7 @@ export function HomeHeroCarousel({slides, autoplayMs = 6000}: HomeHeroCarouselPr
               aria-label={`转到 ${item.label} 业务`}
               className={styles.dot}
               key={item.index}
-              onClick={() => setActiveIndex(index)}
+              onClick={() => goTo(index)}
               type="button"
             />
           ))}
