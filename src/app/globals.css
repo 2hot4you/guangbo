@@ -135,13 +135,9 @@
   .home-capability__arrow { width: 1.5rem; height: 1.5rem; margin-top: 0.2rem; }
 
   .home-models { padding-block: clamp(4rem, 8vw, 7rem); background: #080808; color: #ffffff; }
-  .home-models__layout { display: grid; gap: 4rem; }
+  .home-models__layout { display: grid; gap: clamp(2.5rem, 5vw, 4rem); min-width: 0; }
   .home-section__index--dark { color: #9c9c94; }
   .home-models__layout > div > p:last-child { max-width: 37rem; margin-top: 1.25rem; color: #a9a9a3; }
-  .home-models__names { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); border-top: 1px solid #333331; }
-  .home-models__names li { padding: 1.1rem 0; border-bottom: 1px solid #333331; color: #e5e5df; font-size: clamp(1.3rem, 2.6vw, 2.1rem); font-weight: 650; letter-spacing: -0.03em; }
-  .home-models__names li:nth-child(odd) { border-right: 1px solid #333331; }
-  .home-models__names li:nth-child(even) { padding-left: 1.25rem; }
 
   .home-idc { background: #fbfbf9; }
   .home-idc__layout { display: grid; gap: clamp(3rem, 8vw, 7rem); }
@@ -290,7 +286,6 @@
 @media (min-width: 56rem) {
   .home-ai__intro { grid-template-columns: minmax(0, 1fr) auto; }
   .home-ai__intro .home-domain__visual { margin-top: 0; justify-self: end; }
-  .home-models__layout { grid-template-columns: minmax(0, 0.8fr) minmax(30rem, 1.2fr); align-items: end; }
   .home-idc__layout { grid-template-columns: minmax(0, 0.8fr) minmax(28rem, 1.2fr); align-items: start; }
   .home-domain__layout { grid-template-columns: minmax(0, 0.8fr) minmax(28rem, 1.2fr); align-items: start; }
   .home-domain--reverse .home-domain__layout { grid-template-columns: minmax(28rem, 1.2fr) minmax(0, 0.8fr); }
@@ -310,9 +305,6 @@
   .home-action { width: 100%; }
   .home-capability { grid-template-columns: 2.3rem minmax(0, 1fr) auto; }
   .home-capability__content > p { font-size: 0.9rem; }
-  .home-models__names { grid-template-columns: 1fr; }
-  .home-models__names li:nth-child(odd) { border-right: 0; }
-  .home-models__names li:nth-child(even) { padding-left: 0; }
   .site-footer__nav { grid-template-columns: 1fr 1fr; }
   .site-footer__bottom { align-items: flex-start; flex-direction: column; }
   .site-footer__wordmark { display: block; padding-block: 1.75rem 1.5rem; }

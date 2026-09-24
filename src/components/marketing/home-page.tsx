@@ -2,10 +2,10 @@ import {ArrowRight, ArrowUpRight} from "lucide-react";
 import Link from "next/link";
 import {getPageByPath} from "@/content";
 import type {ContentSection, MarketingPage, PublicPath} from "@/content";
-import {HomeHeroStory} from "./home-hero-story";
-import type {HomeHeroSlideContent} from "./home-hero-story";
+import {HomeHeroCarousel} from "./home-hero-carousel";
+import type {HomeHeroSlideContent} from "./home-hero-types";
+import {ModelEcosystemLoop} from "./model-ecosystem-loop";
 
-const modelNames = ["DeepSeek", "GLM", "Kimi", "Qwen", "Claude", "Gemini", "GPT", "Grok", "Seedance", "FLUX"];
 const supportingDomains = ["XINCHUANG", "LINK", "ENERGY"] as const;
 const supportingPaths = ["/madeinchina", "/network", "/energy"] as const satisfies readonly PublicPath[];
 
@@ -70,7 +70,7 @@ export function HomePage({page}: {page: MarketingPage}) {
 
   return (
     <>
-      <HomeHeroStory slides={heroSlides} />
+      <HomeHeroCarousel slides={heroSlides} />
 
       <section aria-labelledby="ai-heading" className="home-section home-ai" id="ai">
         <div className="site-container">
@@ -104,9 +104,7 @@ export function HomePage({page}: {page: MarketingPage}) {
               <h3 id="model-ecosystem-heading">{ecosystem.title}</h3>
               <p>{ecosystem.body}</p>
             </div>
-            <ul aria-label="代表模型系列" className="home-models__names">
-              {modelNames.map((name) => <li key={name}>{name}</li>)}
-            </ul>
+            <ModelEcosystemLoop />
           </div>
         </div>
       </section>

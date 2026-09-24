@@ -60,30 +60,36 @@ describe("marketing page templates", () => {
     expect(document.querySelector(`.${templateClass}`)).not.toBeNull();
   });
 
-  it("renders five linked hero states and keeps the detailed home sections", () => {
+  it("renders one carousel and both complete model catalog lanes above the preserved home sections", () => {
     render(<MarketingPageView page={getPageByPath("/")} />);
     expect(screen.getAllByRole("heading", {level: 1})).toHaveLength(1);
     expect(screen.getByRole("heading", {level: 1, name: "让大模型走进应用，让创意成为内容"})).toBeInTheDocument();
-    const heroSlides = screen.getAllByTestId("home-hero-slide");
-    expect(heroSlides.map((slide) => slide.getAttribute("data-domain"))).toEqual([
-      "ai", "compute", "xinchang", "link", "energy",
-    ]);
-    expect(heroSlides.map((slide) => within(slide).getByRole("link").getAttribute("href"))).toEqual([
-      "/ai", "/idc", "/madeinchina", "/network", "/energy",
+    const carousel = screen.getByRole("region", {name: "光波互联业务轮播"});
+    expect(carousel).toHaveAttribute("aria-roledescription", "carousel");
+    expect(carousel).toHaveAttribute("data-domain", "ai");
+    expect(within(carousel).getByRole("link", {name: /探索大模型/})).toHaveAttribute("href", "/ai");
+    expect(within(carousel).getByRole("navigation", {name: "业务领域进度"}).querySelectorAll("button")).toHaveLength(5);
+    expect(within(carousel).getAllByRole("button", {name: /转到 .+ 业务/}).map((button) => button.getAttribute("aria-label"))).toEqual([
+      "转到 AI 业务", "转到 COMPUTE 业务", "转到 XINCHUANG 业务", "转到 LINK 业务", "转到 ENERGY 业务",
     ]);
     expect(screen.getByRole("link", {name: "LLM与多模态理解"})).toHaveAttribute("href", "/ai/llm");
     expect(screen.getByRole("link", {name: "AI图像生成与编辑"})).toHaveAttribute("href", "/ai/image");
     expect(screen.getByRole("link", {name: "AI视频生成与编辑"})).toHaveAttribute("href", "/ai/video");
     const sectionIds = [...document.querySelectorAll("section[id]")].map((section) => section.id);
     expect(sectionIds.slice(0, 7)).toEqual(["ai", "idc", "madeinchina", "network", "energy", "delivery", "about"]);
+    expect(screen.getByText("PROVIDERS / 136")).toBeInTheDocument();
+    expect(screen.getByText("MODELS / 72")).toBeInTheDocument();
+    expect(within(screen.getByRole("region", {name: "AI Providers"})).getAllByRole("listitem")).toHaveLength(136);
+    expect(within(screen.getByRole("region", {name: "AI Models"})).getAllByRole("listitem")).toHaveLength(72);
+    expect(document.querySelector(".home-models__names")).toBeNull();
     expect(screen.getByText(/实际可调用的型号及价格以平台目录为准/)).toBeInTheDocument();
   });
 
-  it("uses the same five-domain taxonomy in hero states and numbered sections", () => {
+  it("uses the same five-domain taxonomy in carousel controls and numbered sections", () => {
     render(<MarketingPageView page={getPageByPath("/")} />);
 
-    expect(screen.getAllByTestId("home-hero-slide").map((slide) => slide.getAttribute("data-label"))).toEqual([
-      "AI", "COMPUTE", "XINCHUANG", "LINK", "ENERGY",
+    expect(within(screen.getByRole("navigation", {name: "业务领域进度"})).getAllByRole("button").map((button) => button.getAttribute("aria-label"))).toEqual([
+      "转到 AI 业务", "转到 COMPUTE 业务", "转到 XINCHUANG 业务", "转到 LINK 业务", "转到 ENERGY 业务",
     ]);
     expect(["ai", "idc", "madeinchina", "network", "energy"].map((id) =>
       document.querySelector(`#${id} .home-section__index`)?.textContent,
@@ -100,7 +106,7 @@ describe("marketing page templates", () => {
     const energy = document.getElementById("energy");
 
     expect(within(ai!).getByRole("heading", {level: 3, name: "模型生态"})).toBeInTheDocument();
-    expect(within(ai!).getByText("DeepSeek")).toBeInTheDocument();
+    expect(within(ai!).getAllByText("DeepSeek").length).toBeGreaterThan(0);
     expect(within(compute!).getByRole("link", {name: "VPS租赁"})).toBeInTheDocument();
     expect(within(compute!).getByRole("link", {name: "GPU算力"})).toBeInTheDocument();
     expect(within(xinchang!).getByRole("heading", {level: 3, name: "计算硬件与本地AI部署"})).toBeInTheDocument();

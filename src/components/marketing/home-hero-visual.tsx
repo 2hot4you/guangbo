@@ -1,4 +1,4 @@
-import styles from "./home-hero-story.module.css";
+import styles from "./home-hero-visual.module.css";
 import type {HomeHeroVariant} from "./home-hero-types";
 
 const visualNodes = {

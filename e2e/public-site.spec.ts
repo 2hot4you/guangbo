@@ -383,29 +383,14 @@ test("public pages expose no console, auth, payment, fake pricing, or online gen
   }
 });
 
-const homeHeroDomains = ["ai", "compute", "xinchang", "link", "energy"] as const;
+type HomeHeroDomain = "ai" | "compute" | "xinchang" | "link" | "energy";
 const preservedHomeSections = ["ai", "idc", "madeinchina", "network", "energy", "delivery", "about"] as const;
 
-async function expectActiveHomeHero(page: Page, domain: (typeof homeHeroDomains)[number]) {
-  await expect.poll(async () => page.getByTestId("home-hero-slide").evaluateAll((slides) =>
-    slides.filter((slide) => slide.getAttribute("data-active") === "true").map((slide) => slide.getAttribute("data-domain")),
-  )).toEqual([domain]);
-  await expect(page.getByRole("navigation", {name: "业务领域进度"}).locator('[aria-current="step"]')).toHaveCount(1);
-}
-
-async function expectSettledHomeHeroVisual(page: Page) {
-  await expect.poll(async () => page.getByTestId("home-hero-slide").evaluateAll((slides) =>
-    slides.every((slide) => Number(getComputedStyle(slide).opacity) ===
-      (slide.getAttribute("data-active") === "true" ? 1 : 0)),
-  )).toBe(true);
-}
-
-async function jumpToHomeHeroStep(page: Page, index: number) {
-  await page.locator("[data-home-hero-step]").nth(index).evaluate((step) => {
-    const rect = step.getBoundingClientRect();
-    const center = window.scrollY + rect.top + rect.height / 2 - window.innerHeight / 2;
-    document.scrollingElement!.scrollTop = center;
-  });
+async function expectActiveHomeHero(page: Page, domain: HomeHeroDomain) {
+  const carousel = page.getByRole("region", {name: "光波互联业务轮播"});
+  await expect(carousel).toHaveAttribute("data-domain", domain);
+  await expect(carousel.getByTestId("home-hero-slide")).toHaveCount(1);
+  await expect(carousel.getByRole("navigation", {name: "业务领域进度"}).locator('[aria-current="true"]')).toHaveCount(1);
 }
 
 test("desktop and mobile route changes land at the absolute page top", async ({page}) => {
@@ -428,84 +413,182 @@ test("desktop and mobile route changes land at the absolute page top", async ({p
   }
 });
 
-test("home hero follows all five states forward and reverse through natural scrolling", async ({page}) => {
+test("home carousel controls and keyboard navigate all five states", async ({page}) => {
   await page.goto("/");
-  await expect(page.getByTestId("home-hero-story")).toHaveAttribute("data-enhanced", "true");
-  await expect(page.locator("[data-home-hero-step]")).toHaveCount(5);
-  for (const [index, domain] of homeHeroDomains.entries()) {
-    await jumpToHomeHeroStep(page, index);
-    await expectActiveHomeHero(page, domain);
+  const carousel = page.getByRole("region", {name: "光波互联业务轮播"});
+  await expect(carousel).toHaveAttribute("aria-roledescription", "carousel");
+  await expectActiveHomeHero(page, "ai");
+  const dots = carousel.getByRole("navigation", {name: "业务领域进度"}).getByRole("button");
+  await expect(dots).toHaveCount(5);
+  for (const [index, label] of ["AI", "COMPUTE", "XINCHUANG", "LINK", "ENERGY"].entries()) {
+    await expect(dots.nth(index)).toHaveAttribute("aria-label", `转到 ${label} 业务`);
   }
-  for (let index = homeHeroDomains.length - 1; index >= 0; index--) {
-    await jumpToHomeHeroStep(page, index);
-    await expectActiveHomeHero(page, homeHeroDomains[index]);
-  }
-});
-
-test("home hero resolves quick jumps and progress navigation to the reached state", async ({page}) => {
-  await page.goto("/");
-  await expect(page.getByTestId("home-hero-story")).toHaveAttribute("data-enhanced", "true");
-  for (const [index, domain] of [[0, "ai"], [4, "energy"], [2, "xinchang"]] as const) {
-    await jumpToHomeHeroStep(page, index);
-    await expectActiveHomeHero(page, domain);
-  }
-  await page.getByRole("navigation", {name: "业务领域进度"}).getByRole("button", {name: /04\s*LINK/}).click();
+  await carousel.getByRole("button", {name: "下一项"}).click();
+  await expectActiveHomeHero(page, "compute");
+  await carousel.getByRole("button", {name: "上一项"}).click();
+  await expectActiveHomeHero(page, "ai");
+  await dots.nth(4).click();
+  await expectActiveHomeHero(page, "energy");
+  await carousel.focus();
+  await page.keyboard.press("ArrowLeft");
   await expectActiveHomeHero(page, "link");
+  await page.keyboard.press("ArrowRight");
+  await expectActiveHomeHero(page, "energy");
+  await expect(carousel.getByRole("link", {name: /了解清洁能源/})).toHaveAttribute("href", "/energy");
 });
 
-test("home hero pauses inactive motion and disables all motion for reduced-motion users", async ({page}) => {
+test("home carousel autoplay advances and pauses for hover, focus and reduced motion", async ({page}) => {
+  test.setTimeout(60_000);
   await page.emulateMedia({reducedMotion: "no-preference"});
   await page.goto("/");
-  await expect(page.getByTestId("home-hero-story")).toHaveAttribute("data-enhanced", "true");
-  await jumpToHomeHeroStep(page, 2);
-  await expectActiveHomeHero(page, "xinchang");
-  const states = await page.getByTestId("home-hero-slide").evaluateAll((slides) => slides.map((slide) => ({
-    domain: slide.getAttribute("data-domain"),
-    active: slide.getAttribute("data-active") === "true",
-    layers: [...slide.querySelectorAll("[data-motion-layer]")].map((layer) => ({
-      name: getComputedStyle(layer).animationName,
-      state: getComputedStyle(layer).animationPlayState,
-    })),
-  })));
-  for (const slide of states) {
-    expect(slide.layers.length, `${slide.domain} motion layers`).toBeGreaterThanOrEqual(3);
-    expect(slide.layers.every((layer) => layer.name !== "none" && layer.state === (slide.active ? "running" : "paused")), slide.domain ?? "unknown domain").toBe(true);
-  }
+  await expectActiveHomeHero(page, "ai");
+  await page.waitForTimeout(6500);
+  await expectActiveHomeHero(page, "compute");
+
+  await page.goto("/");
+  const carousel = page.getByRole("region", {name: "光波互联业务轮播"});
+  await carousel.hover();
+  await page.waitForTimeout(6500);
+  await expectActiveHomeHero(page, "ai");
+
+  await page.goto("/");
+  await carousel.focus();
+  await page.waitForTimeout(6500);
+  await expectActiveHomeHero(page, "ai");
+
   await page.emulateMedia({reducedMotion: "reduce"});
-  await page.reload();
-  await expect(page.locator("[data-motion-layer]")).not.toHaveCount(0);
-  expect(await page.locator("[data-motion-layer]").evaluateAll((layers) =>
+  await page.goto("/");
+  await page.waitForTimeout(6500);
+  await expectActiveHomeHero(page, "ai");
+  expect(await carousel.locator("[data-motion-layer]").evaluateAll((layers) =>
     layers.every((layer) => getComputedStyle(layer).animationName === "none"),
   )).toBe(true);
 });
 
-test("home hero releases into the preserved full home sections without console errors", async ({page}) => {
+test("home carousel accepts horizontal pointer swipes and leaves vertical wheel scrolling intact", async ({page}) => {
+  await page.setViewportSize({width: 390, height: 844});
+  await page.goto("/");
+  const carousel = page.getByRole("region", {name: "光波互联业务轮播"});
+  const box = await carousel.boundingBox();
+  expect(box).not.toBeNull();
+  const startX = box!.x + box!.width * 0.7;
+  const startY = box!.y + 120;
+  await page.mouse.move(startX, startY);
+  await page.mouse.down();
+  await page.mouse.move(startX - 80, startY, {steps: 4});
+  await page.mouse.up();
+  await expectActiveHomeHero(page, "compute");
+  await page.mouse.move(startX, startY);
+  await page.mouse.down();
+  await page.mouse.move(startX, startY + 180, {steps: 4});
+  await page.mouse.up();
+  await expectActiveHomeHero(page, "compute");
+  const before = await page.evaluate(() => window.scrollY);
+  await page.mouse.wheel(0, 600);
+  await expect.poll(() => page.evaluate(() => window.scrollY)).toBeGreaterThan(before);
+});
+
+test("home carousel releases into the preserved full home sections without console errors", async ({page}) => {
   const errors: string[] = [];
   page.on("pageerror", (error) => errors.push(error.message));
   page.on("console", (message) => { if (message.type() === "error") errors.push(message.text()); });
-  for (const width of viewportWidths) {
+  for (const width of [360, 390, 768, 1280, 1440]) {
     await page.setViewportSize({width, height: 900});
     await page.goto("/");
-    await expect(page.getByTestId("home-hero-story")).toHaveAttribute("data-enhanced", "true");
-    await jumpToHomeHeroStep(page, 4);
-    await expectActiveHomeHero(page, "energy");
+    await expectActiveHomeHero(page, "ai");
     for (const id of preservedHomeSections) await expect(page.locator(`section#${id}`)).toHaveCount(1);
     await page.locator("section#ai").scrollIntoViewIfNeeded();
     await expect(page.locator("section#ai")).toBeInViewport();
+    await expect(page.locator(".home-models__names")).toHaveCount(0);
   }
   expect(errors).toEqual([]);
 });
 
-test("home hero and preserved sections have no horizontal overflow after scrolling", async ({page}) => {
-  for (const width of viewportWidths) {
+test("home carousel and logo loop have no horizontal overflow or clipped hover scale", async ({page}) => {
+  for (const width of [360, 390, 768, 1280, 1440]) {
     await page.setViewportSize({width, height: 900});
     await page.goto("/");
-    await expect(page.getByTestId("home-hero-story")).toHaveAttribute("data-enhanced", "true");
-    await jumpToHomeHeroStep(page, 4);
-    await expectActiveHomeHero(page, "energy");
+    await expectActiveHomeHero(page, "ai");
     await page.locator("section#ai").scrollIntoViewIfNeeded();
     await expect(page.locator("section#ai")).toBeInViewport();
     await expectNoHorizontalOverflow(page);
+    const providers = page.getByRole("region", {name: "AI Providers"});
+    await providers.scrollIntoViewIfNeeded();
+    const root = await providers.boundingBox();
+    expect(root).not.toBeNull();
+    await page.mouse.move(root!.x + root!.width / 2, root!.y + root!.height / 2);
+    await expect(providers).toHaveAttribute("data-motion-state", "slowed");
+    const hoveredItem = providers.locator("li:hover").first();
+    await expect(hoveredItem).toHaveCount(1);
+    await expect.poll(async () => hoveredItem.evaluate((item) => {
+      const itemBounds = item.getBoundingClientRect();
+      const loopBounds = item.closest('[role="region"]')!.getBoundingClientRect();
+      return itemBounds.top >= loopBounds.top - 1 && itemBounds.bottom <= loopBounds.bottom + 1;
+    })).toBe(true);
+    await expectNoHorizontalOverflow(page);
+  }
+});
+
+test("logo loop exposes exact settings and only the two original catalog lists", async ({page}) => {
+  await page.goto("/");
+  const providers = page.getByRole("region", {name: "AI Providers"});
+  const models = page.getByRole("region", {name: "AI Models"});
+  await expect(page.getByText("PROVIDERS / 136")).toBeVisible();
+  await expect(page.getByText("MODELS / 72")).toBeVisible();
+  for (const [loop, direction, count] of [[providers, "left", 136], [models, "right", 72]] as const) {
+    await expect(loop).toHaveAttribute("data-direction", direction);
+    await expect(loop).toHaveAttribute("data-speed", "160");
+    await expect(loop).toHaveAttribute("data-hover-speed", "80");
+    await expect(loop.getByRole("listitem")).toHaveCount(count);
+    expect(await loop.locator("ul").count()).toBeGreaterThan(1);
+    expect(await loop.locator('[aria-hidden="true"][inert]').count()).toBeGreaterThanOrEqual(1);
+    const vars = await loop.evaluate((element) => ({
+      logoHeight: element.style.getPropertyValue("--logoloop-logo-height"),
+      gap: element.style.getPropertyValue("--logoloop-gap"),
+      fade: element.style.getPropertyValue("--logoloop-fade-color"),
+      padding: getComputedStyle(element).paddingTop,
+    }));
+    expect(vars).toMatchObject({logoHeight: "120px", gap: "80px", fade: "#080808"});
+    expect(parseFloat(vars.padding)).toBeGreaterThan(0);
+  }
+});
+
+test("logo loop tracks move in opposite directions, slow on hover and stop for reduced motion", async ({page}) => {
+  await page.emulateMedia({reducedMotion: "no-preference"});
+  await page.goto("/");
+  const loops = [page.getByRole("region", {name: "AI Providers"}), page.getByRole("region", {name: "AI Models"})];
+  async function offset(loop: Locator) {
+    return loop.locator(":scope > div").first().evaluate((track) => {
+      const transform = getComputedStyle(track).transform;
+      return new DOMMatrixReadOnly(transform === "none" ? undefined : transform).m41;
+    });
+  }
+  for (const [index, loop] of loops.entries()) {
+    await loop.scrollIntoViewIfNeeded();
+    await expect(loop).toHaveAttribute("data-motion-state", "running");
+    await expect.poll(() => offset(loop)).not.toBe(0);
+    const start = await offset(loop);
+    await page.waitForTimeout(450);
+    const normalDelta = (await offset(loop)) - start;
+    expect(Math.abs(normalDelta)).toBeGreaterThan(35);
+    expect(Math.sign(normalDelta)).toBe(index === 0 ? -1 : 1);
+    await loop.hover();
+    await expect(loop).toHaveAttribute("data-motion-state", "slowed");
+    await page.waitForTimeout(500);
+    const slowedStart = await offset(loop);
+    await page.waitForTimeout(450);
+    const slowedDelta = (await offset(loop)) - slowedStart;
+    expect(Math.sign(slowedDelta)).toBe(Math.sign(normalDelta));
+    expect(Math.abs(slowedDelta)).toBeGreaterThan(15);
+    expect(Math.abs(slowedDelta)).toBeLessThan(Math.abs(normalDelta) * 0.8);
+  }
+  await page.emulateMedia({reducedMotion: "reduce"});
+  await page.reload();
+  for (const loop of loops) {
+    await expect(loop).toHaveAttribute("data-motion-state", "reduced");
+    const start = await offset(loop);
+    await page.waitForTimeout(450);
+    expect(await offset(loop)).toBe(start);
   }
 });
 
@@ -538,18 +621,14 @@ test("landing hero tones and first-section emphasis keep the header light", asyn
   }
 });
 
-test("home hero desktop and mobile visual captures", async ({page}, testInfo) => {
+test("home carousel desktop and mobile visual captures", async ({page}, testInfo) => {
   for (const [label, width, height] of [["desktop", 1440, 900], ["mobile", 390, 844]] as const) {
     await page.setViewportSize({width, height});
     await page.goto("/");
-    await expect(page.getByTestId("home-hero-story")).toHaveAttribute("data-enhanced", "true");
-    await jumpToHomeHeroStep(page, 0);
     await expectActiveHomeHero(page, "ai");
-    await expectSettledHomeHeroVisual(page);
     await page.screenshot({path: testInfo.outputPath(`home-hero-${label}-ai.png`)});
-    await jumpToHomeHeroStep(page, 4);
+    await page.getByRole("navigation", {name: "业务领域进度"}).getByRole("button", {name: "转到 ENERGY 业务"}).click();
     await expectActiveHomeHero(page, "energy");
-    await expectSettledHomeHeroVisual(page);
     await page.screenshot({path: testInfo.outputPath(`home-hero-${label}-energy.png`)});
     await page.goto("/energy");
     await page.screenshot({path: testInfo.outputPath(`landing-hero-${label}-energy.png`)});
