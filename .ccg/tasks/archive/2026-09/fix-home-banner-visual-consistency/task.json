@@ -1,0 +1,12 @@
+{
+  "id": "fix-home-banner-visual-consistency",
+  "title": "统一首页 Banner 英文节点与浅色背景",
+  "status": "completed",
+  "complexity": "M",
+  "risk": "medium",
+  "domain": "frontend",
+  "currentPhase": "completed",
+  "nextAction": "归档任务",
+  "createdAt": "2026-09-24T17:04:41Z",
+  "branch": "feat/frontend-foundation"
+}
