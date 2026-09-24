@@ -295,6 +295,27 @@ test("mega menu Tab reaches child links and Escape returns focus to its trigger"
   await expect(panel.getByRole("link")).toHaveCount(0);
 });
 
+test("mega menu keeps keyboard-focused child available after the pointer leaves", async ({page}) => {
+  await page.setViewportSize({width: 1440, height: 900});
+  await page.goto("/");
+  const overview = page.getByRole("navigation", {name: "主导航"})
+    .getByRole("link", {name: "IDC与算力", exact: true});
+  await overview.focus();
+  await page.keyboard.press("Tab");
+  await page.keyboard.press("Tab");
+  const panel = page.locator("#desktop-panel-idc");
+  const child = panel.getByRole("link", {name: "全国VPS租赁"});
+  await expect(child).toBeFocused();
+  const bounds = await overview.boundingBox();
+  expect(bounds).not.toBeNull();
+  await page.mouse.move(bounds!.x + bounds!.width / 2, bounds!.y + bounds!.height / 2);
+  await page.mouse.move(0, 600);
+  await page.waitForTimeout(260); // Exceeds the menu's 180ms pointer-leave delay.
+  await expect(panel).toBeVisible();
+  await expect(child).toBeFocused();
+  expect(await page.evaluate(() => document.activeElement?.tagName)).not.toBe("BODY");
+});
+
 test("mega menu touch trigger opens on first tap and closes on second tap", async ({browser}) => {
   const context = await browser.newContext({hasTouch: true, isMobile: false, viewport: {width: 1440, height: 900}});
   try {
@@ -363,6 +384,96 @@ async function expectHashTargetClearOfHeader(page: Page, id: string) {
     });
   }, {message: `${id} should be visible below the sticky header at its scroll margin`}).toBe(true);
 }
+
+test("hash navigation waits for a delayed same-route history commit before focusing storage", async ({page}) => {
+  await page.setViewportSize({width: 390, height: 844});
+  await page.goto("/energy#solar");
+  await page.evaluate(() => {
+    const timing = {firstFrameAt: 0, committedAt: 0, intercepts: 0};
+    (window as typeof window & {__hashTiming?: typeof timing}).__hashTiming = timing;
+    document.addEventListener("click", (event) => {
+      const link = event.target instanceof Element ? event.target.closest("a[href]") : null;
+      if (link?.getAttribute("href") === "/energy#storage") {
+        event.preventDefault();
+        timing.intercepts += 1;
+        requestAnimationFrame(() => {
+          timing.firstFrameAt = performance.now();
+          requestAnimationFrame(() => {
+            window.history.pushState(null, "", "/energy#storage");
+            timing.committedAt = performance.now();
+          });
+        });
+      }
+    }, true);
+  });
+  await page.getByRole("button", {name: "打开导航菜单"}).click();
+  const drawer = page.getByRole("dialog", {name: "网站导航"});
+  await expect(drawer.getByRole("link", {name: "分布式光伏"})).toHaveAttribute("aria-current", "location");
+  await drawer.getByRole("link", {name: "用户侧储能"}).click();
+  await expect(page).toHaveURL(/\/energy#storage$/);
+  await expect(drawer).toBeHidden();
+  await expectHashTargetClearOfHeader(page, "storage");
+  await page.waitForTimeout(250); // The final state must survive Drawer focus restoration.
+  await expect(page).toHaveURL(/\/energy#storage$/);
+  await expect(drawer).toBeHidden();
+  await expectHashTargetClearOfHeader(page, "storage");
+  await page.getByRole("button", {name: "打开导航菜单"}).click();
+  await expect(page.getByRole("dialog", {name: "网站导航"})
+    .getByRole("link", {name: "用户侧储能"})).toHaveAttribute("aria-current", "location");
+  const timing = await page.evaluate(() => (window as typeof window & {
+    __hashTiming: {firstFrameAt: number; committedAt: number; intercepts: number};
+  }).__hashTiming);
+  expect(timing.intercepts).toBeGreaterThan(0);
+  expect(timing.firstFrameAt).toBeGreaterThan(0);
+  expect(timing.committedAt).toBeGreaterThan(timing.firstFrameAt);
+});
+
+test("hash navigation reactivating the current target restores focus on desktop and mobile", async ({page}) => {
+  for (const width of [1440, 390]) {
+    await page.setViewportSize({width, height: 900});
+    await page.goto("/energy#solar");
+    const solar = page.locator("#solar");
+    await expectHashTargetClearOfHeader(page, "solar");
+    await page.getByRole("link", {name: "光波互联，返回首页"}).focus();
+    await expect(solar).not.toBeFocused();
+    if (width === 1440) {
+      await page.getByRole("navigation", {name: "主导航"})
+        .getByRole("link", {name: "绿电与清洁能源", exact: true}).hover();
+      await page.locator('#desktop-panel-energy a[href="/energy#solar"]').click();
+    } else {
+      await page.getByRole("button", {name: "打开导航菜单"}).click();
+      const drawer = page.getByRole("dialog", {name: "网站导航"});
+      await drawer.getByRole("link", {name: "分布式光伏"}).click();
+      await expect(drawer).toBeHidden();
+    }
+    await expect(page).toHaveURL(/\/energy#solar$/);
+    await expectHashTargetClearOfHeader(page, "solar");
+  }
+});
+
+test("hash navigation back and forward close an open Drawer and focus each target", async ({page}) => {
+  await page.setViewportSize({width: 390, height: 844});
+  await page.goto("/energy#solar");
+  await page.getByRole("button", {name: "打开导航菜单"}).click();
+  const drawer = page.getByRole("dialog", {name: "网站导航"});
+  await drawer.getByRole("link", {name: "用户侧储能"}).click();
+  await expect(page).toHaveURL(/\/energy#storage$/);
+  await expectHashTargetClearOfHeader(page, "storage");
+
+  await page.getByRole("button", {name: "打开导航菜单"}).click();
+  await expect(drawer).toBeVisible();
+  await page.goBack();
+  await expect(page).toHaveURL(/\/energy#solar$/);
+  await expect(drawer).toBeHidden();
+  await expectHashTargetClearOfHeader(page, "solar");
+
+  await page.getByRole("button", {name: "打开导航菜单"}).click();
+  await expect(drawer).toBeVisible();
+  await page.goForward();
+  await expect(page).toHaveURL(/\/energy#storage$/);
+  await expect(drawer).toBeHidden();
+  await expectHashTargetClearOfHeader(page, "storage");
+});
 
 test("industry hubs every Header hash href resolves to exactly one real section", async ({page}) => {
   await page.setViewportSize({width: 1440, height: 900});

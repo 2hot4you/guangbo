@@ -45,3 +45,18 @@
 
 - Main agent completed `pnpm verify`: **174 unit tests passed**, typecheck passed, repository lint passed, and production build generated **18 static pages**.
 - Original Task 4 complete E2E run passed **100/100**. The main agent's later complete rerun had **98 passes plus 2 trace artifact `ENOENT` errors**; those two tests passed **2/2** when rerun separately. The strengthened suite's complete rerun passed **110/110** as recorded above.
+
+## Fix round 2 — Chrome navigation edge regressions
+
+Reviewed the product fix in `c5fa4b6` before writing tests. Each new case would have failed on its parent revision for a specific reason:
+
+1. The previous desktop leave timer always set `openPath` to `null` after 180ms. With a child link focused, that made the panel inert and could move focus to `BODY`; the new test keeps keyboard focus on the child while moving the mouse outside for 260ms.
+2. The previous hash subscription sampled the URL in one RAF after link activation. The new mobile test clicks the real Drawer storage link, prevents its default navigation, then submits `/energy#storage` through normal `history.pushState` after two RAFs. The first frame is recorded before the commit. It requires the final URL, active Storage link, closed Drawer, and focused, Header-safe visible Storage section to remain correct after Drawer focus restoration.
+3. The previous hook exposed only the hash string, so activating the same hash again did not create a new focus effect. The new test moves focus away, reactivates `/energy#solar` from the desktop panel and mobile Drawer, and requires focus to return to Solar.
+4. The previous Drawer kept its own `isOpen` state across same-page history changes. The new test opens the Drawer during Back and Forward navigation and requires it to close and focus the corresponding Solar or Storage section below the Header.
+
+### Fix round 2 verification and concern
+
+- Four new browser cases across both Chromium projects: **8/8 passed**. The complete targeted command `pnpm exec playwright test e2e/public-site.spec.ts --grep 'mega menu|industry hubs|hash navigation' --reporter=line` passed **32/32**.
+- `pnpm typecheck` and file-scoped ESLint passed before the final targeted run.
+- Complete `pnpm test:e2e -- --reporter=line`: **116/118 passed**. Both failures came from the unchanged `desktop and mobile route changes land at the absolute page top` test. On `/ai → /idc` at 1440px, `window.scrollY` settled at 4–5px instead of 0. An isolated rerun reproduced both failures, settling at 2px and 4px. This is distinct from the four new hash regressions and was reported to the main agent; no product code or unrelated assertion was changed in this task.
