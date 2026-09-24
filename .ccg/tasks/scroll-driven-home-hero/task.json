@@ -1,0 +1,12 @@
+{
+  "id": "scroll-driven-home-hero",
+  "title": "构建首页五业务滚动 Hero 并统一内页浅色首屏",
+  "status": "in_progress",
+  "complexity": "L+",
+  "risk": "medium",
+  "domain": "frontend",
+  "currentPhase": "analysis",
+  "nextAction": "完成分析并提交设计文档供用户复核",
+  "createdAt": "2026-09-24T14:30:00+08:00",
+  "branch": "feat/frontend-foundation"
+}
