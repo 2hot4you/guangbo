@@ -15,3 +15,4 @@
 - `prefers-reduced-motion` 下轮播停止自动播放并取消位移动画；鼠标悬停、控件聚焦和页面隐藏时暂停自动播放。
 - 首页模型生态使用 React Bits `LogoLoop`，展示 `@lobehub/icons` 固定版本中完整的 Provider 与 Model 两个分类，不包含 Application 分类。
 - Provider 与 Model 使用两条反向循环轨道，图标来自 LobeHub 官方 CDN；每个图标保留名称、替代文本和加载失败回退，避免将数百个 SVG React 组件打入首页脚本。
+- Provider LogoLoop 固定 `direction="left"`，Model LogoLoop 固定 `direction="right"`；两条轨道均使用 `speed={160}`、`hoverSpeed={80}`、`logoHeight={120}`、`gap={80}`，并开启 `fadeOut` 与 `scaleOnHover`。

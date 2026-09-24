@@ -94,7 +94,10 @@ interface LobeCatalogItem {
 
 - 保留 ResizeObserver、按轨道尺寸补副本、速度缓动、边缘渐隐和 hover 速度。
 - Provider 轨道向左，Model 轨道向右。
-- 两条轨道使用不同但克制的速度，悬停和 focus-within 时减速。
+- Provider 轨道固定 `direction="left"`，Model 轨道固定 `direction="right"`。
+- 两条轨道均固定 `speed={160}`、`hoverSpeed={80}`、`logoHeight={120}`、`gap={80}`。
+- 两条轨道均开启 `fadeOut` 与 `scaleOnHover`，渐隐颜色匹配模型生态区的深色背景。
+- 鼠标悬停和 focus-within 时从 160px/s 平滑减速到 80px/s；离开后恢复 160px/s。
 - 第一份列表进入可访问树，重复副本 `aria-hidden="true"`。
 - 每项显示图标和文字名称，不生成数百个外部链接。
 - `prefers-reduced-motion` 下停止 requestAnimationFrame，而不只是视觉上覆盖 transform；原始顺序列表保持可横向滚动。
@@ -107,7 +110,7 @@ interface LobeCatalogItem {
 - `PROVIDERS / 136` 标签及 Provider LogoLoop。
 - `MODELS / 72` 标签及 Model LogoLoop。
 
-轨道不使用卡片墙；单项为透明背景的 Logo + 名称组合，使用分隔线和留白维持现有 ZenMux 风格。桌面端图标较大，移动端缩小间距但保留名称。
+轨道不使用卡片墙；单项为透明背景的 Logo + 名称组合，使用分隔线和留白维持现有 ZenMux 风格。两端使用深色背景匹配的 fade-out 渐隐。Logo 高度和相邻间距在所有视口保持用户指定的 120px / 80px，外层容器负责裁切，页面不得产生横向溢出。
 
 ## 组件边界
 
@@ -136,6 +139,8 @@ interface LobeCatalogItem {
 - 桌面与移动端自动轮播、按钮、圆点和横向滑动正常。
 - 真实纵向触控/指针拖动仍能滚动页面。
 - 两条 LogoLoop 连续无跳变，hover/focus 减速，低动态模式静止。
+- Provider 实测向左、Model 实测向右；常规速度为 160px/s，hover/focus 速度为 80px/s，Logo 高度为 120px、间距为 80px。
+- 两条轨道均存在两端 fade-out，支持 hover scale，且放大后不被轨道容器裁切。
 - 图标失败时名称仍可见，没有控制台错误和水平页面溢出。
 - 首页下方 `ai/idc/madeinchina/network/energy/delivery/about` 全部保留。
 - 完整执行单元测试、类型检查、Lint、生产构建与 Playwright。
