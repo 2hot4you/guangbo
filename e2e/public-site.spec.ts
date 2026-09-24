@@ -80,7 +80,9 @@ for (const path of publicPaths) {
     if (topLevelPathSet.has(path)) {
       const landing = page.locator("[data-landing-page]");
       await expect(landing).toHaveCount(1);
-      await expect(landing.locator("section[data-content-module]")).toHaveCount(9);
+      await expect(landing.locator("section[data-content-module]")).toHaveCount(
+        ["/madeinchina", "/network", "/energy"].includes(path) ? 13 : 9,
+      );
     }
     await expectNoHorizontalOverflow(page);
   });
@@ -168,7 +170,7 @@ test("mobile AI and IDC navigation exposes overview and children and closes afte
   await expect(page.locator("#main-content")).toBeFocused();
 });
 
-test("desktop navigation uses direct links with Home first and visible keyboard focus", async ({page}) => {
+test("desktop navigation uses direct overview links with Home first and visible keyboard focus", async ({page}) => {
   await page.setViewportSize({width: 1440, height: 900});
   await page.goto("/");
   const nav = page.getByRole("navigation", {name: "主导航"});
@@ -184,7 +186,7 @@ test("desktop navigation uses direct links with Home first and visible keyboard 
     {label: "绿电与清洁能源", href: "/energy"},
     {label: "关于我们", href: "/about"},
   ]);
-  await expect(nav.getByRole("button")).toHaveCount(0);
+  await expect(nav.getByRole("button", {name: /(?:展开|收起).*子菜单/})).toHaveCount(5);
   await expect(page.getByRole("menu")).toHaveCount(0);
   const aiLink = nav.getByRole("link", {name: "大模型与AIGC"});
   for (let attempt = 0; attempt < 12 && !(await aiLink.evaluate((element) => element === document.activeElement)); attempt++) {
@@ -194,6 +196,147 @@ test("desktop navigation uses direct links with Home first and visible keyboard 
   expect(await aiLink.evaluate((element) => element.matches(":focus-visible"))).toBe(true);
   await page.keyboard.press("Enter");
   await expect(page).toHaveURL(/\/ai$/);
+});
+
+test("mega menu spans the desktop viewport and stays open while hovering into its panel", async ({page}) => {
+  await page.setViewportSize({width: 1440, height: 900});
+  await page.goto("/");
+  const nav = page.getByRole("navigation", {name: "主导航"});
+  await nav.getByRole("link", {name: "全国专线租赁", exact: true}).hover();
+  const panel = page.locator("#desktop-panel-network");
+  await expect(panel).toBeVisible();
+  const bounds = await panel.boundingBox();
+  expect(bounds).not.toBeNull();
+  expect(Math.abs(bounds!.x), "panel left edge").toBeLessThanOrEqual(1);
+  expect(Math.abs(bounds!.width - 1440), "panel viewport width").toBeLessThanOrEqual(1);
+  await panel.getByRole("link", {name: "OTN 三层传输"}).hover();
+  await page.waitForTimeout(250); // Beyond the 180ms leave delay.
+  await expect(panel).toBeVisible();
+  await page.mouse.move(0, 600);
+  await expect(panel).toBeHidden();
+});
+
+test("mega menu Tab reaches child links and Escape returns focus to its trigger", async ({page}) => {
+  await page.setViewportSize({width: 1440, height: 900});
+  await page.goto("/");
+  await page.mouse.move(0, 600);
+  const nav = page.getByRole("navigation", {name: "主导航"});
+  const overview = nav.getByRole("link", {name: "IDC与算力", exact: true});
+  await overview.focus();
+  const panel = page.locator("#desktop-panel-idc");
+  await expect(panel).toBeVisible();
+  await page.keyboard.press("Tab");
+  const trigger = nav.locator('button[aria-controls="desktop-panel-idc"]');
+  await expect(trigger).toBeFocused();
+  await page.keyboard.press("Tab");
+  await expect(panel.getByRole("link", {name: "全国VPS租赁"})).toBeFocused();
+  await page.keyboard.press("Escape");
+  await expect(panel).toBeHidden();
+  await expect(trigger).toBeFocused();
+  await expect(panel.getByRole("link")).toHaveCount(0);
+});
+
+test("mega menu touch trigger opens on first tap and closes on second tap", async ({browser}) => {
+  const context = await browser.newContext({hasTouch: true, isMobile: false, viewport: {width: 1440, height: 900}});
+  try {
+    const page = await context.newPage();
+    await page.goto("/");
+    const trigger = page.locator('button[aria-controls="desktop-panel-network"]');
+    const panel = page.locator("#desktop-panel-network");
+    await trigger.tap();
+    await expect(trigger).toHaveAttribute("aria-expanded", "true");
+    await expect(panel).toBeVisible();
+    await trigger.tap();
+    await expect(trigger).toHaveAttribute("aria-expanded", "false");
+    await expect(panel).toBeHidden();
+  } finally {
+    await context.close();
+  }
+});
+
+test("mega menu mobile Drawer exposes all five industry groups and closes on Escape", async ({page}) => {
+  await page.setViewportSize({width: 390, height: 844});
+  await page.goto("/");
+  await page.getByRole("button", {name: "打开导航菜单"}).click();
+  const drawer = page.getByRole("dialog", {name: "网站导航"});
+  await expect(drawer).toBeVisible();
+  for (const [label, path, child] of [
+    ["大模型与AIGC", "/ai", "LLM与多模态理解"],
+    ["IDC与算力", "/idc", "全国VPS租赁"],
+    ["信创与企业数字化", "/madeinchina", "产品与能力图谱"],
+    ["全国专线租赁", "/network", "产品矩阵"],
+    ["绿电与清洁能源", "/energy", "服务矩阵"],
+  ] as const) {
+    await expect(drawer.getByRole("link", {name: label, exact: true})).toHaveAttribute("href", path);
+    const trigger = drawer.getByRole("button", {name: `展开${label}子菜单`});
+    await trigger.click();
+    await expect(drawer.getByRole("link", {name: child, exact: true})).toBeVisible();
+    await expect(drawer.getByRole("button", {name: `收起${label}子菜单`})).toHaveAttribute("aria-expanded", "true");
+  }
+  await page.keyboard.press("Escape");
+  await expect(drawer).toBeHidden();
+});
+
+async function expectHashTargetClearOfHeader(page: Page, id: string) {
+  const target = page.locator(`#${id}`);
+  await expect(target).toBeFocused();
+  await expect.poll(async () => {
+    const section = await target.boundingBox();
+    const header = await page.locator(".site-header").boundingBox();
+    return section && header ? section.y - (header.y + header.height) : -1;
+  }, {message: `${id} should land below the sticky header`}).toBeGreaterThanOrEqual(0);
+}
+
+test("industry hubs deep links focus visible targets across and within routes", async ({page}) => {
+  await page.setViewportSize({width: 1440, height: 900});
+  await page.goto("/");
+  await page.getByRole("navigation", {name: "主导航"})
+    .getByRole("link", {name: "全国专线租赁", exact: true}).hover();
+  await page.locator("#desktop-panel-network").getByRole("link", {name: "OTN 三层传输"}).click();
+  await expect(page).toHaveURL(/\/network#otn$/);
+  await expectHashTargetClearOfHeader(page, "otn");
+
+  await page.setViewportSize({width: 390, height: 844});
+  await page.getByRole("button", {name: "打开导航菜单"}).click();
+  const drawer = page.getByRole("dialog", {name: "网站导航"});
+  await drawer.getByRole("button", {name: "展开绿电与清洁能源子菜单"}).click();
+  await drawer.getByRole("link", {name: "分布式光伏"}).click();
+  await expect(page).toHaveURL(/\/energy#solar$/);
+  await expect(drawer).toBeHidden();
+  await expectHashTargetClearOfHeader(page, "solar");
+
+  await page.getByRole("button", {name: "打开导航菜单"}).click();
+  await drawer.getByRole("link", {name: "用户侧储能"}).click();
+  await expect(page).toHaveURL(/\/energy#storage$/);
+  await expect(drawer).toBeHidden();
+  await expectHashTargetClearOfHeader(page, "storage");
+});
+
+test("industry hubs render hero plus twelve modules without overflow at desktop and phone widths", async ({page}) => {
+  for (const width of [390, 1280]) {
+    await page.setViewportSize({width, height: 900});
+    for (const path of ["/madeinchina", "/network", "/energy"]) {
+      await page.goto(path);
+      const modules = page.locator("[data-landing-page] section[data-content-module]");
+      await expect(modules).toHaveCount(13);
+      await expect(modules.first().locator("h1")).toHaveCount(1);
+      await expectNoHorizontalOverflow(page);
+    }
+  }
+});
+
+test("mega menu child destinations are present in server-rendered header HTML", async ({request}) => {
+  const response = await request.get("/");
+  expect(response.status()).toBe(200);
+  const html = await response.text();
+  const header = html.slice(html.indexOf("<header"), html.indexOf("</header>") + "</header>".length);
+  expect(header).toContain('href="/ai/llm"');
+  expect(header).toContain('href="/ai/image"');
+  expect(header).toContain('href="/ai/video"');
+  expect(header).toContain('href="/idc/vps"');
+  expect(header).toContain('href="/idc/bare-metal"');
+  expect(header).toContain('href="/idc/colocation"');
+  expect(header).toContain('href="/idc/gpu"');
 });
 
 test("dark footer links and home energy link have contrasting keyboard outlines", async ({page}) => {
