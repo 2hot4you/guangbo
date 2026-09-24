@@ -190,15 +190,17 @@ function LogoLoopComponent({
   } as CSSProperties;
 
   const renderList = (copy: number) => (
-    <div key={copy} className={styles.copy} aria-hidden={copy === 0 ? undefined : true} inert={copy === 0 ? undefined : true}>
+    <div key={copy} className={styles.copy} aria-hidden={copy === 0 ? undefined : true}>
       <ul ref={copy === 0 ? listRef : undefined} className={styles.list}>
         {logos.map((item, index) => {
           const key: Key = index;
           return (
             <li key={key} className={styles.item} title={item.title}>
-              {renderItem ? renderItem(item, key) : "node" in item
-                ? <span aria-label={item.ariaLabel}>{item.node}</span>
-                : <img src={item.src} alt={item.alt} width={item.width} height={item.height} loading="lazy" />}
+              <div className={styles.content} inert={copy === 0 ? undefined : true}>
+                {renderItem ? renderItem(item, key) : "node" in item
+                  ? <span aria-label={item.ariaLabel}>{item.node}</span>
+                  : <img src={item.src} alt={item.alt} width={item.width} height={item.height} loading="lazy" />}
+              </div>
             </li>
           );
         })}

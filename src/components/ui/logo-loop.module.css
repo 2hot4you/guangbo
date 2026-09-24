@@ -35,6 +35,13 @@
   transition: transform 180ms ease;
 }
 
+.content {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 100%;
+}
+
 .item img {
   display: block;
   width: auto;

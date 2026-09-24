@@ -13,8 +13,10 @@ const stylesheet = postcss.parse(readFileSync(resolve(process.cwd(), "src/compon
 
 function cssDeclaration(selector: string, property: string) {
   let value: string | undefined;
-  stylesheet.walkRules(selector, (rule) => {
-    rule.walkDecls(property, (declaration) => { value = declaration.value; });
+  stylesheet.walkRules((rule) => {
+    if (rule.selectors.includes(selector)) {
+      rule.walkDecls(property, (declaration) => { value = declaration.value; });
+    }
   });
   return value;
 }
@@ -44,6 +46,34 @@ describe("LogoLoop", () => {
     expect(within(region).getAllByRole("list")).toHaveLength(1);
     expect(within(region).getAllByRole("listitem")).toHaveLength(2);
     expect(region.querySelectorAll('[aria-hidden="true"] ul')).toHaveLength(1);
+  });
+
+  it.each(["left", "right"] as const)("keeps %s duplicate items hoverable while hiding interactive content", (direction) => {
+    vi.stubGlobal("matchMedia", vi.fn(() => ({
+      matches: false,
+      addEventListener: vi.fn(),
+      removeEventListener: vi.fn(),
+    })));
+    render(<LogoLoop
+      logos={[{node: <button type="button">Details</button>, title: "Details"}]}
+      direction={direction}
+      scaleOnHover
+      ariaLabel="Providers"
+    />);
+
+    const region = screen.getByRole("region", {name: "Providers"});
+    expect(within(region).getAllByRole("button", {name: "Details"})).toHaveLength(1);
+    const duplicate = region.querySelector<HTMLElement>('[aria-hidden="true"]');
+    const item = duplicate?.querySelector<HTMLElement>("li");
+    const content = item?.firstElementChild;
+    const duplicatedButton = content?.querySelector("button");
+    expect(duplicate).toBeTruthy();
+    expect(duplicate).not.toHaveAttribute("inert");
+    expect(item).toBeTruthy();
+    expect(item).not.toHaveAttribute("inert");
+    expect(content).toHaveAttribute("inert");
+    expect(duplicatedButton?.closest("[inert]")).toBe(content);
+    expect(cssDeclaration(".scaleOnHover .item:hover", "transform")).toBe("scale(1.16)");
   });
 
   it("does not schedule animation frames for reduced motion", () => {
