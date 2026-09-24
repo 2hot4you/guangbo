@@ -6,8 +6,10 @@ const publicPaths = [
   "/madeinchina", "/network", "/energy", "/about",
 ] as const;
 
-const sampledPaths = ["/", "/ai/llm", "/idc/colocation", "/network", "/energy", "/about"] as const;
-const viewportWidths = [320, 375, 390, 768, 1024, 1440] as const;
+const topLevelPaths = ["/ai", "/idc", "/madeinchina", "/network", "/energy", "/about"] as const;
+const topLevelPathSet = new Set<string>(topLevelPaths);
+const sampledPaths = ["/", "/ai/llm", "/idc/colocation", ...topLevelPaths] as const;
+const viewportWidths = [360, 768, 1280, 1440] as const;
 
 async function expectNoHorizontalOverflow(page: import("@playwright/test").Page) {
   const overflow = await page.evaluate(() => {
@@ -23,12 +25,17 @@ for (const path of publicPaths) {
     expect(response?.status()).toBe(200);
     await expect(page.locator("h1")).toHaveCount(1);
     await expect(page.locator("h1")).toBeVisible();
-    if (path === "/") {
+    if (path === "/" || topLevelPathSet.has(path)) {
       await expect(page.getByRole("navigation", {name: "面包屑导航"})).toHaveCount(0);
     } else {
       const breadcrumbs = page.getByRole("navigation", {name: "面包屑导航"});
       await expect(breadcrumbs).toBeVisible();
       await expect(breadcrumbs.locator('[aria-current="page"]')).toHaveText(getRouteLabel(path));
+    }
+    if (topLevelPathSet.has(path)) {
+      const landing = page.locator("[data-landing-page]");
+      await expect(landing).toHaveCount(1);
+      expect(await landing.locator("section[data-content-module]").count(), `${path} content modules`).toBeGreaterThanOrEqual(8);
     }
     await expectNoHorizontalOverflow(page);
   });
@@ -77,7 +84,7 @@ test("sample pages fit all required CSS viewport widths", async ({page}) => {
       await expect(page.locator("header img")).toBeVisible();
       const logoLoaded = await page.locator("header img").evaluate((image: HTMLImageElement) => image.complete && image.naturalWidth > 0);
       expect(logoLoaded, `logo failed to load at ${path}, ${width}px`).toBe(true);
-      const clipped = await page.locator(".marketing-card, footer, .network-topology").evaluateAll((elements) => elements.flatMap((element) => {
+      const clipped = await page.locator(".marketing-card, footer, .network-landing-topology").evaluateAll((elements) => elements.flatMap((element) => {
         const rect = element.getBoundingClientRect();
         return rect.left < -1 || rect.right > window.innerWidth + 1 || element.scrollWidth > element.clientWidth + 1
           ? [`${element.className || element.tagName}: ${rect.left}..${rect.right}, ${element.scrollWidth}/${element.clientWidth}`]
@@ -85,7 +92,7 @@ test("sample pages fit all required CSS viewport widths", async ({page}) => {
       }));
       expect(clipped, `cards, footer, or topology overflow at ${path}, ${width}px`).toEqual([]);
       if (path === "/network") {
-        const topology = page.locator(".network-topology");
+        const topology = page.locator(".network-landing-topology");
         await expect(topology).toBeVisible();
         const bounds = await topology.boundingBox();
         expect(bounds, `network topology has no bounds at ${width}px`).not.toBeNull();
@@ -97,14 +104,14 @@ test("sample pages fit all required CSS viewport widths", async ({page}) => {
 });
 
 test("mobile AI and IDC navigation exposes overview and children and closes after navigation", async ({page}) => {
-  await page.setViewportSize({width: 320, height: 800});
+  await page.setViewportSize({width: 360, height: 800});
   await page.goto("/");
   const opener = page.getByRole("button", {name: "打开导航菜单"});
   await opener.click();
   const drawer = page.getByRole("dialog", {name: "网站导航"});
   await expect(drawer).toBeVisible();
-  await expect(drawer.getByRole("link", {name: "大模型与AIGC总览"})).toHaveAttribute("href", "/ai");
-  await expect(drawer.getByRole("link", {name: "IDC与算力总览"})).toHaveAttribute("href", "/idc");
+  await expect(drawer.getByRole("link", {name: "大模型与AIGC", exact: true})).toHaveAttribute("href", "/ai");
+  await expect(drawer.getByRole("link", {name: "IDC与算力", exact: true})).toHaveAttribute("href", "/idc");
   await drawer.getByRole("button", {name: "展开大模型与AIGC子菜单"}).click();
   await expect(drawer.getByRole("link", {name: "LLM与多模态理解"})).toBeVisible();
   await drawer.getByRole("button", {name: "展开IDC与算力子菜单"}).click();
@@ -115,23 +122,32 @@ test("mobile AI and IDC navigation exposes overview and children and closes afte
   await expect(page.locator("#main-content")).toBeFocused();
 });
 
-test("desktop dropdown opens and navigates with keyboard, with visible keyboard focus", async ({page}) => {
+test("desktop navigation uses direct links with Home first and visible keyboard focus", async ({page}) => {
   await page.setViewportSize({width: 1440, height: 900});
   await page.goto("/");
-  const trigger = page.getByRole("button", {name: "大模型与AIGC菜单"});
-  for (let attempt = 0; attempt < 8 && !(await trigger.evaluate((element) => element === document.activeElement)); attempt++) {
+  const nav = page.getByRole("navigation", {name: "主导航"});
+  await expect(nav).toBeVisible();
+  expect(await nav.getByRole("link").evaluateAll((links) => links.map((link) => ({
+    label: link.textContent?.trim(), href: link.getAttribute("href"),
+  })))).toEqual([
+    {label: "首页", href: "/"},
+    {label: "大模型与AIGC", href: "/ai"},
+    {label: "IDC与算力", href: "/idc"},
+    {label: "信创与企业数字化", href: "/madeinchina"},
+    {label: "全国专线租赁", href: "/network"},
+    {label: "绿电与清洁能源", href: "/energy"},
+    {label: "关于我们", href: "/about"},
+  ]);
+  await expect(nav.getByRole("button")).toHaveCount(0);
+  await expect(page.getByRole("menu")).toHaveCount(0);
+  const aiLink = nav.getByRole("link", {name: "大模型与AIGC"});
+  for (let attempt = 0; attempt < 12 && !(await aiLink.evaluate((element) => element === document.activeElement)); attempt++) {
     await page.keyboard.press("Tab");
   }
-  await expect(trigger).toBeFocused();
-  expect(await trigger.evaluate((element) => element.matches(":focus-visible"))).toBe(true);
+  await expect(aiLink).toBeFocused();
+  expect(await aiLink.evaluate((element) => element.matches(":focus-visible"))).toBe(true);
   await page.keyboard.press("Enter");
-  const menu = page.getByRole("menu", {name: "大模型与AIGC菜单"});
-  await expect(menu).toBeVisible();
-  await expect(menu.getByRole("menuitem", {name: "大模型与AIGC总览"})).toBeFocused();
-  await page.keyboard.press("ArrowDown");
-  await expect(menu.getByRole("menuitem", {name: "LLM与多模态理解"})).toBeFocused();
-  await page.keyboard.press("Enter");
-  await expect(page).toHaveURL(/\/ai\/llm$/);
+  await expect(page).toHaveURL(/\/ai$/);
 });
 
 test("unknown route responds 404 with the intended H1", async ({page}) => {

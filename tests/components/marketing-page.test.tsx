@@ -30,6 +30,18 @@ describe("marketing page templates", () => {
     }
     expect(screen.getAllByRole("heading", {level: 1})).toHaveLength(1);
     expect(screen.getByRole("heading", {level: 1})).toHaveTextContent(page.hero.title);
+    for (const sourceSection of page.sections) {
+      const section = root!.querySelector<HTMLElement>(`section#${sourceSection.id}[data-content-module]`);
+      expect(section, `${path}: missing ${sourceSection.id}`).not.toBeNull();
+      expect(section).toHaveAttribute("aria-labelledby", `${sourceSection.id}-heading`);
+      expect(within(section!).getByRole("heading", {level: 2, name: sourceSection.title})).toBeInTheDocument();
+      if (sourceSection.body) expect(section).toHaveTextContent(sourceSection.body);
+      for (const item of sourceSection.items ?? []) {
+        expect(section, `${path}#${sourceSection.id}: missing ${item.title}`).toHaveTextContent(item.title);
+        expect(section, `${path}#${sourceSection.id}: missing body for ${item.title}`).toHaveTextContent(item.body);
+        if (item.meta) expect(section, `${path}#${sourceSection.id}: missing meta for ${item.title}`).toHaveTextContent(item.meta);
+      }
+    }
 
     const approved = new Set<string>(PUBLIC_PATHS);
     for (const anchor of document.querySelectorAll<HTMLAnchorElement>("a[href]")) {
@@ -193,6 +205,20 @@ describe("marketing page templates", () => {
     expect(html).toContain("让大模型走进应用，让创意成为内容");
     expect(html).toContain('href="/ai/llm"');
     expect(html).toContain("模型名称用于能力介绍");
+  });
+
+  it.each(["/ai", "/idc", "/network", "/about"] as const)("places representative %s landing content in server HTML", (path) => {
+    const page = getPageByPath(path);
+    const html = renderToStaticMarkup(<MarketingPageView page={page} />);
+    const firstSection = page.sections[0];
+    expect(html).toContain(`data-landing-page="${page.key}"`);
+    expect(html).toContain(`id="${firstSection.id}"`);
+    expect(html).toContain(firstSection.title);
+    if (firstSection.body) expect(html).toContain(firstSection.body);
+    if (firstSection.items?.[0]) {
+      expect(html).toContain(firstSection.items[0].title);
+      expect(html).toContain(firstSection.items[0].body);
+    }
   });
 
   it("shows a semantic station connection route with the source explanation", () => {
