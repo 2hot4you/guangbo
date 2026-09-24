@@ -2,6 +2,7 @@ import {cleanup, render, screen, waitFor, within} from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import {afterEach, describe, expect, it, vi} from "vitest";
 import {MobileNavigation} from "@/components/layout/mobile-navigation";
+import {RouteTransitionFocus} from "@/components/layout/route-transition-focus";
 import {DesktopNavigation} from "@/components/layout/desktop-navigation";
 import {SiteHeader} from "@/components/layout/site-header";
 import {SiteFooter} from "@/components/layout/site-footer";
@@ -11,7 +12,26 @@ vi.mock("next/navigation", () => ({usePathname: () => pathname}));
 
 afterEach(() => {
   cleanup();
+  vi.restoreAllMocks();
+  vi.unstubAllGlobals();
   pathname = "/";
+});
+
+describe("route transitions", () => {
+  it("focuses main without scrolling it and resets a changed route to the absolute top", async () => {
+    const scrollTo = vi.fn();
+    vi.stubGlobal("scrollTo", scrollTo);
+    const focus = vi.spyOn(HTMLElement.prototype, "focus");
+    const view = render(<><RouteTransitionFocus /><main id="main-content" tabIndex={-1} /></>);
+
+    expect(scrollTo).not.toHaveBeenCalled();
+    expect(focus).not.toHaveBeenCalled();
+    pathname = "/idc";
+    view.rerender(<><RouteTransitionFocus /><main id="main-content" tabIndex={-1} /></>);
+
+    await waitFor(() => expect(scrollTo).toHaveBeenCalledWith({left: 0, top: 0, behavior: "auto"}));
+    expect(focus).toHaveBeenCalledWith({preventScroll: true});
+  });
 });
 
 describe("mobile navigation", () => {
@@ -81,12 +101,13 @@ describe("mobile navigation", () => {
 
   it("closes when the pathname changes while the drawer is open", async () => {
     const user = userEvent.setup();
-    const view = render(<><main id="main-content" tabIndex={-1} /><MobileNavigation /></>);
+    vi.stubGlobal("scrollTo", vi.fn());
+    const view = render(<><RouteTransitionFocus /><main id="main-content" tabIndex={-1} /><MobileNavigation /></>);
     const main = screen.getByRole("main");
     await user.click(screen.getByRole("button", {name: "打开导航菜单"}));
     expect(screen.getByRole("dialog", {name: "网站导航"})).toBeInTheDocument();
     pathname = "/about";
-    view.rerender(<><main id="main-content" tabIndex={-1} /><MobileNavigation /></>);
+    view.rerender(<><RouteTransitionFocus /><main id="main-content" tabIndex={-1} /><MobileNavigation /></>);
     await waitFor(() => expect(screen.queryByRole("dialog", {name: "网站导航"})).not.toBeInTheDocument());
     expect(screen.getByRole("button", {name: "打开导航菜单"})).toBeInTheDocument();
     await waitFor(() => expect(main).toHaveFocus());
