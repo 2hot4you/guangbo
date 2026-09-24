@@ -1,0 +1,12 @@
+{
+  "id": "redesign-homepage-zenmux",
+  "title": "参考 ZenMux 重做首页与通用组件",
+  "status": "in_progress",
+  "complexity": "L+",
+  "risk": "medium",
+  "domain": "frontend",
+  "currentPhase": "planning",
+  "nextAction": "等待用户审阅普通轮播 Banner 与完整 LogoLoop 规格",
+  "createdAt": "2026-09-23T12:12:00Z",
+  "branch": "feat/frontend-foundation"
+}
