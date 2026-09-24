@@ -1,4 +1,7 @@
+import {readFileSync} from "node:fs";
+import {resolve} from "node:path";
 import {act, cleanup, fireEvent, render, screen, within} from "@testing-library/react";
+import postcss from "postcss";
 import {afterEach, describe, expect, it, vi} from "vitest";
 import {LogoLoop} from "@/components/ui/logo-loop";
 
@@ -6,6 +9,15 @@ const logos = [
   {src: "/logos/first.svg", alt: "First logo", title: "First", width: 120, height: 120},
   {src: "/logos/second.svg", alt: "Second logo", title: "Second", width: 120, height: 120},
 ] as const;
+const stylesheet = postcss.parse(readFileSync(resolve(process.cwd(), "src/components/ui/logo-loop.module.css"), "utf8"));
+
+function cssDeclaration(selector: string, property: string) {
+  let value: string | undefined;
+  stylesheet.walkRules(selector, (rule) => {
+    rule.walkDecls(property, (declaration) => { value = declaration.value; });
+  });
+  return value;
+}
 
 afterEach(() => {
   cleanup();
@@ -47,6 +59,43 @@ describe("LogoLoop", () => {
 
     expect(screen.getByRole("region", {name: "Providers"})).toHaveAttribute("data-motion-state", "reduced");
     expect(requestAnimationFrame).not.toHaveBeenCalled();
+  });
+
+  it.each(["up", "down"] as const)("offers a bounded vertical scrolling viewport for %s in reduced motion", (direction) => {
+    vi.stubGlobal("matchMedia", vi.fn(() => ({
+      matches: true,
+      addEventListener: vi.fn(),
+      removeEventListener: vi.fn(),
+    })));
+
+    render(<LogoLoop logos={logos} direction={direction} logoHeight={120} gap={80} ariaLabel="Providers" />);
+
+    const region = screen.getByRole("region", {name: "Providers"});
+    const track = region.firstElementChild as HTMLElement;
+    expect(region).toHaveAttribute("data-direction", direction);
+    expect(region).toHaveAttribute("data-motion-state", "reduced");
+    expect(region.className).toContain("vertical");
+    expect(region.className).toContain("reducedMotion");
+    expect(track.className).toContain("track");
+    expect(cssDeclaration(".vertical.reducedMotion .track", "overflow-y")).toBe("auto");
+    expect(cssDeclaration(".vertical.reducedMotion .track", "height")).toBe("100%");
+    expect(cssDeclaration(".vertical.reducedMotion .track", "max-height")).toBe("100%");
+  });
+
+  it("keeps the horizontal reduced-motion track scrollable", () => {
+    vi.stubGlobal("matchMedia", vi.fn(() => ({
+      matches: true,
+      addEventListener: vi.fn(),
+      removeEventListener: vi.fn(),
+    })));
+
+    render(<LogoLoop logos={logos} direction="left" ariaLabel="Providers" />);
+    const region = screen.getByRole("region", {name: "Providers"});
+    const track = region.firstElementChild as HTMLElement;
+    expect(region).toHaveAttribute("data-motion-state", "reduced");
+    expect(region.className).toContain("horizontal");
+    expect(track.className).toContain("track");
+    expect(cssDeclaration(".reducedMotion .track", "overflow-x")).toBe("auto");
   });
 
   it("cancels the animation frame and disconnects the size observer on unmount", () => {
