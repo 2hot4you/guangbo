@@ -60,11 +60,17 @@ describe("marketing page templates", () => {
     expect(document.querySelector(`.${templateClass}`)).not.toBeNull();
   });
 
-  it("renders the real home hero, three AI capability links, and ordered sections", () => {
+  it("renders five linked hero states and keeps the detailed home sections", () => {
     render(<MarketingPageView page={getPageByPath("/")} />);
+    expect(screen.getAllByRole("heading", {level: 1})).toHaveLength(1);
     expect(screen.getByRole("heading", {level: 1, name: "让大模型走进应用，让创意成为内容"})).toBeInTheDocument();
-    expect(screen.getByRole("link", {name: "探索大模型"})).toHaveAttribute("href", "/ai");
-    expect(screen.getByRole("link", {name: "查看IDC与算力"})).toHaveAttribute("href", "/idc");
+    const heroSlides = screen.getAllByTestId("home-hero-slide");
+    expect(heroSlides.map((slide) => slide.getAttribute("data-domain"))).toEqual([
+      "ai", "compute", "xinchang", "link", "energy",
+    ]);
+    expect(heroSlides.map((slide) => within(slide).getByRole("link").getAttribute("href"))).toEqual([
+      "/ai", "/idc", "/madeinchina", "/network", "/energy",
+    ]);
     expect(screen.getByRole("link", {name: "LLM与多模态理解"})).toHaveAttribute("href", "/ai/llm");
     expect(screen.getByRole("link", {name: "AI图像生成与编辑"})).toHaveAttribute("href", "/ai/image");
     expect(screen.getByRole("link", {name: "AI视频生成与编辑"})).toHaveAttribute("href", "/ai/video");
@@ -73,15 +79,11 @@ describe("marketing page templates", () => {
     expect(screen.getByText(/实际可调用的型号及价格以平台目录为准/)).toBeInTheDocument();
   });
 
-  it("uses the same five-domain taxonomy in the hero graphic and numbered sections", () => {
+  it("uses the same five-domain taxonomy in hero states and numbered sections", () => {
     render(<MarketingPageView page={getPageByPath("/")} />);
 
-    expect(document.querySelector(".home-eyebrow")).toHaveTextContent("AI · COMPUTE · XINCHUANG · LINK · ENERGY");
-    expect([...document.querySelectorAll(".home-signal__label")].map((label) => label.textContent)).toEqual([
+    expect(screen.getAllByTestId("home-hero-slide").map((slide) => slide.getAttribute("data-label"))).toEqual([
       "AI", "COMPUTE", "XINCHUANG", "LINK", "ENERGY",
-    ]);
-    expect([...document.querySelectorAll(".home-domain-strip span")].map((label) => label.textContent)).toEqual([
-      "大模型", "算力", "信创", "专线网络", "清洁能源",
     ]);
     expect(["ai", "idc", "madeinchina", "network", "energy"].map((id) =>
       document.querySelector(`#${id} .home-section__index`)?.textContent,
@@ -170,9 +172,9 @@ describe("marketing page templates", () => {
         for (const section of page.sections) {
           expect(document.getElementById(section.id)).toHaveAttribute("aria-labelledby", `${section.id}-heading`);
           const headingLevel = path === "/" && section.id === "model-ecosystem" ? 3 : 2;
-          expect(screen.getByRole("heading", {level: headingLevel, name: section.title})).toBeInTheDocument();
-          if (section.body) expect(screen.getByText(section.body)).toBeInTheDocument();
           const renderedSection = document.getElementById(section.id);
+          expect(within(renderedSection!).getByRole("heading", {level: headingLevel, name: section.title})).toBeInTheDocument();
+          if (section.body) expect(within(renderedSection!).getByText(section.body)).toBeInTheDocument();
           for (const item of section.items ?? []) {
             expect(within(renderedSection!).getByRole("heading", {level: 3, name: item.title})).toBeInTheDocument();
             expect(within(renderedSection!).getAllByText(item.body, {exact: true}).length).toBeGreaterThan(0);

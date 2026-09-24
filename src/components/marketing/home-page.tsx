@@ -2,6 +2,8 @@ import {ArrowRight, ArrowUpRight} from "lucide-react";
 import Link from "next/link";
 import {getPageByPath} from "@/content";
 import type {ContentSection, MarketingPage, PublicPath} from "@/content";
+import {HomeHeroStory} from "./home-hero-story";
+import type {HomeHeroSlideContent} from "./home-hero-story";
 
 const modelNames = ["DeepSeek", "GLM", "Kimi", "Qwen", "Claude", "Gemini", "GPT", "Grok", "Seedance", "FLUX"];
 const supportingDomains = ["XINCHUANG", "LINK", "ENERGY"] as const;
@@ -58,39 +60,17 @@ export function HomePage({page}: {page: MarketingPage}) {
   const delivery = sectionById(page, "delivery");
   const about = sectionById(page, "about");
   const supporting = ["madeinchina", "network", "energy"].map((id) => sectionById(page, id));
+  const heroSlides = [
+    {index: "01", label: "AI", title: page.hero.title, body: page.hero.lead, href: "/ai", cta: "探索大模型", variant: "ai"},
+    {index: "02", label: "COMPUTE", title: idc.title, body: idc.body!, href: "/idc", cta: "查看IDC与算力", variant: "compute"},
+    {index: "03", label: "XINCHUANG", title: supporting[0].title, body: supporting[0].body!, href: "/madeinchina", cta: "了解信创与数字化", variant: "xinchang"},
+    {index: "04", label: "LINK", title: supporting[1].title, body: supporting[1].body!, href: "/network", cta: "查看专线网络", variant: "link"},
+    {index: "05", label: "ENERGY", title: supporting[2].title, body: supporting[2].body!, href: "/energy", cta: "了解清洁能源", variant: "energy"},
+  ] as const satisfies readonly HomeHeroSlideContent[];
 
   return (
     <>
-      <section aria-labelledby="home-title" className="home-hero">
-        <div className="site-container home-hero__layout">
-          <div className="home-hero__copy">
-            <p className="home-eyebrow">AI · COMPUTE · XINCHUANG · LINK · ENERGY</p>
-            <h1 className="home-hero__title text-balance" id="home-title">{page.hero.title}</h1>
-            <p className="home-hero__lead">{page.hero.lead}</p>
-            <div className="home-hero__actions">
-              <Link className="home-action home-action--primary" href="/ai">
-                探索大模型 <ArrowRight aria-hidden="true" />
-              </Link>
-              <Link className="home-action home-action--secondary" href="/idc">
-                查看IDC与算力 <ArrowRight aria-hidden="true" />
-              </Link>
-            </div>
-          </div>
-          <div aria-hidden="true" className="home-signal">
-            <div className="home-signal__orbit home-signal__orbit--outer" />
-            <div className="home-signal__orbit home-signal__orbit--inner" />
-            <div className="home-signal__core">G</div>
-            <span className="home-signal__label home-signal__label--one">AI</span>
-            <span className="home-signal__label home-signal__label--two">COMPUTE</span>
-            <span className="home-signal__label home-signal__label--three">XINCHUANG</span>
-            <span className="home-signal__label home-signal__label--four">LINK</span>
-            <span className="home-signal__label home-signal__label--five">ENERGY</span>
-          </div>
-        </div>
-        <div aria-label="业务领域" className="site-container home-domain-strip">
-          <span>大模型</span><span>算力</span><span>信创</span><span>专线网络</span><span>清洁能源</span>
-        </div>
-      </section>
+      <HomeHeroStory slides={heroSlides} />
 
       <section aria-labelledby="ai-heading" className="home-section home-ai" id="ai">
         <div className="site-container">
