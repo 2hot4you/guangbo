@@ -1,0 +1,130 @@
+.root {
+  position: relative;
+  max-width: 100%;
+  overflow: clip;
+  isolation: isolate;
+}
+
+.track {
+  display: flex;
+  width: max-content;
+  will-change: transform;
+}
+
+.copy {
+  flex: none;
+}
+
+.list {
+  display: flex;
+  align-items: center;
+  gap: var(--logoloop-gap);
+  width: max-content;
+  margin: 0;
+  padding: 0 var(--logoloop-gap) 0 0;
+  list-style: none;
+}
+
+.item {
+  display: flex;
+  flex: none;
+  align-items: center;
+  justify-content: center;
+  height: var(--logoloop-logo-height);
+  white-space: nowrap;
+  transition: transform 180ms ease;
+}
+
+.item img {
+  display: block;
+  width: auto;
+  max-height: 100%;
+  object-fit: contain;
+}
+
+.horizontal .track {
+  flex-direction: row;
+}
+
+.vertical .track,
+.vertical .list {
+  flex-direction: column;
+  align-items: center;
+}
+
+.vertical {
+  height: calc(var(--logoloop-logo-height) * 3 + var(--logoloop-gap) * 2);
+}
+
+.vertical .list {
+  width: auto;
+  height: max-content;
+  padding: 0 0 var(--logoloop-gap);
+}
+
+.scaleOnHover {
+  padding-block: calc(var(--logoloop-logo-height) * 0.18);
+}
+
+.scaleOnHover .item:hover,
+.scaleOnHover .item:focus-within {
+  transform: scale(1.16);
+}
+
+.fadeOut::before,
+.fadeOut::after {
+  position: absolute;
+  z-index: 1;
+  pointer-events: none;
+  content: "";
+}
+
+.horizontal.fadeOut::before,
+.horizontal.fadeOut::after {
+  top: 0;
+  bottom: 0;
+  width: min(12%, 96px);
+}
+
+.horizontal.fadeOut::before {
+  left: 0;
+  background: linear-gradient(to right, var(--logoloop-fade-color), transparent);
+}
+
+.horizontal.fadeOut::after {
+  right: 0;
+  background: linear-gradient(to left, var(--logoloop-fade-color), transparent);
+}
+
+.vertical.fadeOut::before,
+.vertical.fadeOut::after {
+  right: 0;
+  left: 0;
+  height: min(12%, 96px);
+}
+
+.vertical.fadeOut::before {
+  top: 0;
+  background: linear-gradient(to bottom, var(--logoloop-fade-color), transparent);
+}
+
+.vertical.fadeOut::after {
+  bottom: 0;
+  background: linear-gradient(to top, var(--logoloop-fade-color), transparent);
+}
+
+.reducedMotion .track {
+  width: 100%;
+  overflow-x: auto;
+  transform: none !important;
+  will-change: auto;
+}
+
+.reducedMotion .item {
+  transition: none;
+}
+
+.vertical.reducedMotion .track {
+  overflow-x: hidden;
+  overflow-y: auto;
+}
