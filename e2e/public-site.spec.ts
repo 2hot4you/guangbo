@@ -384,13 +384,25 @@ test("public pages expose no console, auth, payment, fake pricing, or online gen
 });
 
 type HomeHeroDomain = "ai" | "compute" | "xinchang" | "link" | "energy";
+const homeHeroStates: Record<HomeHeroDomain, {title: string; href: string; cta: string; dot: string}> = {
+  ai: {title: "让大模型走进应用，让创意成为内容", href: "/ai", cta: "探索大模型", dot: "AI"},
+  compute: {title: "IDC与算力", href: "/idc", cta: "查看IDC与算力", dot: "COMPUTE"},
+  xinchang: {title: "信创与企业数字化", href: "/madeinchina", cta: "了解信创与数字化", dot: "XINCHUANG"},
+  link: {title: "专线网络", href: "/network", cta: "查看专线网络", dot: "LINK"},
+  energy: {title: "绿电与清洁能源", href: "/energy", cta: "了解清洁能源", dot: "ENERGY"},
+};
 const preservedHomeSections = ["ai", "idc", "madeinchina", "network", "energy", "delivery", "about"] as const;
 
 async function expectActiveHomeHero(page: Page, domain: HomeHeroDomain) {
   const carousel = page.getByRole("region", {name: "光波互联业务轮播"});
+  const state = homeHeroStates[domain];
   await expect(carousel).toHaveAttribute("data-domain", domain);
   await expect(carousel.getByTestId("home-hero-slide")).toHaveCount(1);
-  await expect(carousel.getByRole("navigation", {name: "业务领域进度"}).locator('[aria-current="true"]')).toHaveCount(1);
+  await expect(carousel.getByRole("heading", {level: 1, name: state.title})).toBeVisible();
+  await expect(carousel.getByRole("link", {name: state.cta})).toHaveAttribute("href", state.href);
+  const dots = carousel.getByRole("navigation", {name: "业务领域进度"});
+  await expect(dots.locator('[aria-current="true"]')).toHaveCount(1);
+  await expect(dots.getByRole("button", {name: `转到 ${state.dot} 业务`})).toHaveAttribute("aria-current", "true");
 }
 
 test("desktop and mobile route changes land at the absolute page top", async ({page}) => {
@@ -427,14 +439,15 @@ test("home carousel controls and keyboard navigate all five states", async ({pag
   await expectActiveHomeHero(page, "compute");
   await carousel.getByRole("button", {name: "上一项"}).click();
   await expectActiveHomeHero(page, "ai");
-  await dots.nth(4).click();
-  await expectActiveHomeHero(page, "energy");
+  for (const [index, domain] of [[2, "xinchang"], [3, "link"], [4, "energy"]] as const) {
+    await dots.nth(index).click();
+    await expectActiveHomeHero(page, domain);
+  }
   await carousel.focus();
   await page.keyboard.press("ArrowLeft");
   await expectActiveHomeHero(page, "link");
   await page.keyboard.press("ArrowRight");
   await expectActiveHomeHero(page, "energy");
-  await expect(carousel.getByRole("link", {name: /了解清洁能源/})).toHaveAttribute("href", "/energy");
 });
 
 test("home carousel autoplay advances and pauses for hover, focus and reduced motion", async ({page}) => {
@@ -512,19 +525,46 @@ test("home carousel and logo loop have no horizontal overflow or clipped hover s
     await page.locator("section#ai").scrollIntoViewIfNeeded();
     await expect(page.locator("section#ai")).toBeInViewport();
     await expectNoHorizontalOverflow(page);
-    const providers = page.getByRole("region", {name: "AI Providers"});
-    await providers.scrollIntoViewIfNeeded();
-    const root = await providers.boundingBox();
-    expect(root).not.toBeNull();
-    await page.mouse.move(root!.x + root!.width / 2, root!.y + root!.height / 2);
-    await expect(providers).toHaveAttribute("data-motion-state", "slowed");
-    const hoveredItem = providers.locator("li:hover").first();
-    await expect(hoveredItem).toHaveCount(1);
-    await expect.poll(async () => hoveredItem.evaluate((item) => {
-      const itemBounds = item.getBoundingClientRect();
-      const loopBounds = item.closest('[role="region"]')!.getBoundingClientRect();
-      return itemBounds.top >= loopBounds.top - 1 && itemBounds.bottom <= loopBounds.bottom + 1;
-    })).toBe(true);
+    for (const name of ["AI Providers", "AI Models"]) {
+      const loop = page.getByRole("region", {name});
+      await loop.scrollIntoViewIfNeeded();
+      await page.mouse.move(0, 0);
+      expect(await loop.locator("li").evaluateAll((items) => Math.max(...items.map((item) =>
+        new DOMMatrixReadOnly(getComputedStyle(item).transform).a,
+      ))), `${name}: idle logo scale at ${width}px`).toBeLessThanOrEqual(1.01);
+      const itemIndex = await loop.locator("li").evaluateAll((items) => {
+        const root = items[0].closest('[role="region"]')!.getBoundingClientRect();
+        const center = (root.left + root.right) / 2;
+        return items.map((item, index) => ({index, rect: item.getBoundingClientRect()}))
+          .filter(({rect}) => (rect.left + rect.right) / 2 >= root.left + 2 && (rect.left + rect.right) / 2 <= root.right - 2)
+          .sort((a, b) => Math.abs((a.rect.left + a.rect.right) / 2 - center) - Math.abs((b.rect.left + b.rect.right) / 2 - center))[0]?.index ?? -1;
+      });
+      expect(itemIndex, `${name}: no hoverable logo at ${width}px`).toBeGreaterThanOrEqual(0);
+      const before = await loop.locator("li").nth(itemIndex).boundingBox();
+      expect(before).not.toBeNull();
+      await page.mouse.move(before!.x + before!.width / 2, before!.y + before!.height / 2);
+      await expect(loop).toHaveAttribute("data-motion-state", "slowed");
+      await page.waitForTimeout(220); // scaleOnHover transitions for 180ms
+      const scaledItem = async () => loop.locator("li").evaluateAll((items) => {
+        const loopRect = items[0].closest('[role="region"]')!.getBoundingClientRect();
+        return items.flatMap((element) => {
+          const logo = element as HTMLElement;
+          const rect = logo.getBoundingClientRect();
+          const scale = new DOMMatrixReadOnly(getComputedStyle(logo).transform).a;
+          return scale > 1.15 && rect.right > loopRect.left && rect.left < loopRect.right
+            ? [{scale, widthRatio: rect.width / logo.offsetWidth, heightRatio: rect.height / logo.offsetHeight,
+              top: rect.top, bottom: rect.bottom, loopTop: loopRect.top, loopBottom: loopRect.bottom}]
+            : [];
+        })[0] ?? null;
+      });
+      await expect.poll(scaledItem, {message: `${name}: hover scale at ${width}px`}).not.toBeNull();
+      const enlarged = (await scaledItem())!;
+      expect(enlarged.scale, `${name}: hover scale at ${width}px`).toBeGreaterThan(1.15);
+      expect(enlarged.widthRatio).toBeGreaterThan(1.15);
+      expect(enlarged.heightRatio).toBeGreaterThan(1.15);
+      expect(enlarged.top, `${name}: clipped at top at ${width}px`).toBeGreaterThanOrEqual(enlarged.loopTop - 1);
+      expect(enlarged.bottom, `${name}: clipped at bottom at ${width}px`).toBeLessThanOrEqual(enlarged.loopBottom + 1);
+    }
     await expectNoHorizontalOverflow(page);
   }
 });
@@ -541,7 +581,8 @@ test("logo loop exposes exact settings and only the two original catalog lists",
     await expect(loop).toHaveAttribute("data-hover-speed", "80");
     await expect(loop.getByRole("listitem")).toHaveCount(count);
     expect(await loop.locator("ul").count()).toBeGreaterThan(1);
-    expect(await loop.locator('[aria-hidden="true"][inert]').count()).toBeGreaterThanOrEqual(1);
+    expect(await loop.locator('[aria-hidden="true"]').count()).toBeGreaterThanOrEqual(1);
+    expect(await loop.locator('[aria-hidden="true"] [inert]').count()).toBeGreaterThanOrEqual(1);
     const vars = await loop.evaluate((element) => ({
       logoHeight: element.style.getPropertyValue("--logoloop-logo-height"),
       gap: element.style.getPropertyValue("--logoloop-gap"),
