@@ -139,8 +139,10 @@ describe("distinct business landing pages", () => {
     expect(within(document.getElementById("carbon")!).getByText(/服务边界/)).toBeInTheDocument();
     expect(within(document.getElementById("energy-hero")!).getByRole("list", {name: "首屏用能路径"}).querySelectorAll("li")).toHaveLength(4);
     expect(within(document.getElementById("energy-hero")!).queryByText("地区 · 规模 · 负荷 · 目标")).not.toBeInTheDocument();
-    const placeholder = within(document.getElementById("energy-hero")!).getByRole("figure", {name: "清洁能源项目视觉占位"});
-    expect(within(placeholder).getByText("项目图片尚待确认")).toBeInTheDocument();
+    const hero = document.getElementById("energy-hero")!;
+    expect(within(hero).getByRole("figure", {name: "清洁能源抽象图形"})).toBeEmptyDOMElement();
+    expect(hero).not.toHaveTextContent(/视觉占位|图片尚待确认/);
+    expect(renderToStaticMarkup(<EnergyLandingPage page={energy} />)).not.toMatch(/视觉占位|图片尚待确认/);
   });
 
   it("tells the company story without inventing a contact method", () => {

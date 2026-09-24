@@ -223,6 +223,37 @@
 .idcNodePower { bottom: 8%; left: 9%; animation-delay: -3.6s; }
 .idcNodeCooling { top: 31%; left: -4%; animation-delay: -4.8s; }
 
+.energyHeroArtwork {
+  position: relative;
+  display: grid;
+  min-width: 0;
+  min-height: clamp(12rem, 28vw, 26rem);
+  overflow: hidden;
+  place-items: center;
+  margin: 0;
+  border: 1px solid #080808;
+  background: radial-gradient(circle at center, rgb(217 255 67 / 0.12), transparent 52%),
+    repeating-linear-gradient(90deg, transparent 0 2.5rem, rgb(255 255 255 / 0.07) 2.5rem calc(2.5rem + 1px)),
+    #080808;
+}
+.energyHeroArtwork::before {
+  width: min(58%, 11rem);
+  aspect-ratio: 1;
+  border: 1px solid var(--accent);
+  border-radius: 50%;
+  box-shadow: 0 0 0 2.25rem rgb(217 255 67 / 0.12), 0 0 0 4.5rem rgb(217 255 67 / 0.05);
+  content: "";
+}
+.energyHeroArtwork::after {
+  position: absolute;
+  width: min(20%, 4rem);
+  aspect-ratio: 1;
+  border-radius: 50%;
+  background: var(--accent);
+  box-shadow: 0 0 2.5rem rgb(217 255 67 / 0.45);
+  content: "";
+}
+
 .numberedList { margin: 0; padding: 0; list-style: none; border-top: 1px solid color-mix(in srgb, currentColor 24%, transparent); }
 .numberedItem { display: grid; grid-template-columns: 3rem minmax(0, 1fr); gap: clamp(1rem, 3vw, 3rem); padding-block: 1.65rem; border-bottom: 1px solid color-mix(in srgb, currentColor 24%, transparent); }
 .number,
