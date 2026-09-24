@@ -20,7 +20,7 @@ export function IdcLandingPage({page}: {page: MarketingPage}) {
 
   return (
     <div className="idc-landing min-w-0 overflow-x-clip" data-landing-page="idc">
-      <LandingHero id="hero" eyebrow="IDC / 基础设施资源矩阵" title={page.hero.title} lead={page.hero.lead} tone="dark" layout="split" visualPosition="start">
+      <LandingHero id="hero" eyebrow="IDC / 基础设施资源矩阵" title={page.hero.title} lead={page.hero.lead} tone="light" layout="split" visualPosition="start">
         <figure aria-label="IDC五层基础设施动态示意" className={`${styles.heroGraphicFigure} ${styles.idcHeroGraphic}`}>
           <figcaption className={styles.idcGraphicCaption}>
             <span>INFRASTRUCTURE / 05 LAYERS</span>
@@ -40,16 +40,16 @@ export function IdcLandingPage({page}: {page: MarketingPage}) {
         </figure>
       </LandingHero>
 
-      <LandingSection id={services.id} number="01" eyebrow="SERVICE MATRIX" title={services.title} body={services.body} tone="light">
-        <div className="grid border-t border-black/25 md:grid-cols-2 xl:grid-cols-4">
+      <LandingSection id={services.id} number="01" eyebrow="SERVICE MATRIX" title={services.title} body={services.body} tone="dark">
+        <div className="grid border-t border-white/25 md:grid-cols-2 xl:grid-cols-4">
           {services.items?.map((item, index) => (
-            <article className="min-w-0 border-b border-black/25 px-0 py-8 md:border-r md:px-6 md:first:pl-0 xl:last:border-r-0" key={item.title}>
-              <span className="mb-12 block font-mono text-xs text-black/65">RESOURCE / 0{index + 1}</span>
+            <article className="min-w-0 border-b border-white/25 px-0 py-8 md:border-r md:px-6 md:first:pl-0 xl:last:border-r-0" key={item.title}>
+              <span className="mb-12 block font-mono text-xs text-white/65">RESOURCE / 0{index + 1}</span>
               <h3 className="mb-5 text-2xl font-semibold tracking-tight">
                 {item.href ? <Link className={styles.textLink} href={item.href}>{item.title}</Link> : item.title}
               </h3>
-              <p className="mb-8 leading-7 text-black/75">{item.body}</p>
-              {item.meta && <p className="border-t border-black/20 pt-4 text-sm leading-6 text-black/60">选型重点：{item.meta}</p>}
+              <p className="mb-8 leading-7 text-white/75">{item.body}</p>
+              {item.meta && <p className="border-t border-white/20 pt-4 text-sm leading-6 text-white/70">选型重点：{item.meta}</p>}
             </article>
           ))}
         </div>

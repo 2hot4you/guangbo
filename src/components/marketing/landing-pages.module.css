@@ -167,11 +167,11 @@
 .aiNodeImage { right: 0; bottom: 27%; animation-delay: -2s; }
 .aiNodeVideo { bottom: 7%; left: 8%; animation-delay: -4s; }
 
-.idcHeroGraphic { border-color: rgb(255 255 255 / 0.32); }
-.idcGraphicCaption { max-width: 31rem; color: rgb(255 255 255 / 0.68); font-size: 0.86rem; line-height: 1.7; }
-.idcGraphicCaption span { display: block; margin-bottom: 0.45rem; color: var(--accent); font: 700 0.68rem/1.4 ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace; letter-spacing: 0.12em; }
+.idcHeroGraphic { border-color: rgb(0 0 0 / 0.32); }
+.idcGraphicCaption { max-width: 31rem; color: rgb(0 0 0 / 0.68); font-size: 0.86rem; line-height: 1.7; }
+.idcGraphicCaption span { display: block; width: fit-content; margin-bottom: 0.45rem; padding: 0.2rem 0.4rem; background: #050505; color: var(--accent); font: 700 0.68rem/1.4 ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace; letter-spacing: 0.12em; }
 .idcInfrastructureGraphic {
-  border: 1px solid rgb(255 255 255 / 0.2);
+  border: 1px solid rgb(0 0 0 / 0.2);
   border-radius: 50%;
   background: radial-gradient(circle at 50% 50%, rgb(217 255 67 / 0.08), transparent 52%);
 }
@@ -183,21 +183,21 @@
   left: 50%;
   width: 72%;
   height: 1px;
-  background: rgb(255 255 255 / 0.16);
+  background: rgb(0 0 0 / 0.16);
   content: "";
   transform: translate(-50%, -50%) rotate(32deg);
 }
 .idcInfrastructureGraphic::after { transform: translate(-50%, -50%) rotate(-38deg); }
 .idcOrbitOuter {
   inset: 6%;
-  border: 1px dashed rgb(255 255 255 / 0.3);
+  border: 1px dashed rgb(0 0 0 / 0.3);
   border-right-color: var(--accent);
   border-radius: 50%;
   animation: heroOrbitSpin 30s linear infinite;
 }
 .idcOrbitInner {
   inset: 28%;
-  border: 1px solid rgb(217 255 67 / 0.58);
+  border: 1px solid rgb(0 0 0 / 0.45);
   border-left-color: transparent;
   border-radius: 50%;
   animation: heroOrbitSpin 18s linear infinite reverse;
@@ -216,7 +216,7 @@
   font-size: 1rem;
   animation: heroCenteredPulse 4.5s ease-in-out infinite;
 }
-.infrastructureNode { border: 1px solid rgb(255 255 255 / 0.34); background: #080808; color: #fff; padding: 0.5rem 0.72rem; }
+.infrastructureNode { border: 1px solid rgb(0 0 0 / 0.34); background: #080808; color: #fff; padding: 0.5rem 0.72rem; }
 .idcNodeCompute { top: 5%; left: 37%; }
 .idcNodeStorage { top: 28%; right: -2%; animation-delay: -1.2s; }
 .idcNodeNetwork { right: 5%; bottom: 15%; animation-delay: -2.4s; }

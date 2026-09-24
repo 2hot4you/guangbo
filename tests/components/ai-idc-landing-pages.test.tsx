@@ -9,6 +9,12 @@ import {idc} from "@/content/pages/idc";
 afterEach(cleanup);
 
 describe("distinct AI and IDC landing pages", () => {
+  it("uses a light IDC hero and moves emphasis to the service matrix", () => {
+    render(<IdcLandingPage page={idc} />);
+    expect(document.getElementById("hero")).toHaveAttribute("data-tone", "light");
+    expect(document.getElementById("service-matrix")).toHaveAttribute("data-tone", "dark");
+  });
+
   it.each([
     {name: "AI", page: ai, Component: AiLandingPage, rootClass: "ai-landing"},
     {name: "IDC", page: idc, Component: IdcLandingPage, rootClass: "idc-landing"},

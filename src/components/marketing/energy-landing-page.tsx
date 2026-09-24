@@ -6,7 +6,7 @@ export function EnergyLandingPage({page}: {page: MarketingPage}) {
 
   return (
     <div data-landing-page={page.key}>
-      <LandingHero id="energy-hero" eyebrow="ENERGY / ENTERPRISE PATH" title={page.hero.title} lead={page.hero.lead} tone="accent" compact>
+      <LandingHero id="energy-hero" eyebrow="ENERGY / ENTERPRISE PATH" title={page.hero.title} lead={page.hero.lead} tone="light" compact>
         <div className="mt-6 grid min-w-0 gap-4 lg:grid-cols-[minmax(0,1.25fr)_minmax(0,1fr)]">
           <figure aria-label="首屏企业用能路径" className="min-w-0 border-y border-current/35 py-3">
             <ol aria-label="首屏用能路径" className="m-0 grid list-none grid-cols-2 gap-3 p-0">
@@ -23,7 +23,7 @@ export function EnergyLandingPage({page}: {page: MarketingPage}) {
         </div>
       </LandingHero>
 
-      <LandingSection id={inputs.id} title={inputs.title} body={inputs.body} number="01">
+      <LandingSection id={inputs.id} title={inputs.title} body={inputs.body} number="01" tone="accent">
         <figure aria-label="企业用能输入资料" className="energy-flow border-y border-current/20 py-7">
           <ol className="m-0 grid list-none gap-4 p-0 md:grid-cols-4">
             {[
@@ -32,7 +32,7 @@ export function EnergyLandingPage({page}: {page: MarketingPage}) {
               ["历史负荷", "准备负荷曲线和生产计划，梳理用电变化。"],
               ["绿色用能目标", "说明绿电、绿证或节能项目方向，明确评估重点。"],
             ].map(([title, detail], index) => (
-              <li className="min-w-0 border-l-2 border-lime-500 py-3 pl-4 md:border-l-0 md:border-t-2 md:pl-0 md:pt-5" key={title}>
+              <li className="min-w-0 border-l-2 border-black/60 py-3 pl-4 md:border-l-0 md:border-t-2 md:pl-0 md:pt-5" key={title}>
                 <span aria-hidden="true" className="font-mono text-xs opacity-65">0{index + 1}</span>
                 <h3 className="mt-3 text-xl font-semibold">{title}</h3>
                 <p className="mt-2 text-sm opacity-65">{detail}</p>

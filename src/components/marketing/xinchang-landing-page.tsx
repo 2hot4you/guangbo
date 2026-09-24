@@ -6,21 +6,21 @@ export function XinchangLandingPage({page}: {page: MarketingPage}) {
 
   return (
     <div data-landing-page={page.key}>
-      <LandingHero id="madeInChina-hero" eyebrow="XINCHUANG / SYSTEM BLUEPRINT" title={page.hero.title} lead={page.hero.lead} tone="dark">
-        <figure aria-label="企业系统四层架构蓝图" className="mt-12 border border-white/30">
+      <LandingHero id="madeInChina-hero" eyebrow="XINCHUANG / SYSTEM BLUEPRINT" title={page.hero.title} lead={page.hero.lead} tone="light">
+        <figure aria-label="企业系统四层架构蓝图" className="mt-12 border border-black/30">
           <ol className="m-0 grid list-none grid-cols-2 p-0 md:grid-cols-4">
             {layers.items?.map((item, index) => (
-              <li className="min-w-0 border-b border-white/25 px-4 py-4 md:border-b-0" key={item.title}>
-                <span className="font-mono text-xs text-lime-300">L{index + 1}</span>
+              <li className="min-w-0 border-b border-black/25 px-4 py-4 md:border-b-0" key={item.title}>
+                <span className="inline-block bg-black px-1.5 py-0.5 font-mono text-xs text-[var(--accent)]">L{index + 1}</span>
                 <strong className="mt-2 block text-lg font-semibold">{item.title}</strong>
               </li>
             ))}
           </ol>
-          <figcaption className="border-t border-white/25 px-5 py-3 text-sm text-white/65">架构概览：从接入到基础设施，按业务范围组合验证。</figcaption>
+          <figcaption className="border-t border-black/25 px-5 py-3 text-sm text-black/65">架构概览：从接入到基础设施，按业务范围组合验证。</figcaption>
         </figure>
       </LandingHero>
 
-      <LandingSection id={diagnostic.id} title={diagnostic.title} body={diagnostic.body} number="01" tone="muted">
+      <LandingSection id={diagnostic.id} title={diagnostic.title} body={diagnostic.body} number="01" tone="dark">
         <NumberedList label="需求诊断次序" items={[
           {title: "识别现有环境", body: "盘点已有系统、使用角色与部署位置。"},
           {title: "确认业务问题", body: "找出需要新建、连接或迁移的流程。"},

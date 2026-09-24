@@ -58,7 +58,7 @@ const toneClass: Record<LandingTone, string> = {
 
 export function LandingHero({id, title, lead, eyebrow, children, className = "", tone = "light", layout = "stacked", visualPosition = "end", compact = false}: LandingHeroProps) {
   return (
-    <section aria-labelledby={`${id}-heading`} className={`${styles.hero} ${toneClass[tone]} ${compact ? styles.heroCompact : ""} ${className}`} data-content-module id={id}>
+    <section aria-labelledby={`${id}-heading`} className={`${styles.hero} ${toneClass[tone]} ${compact ? styles.heroCompact : ""} ${className}`} data-content-module data-tone={tone} id={id}>
       <div className={`${styles.container} ${layout === "split" ? styles.heroSplit : ""} ${layout === "split" && visualPosition === "start" ? styles.heroSplitVisualStart : ""}`}>
         <div className={styles.heroCopy}>
           {eyebrow && <p className={styles.eyebrow}>{eyebrow}</p>}
@@ -73,7 +73,7 @@ export function LandingHero({id, title, lead, eyebrow, children, className = "",
 
 export function LandingSection({id, title, body, eyebrow, number, children, className = "", tone = "light"}: LandingSectionProps) {
   return (
-    <section aria-labelledby={`${id}-heading`} className={`${styles.section} ${toneClass[tone]} ${className}`} data-content-module id={id}>
+    <section aria-labelledby={`${id}-heading`} className={`${styles.section} ${toneClass[tone]} ${className}`} data-content-module data-tone={tone} id={id}>
       <div className={styles.container}>
         <div className={styles.sectionHead}>
           {(number || eyebrow) && <p className={styles.eyebrow}>{[number, eyebrow].filter(Boolean).join(" / ")}</p>}

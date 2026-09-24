@@ -8,18 +8,18 @@ export function NetworkLandingPage({page}: {page: MarketingPage}) {
 
   return (
     <div data-landing-page={page.key}>
-      <LandingHero id="network-hero" eyebrow="NETWORK / CONNECTION ROUTE" title={page.hero.title} lead={page.hero.lead} tone="dark">
-        <figure aria-label="首屏站点连接路径" className="mt-14 border-y border-white/30 py-6 text-white">
+      <LandingHero id="network-hero" eyebrow="NETWORK / CONNECTION ROUTE" title={page.hero.title} lead={page.hero.lead} tone="light">
+        <figure aria-label="首屏站点连接路径" className="mt-14 border-y border-black/30 py-6 text-black">
           <ol aria-label="首屏连接概览" className="m-0 grid list-none grid-cols-3 gap-3 p-0">
             {["业务站点", "接入与传输", "目标业务"].map((station) => (
-              <li className="min-w-0 border-t-2 border-lime-300 pt-4 text-base leading-relaxed md:text-xl" key={station}>{station}</li>
+              <li className="min-w-0 border-t-2 border-black/70 pt-4 text-base leading-relaxed md:text-xl" key={station}>{station}</li>
             ))}
           </ol>
-          <figcaption className="mt-5 text-sm text-white/65">站点路径示意：接入与传输方式按具体线路条件确认。</figcaption>
+          <figcaption className="mt-5 text-sm text-black/65">站点路径示意：接入与传输方式按具体线路条件确认。</figcaption>
         </figure>
       </LandingHero>
 
-      <LandingSection id={products.id} title={products.title} number="01">
+      <LandingSection id={products.id} title={products.title} number="01" tone="dark">
         <NumberedList label="连接产品类型" items={products.items ?? []} />
       </LandingSection>
 

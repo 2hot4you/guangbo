@@ -18,6 +18,17 @@ const pages = [
 ] as const;
 
 describe("distinct business landing pages", () => {
+  it.each([
+    {Component: XinchangLandingPage, page: madeInChina, hero: "madeInChina-hero", first: "diagnostic", firstTone: "dark"},
+    {Component: NetworkLandingPage, page: network, hero: "network-hero", first: "products", firstTone: "dark"},
+    {Component: EnergyLandingPage, page: energy, hero: "energy-hero", first: "inputs", firstTone: "accent"},
+    {Component: AboutLandingPage, page: about, hero: "about-hero", first: "identity", firstTone: "dark"},
+  ])("uses a light hero and moves emphasis to the first section", ({Component, page, hero, first, firstTone}) => {
+    render(<Component page={page} />);
+    expect(document.getElementById(hero)).toHaveAttribute("data-tone", "light");
+    expect(document.getElementById(first)).toHaveAttribute("data-tone", firstTone);
+  });
+
   it.each(pages)("renders the $name content as one h1 and nine addressable modules", ({page, Component, ids}) => {
     render(<Component page={page} />);
 

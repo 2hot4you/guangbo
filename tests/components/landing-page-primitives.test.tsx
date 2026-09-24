@@ -28,6 +28,20 @@ describe("landing page primitives", () => {
     expect(document.getElementById("workflow")).toHaveAttribute("aria-labelledby", "workflow-heading");
     expect(screen.getByRole("heading", {level: 2, name: "工作流程"})).toBeInTheDocument();
     expect(document.querySelectorAll("[data-content-module]")).toHaveLength(2);
+    expect(document.getElementById("intro")).toHaveAttribute("data-tone", "light");
+    expect(document.getElementById("workflow")).toHaveAttribute("data-tone", "light");
+  });
+
+  it("exposes explicit hero and section tones in the DOM", () => {
+    render(
+      <>
+        <LandingHero id="dark-hero" title="深色首屏" lead="说明" tone="dark" />
+        <LandingSection id="accent-section" title="强调内容" tone="accent" />
+      </>,
+    );
+
+    expect(document.getElementById("dark-hero")).toHaveAttribute("data-tone", "dark");
+    expect(document.getElementById("accent-section")).toHaveAttribute("data-tone", "accent");
   });
 
   it("keeps placeholder labels and descriptions readable in server HTML", () => {
