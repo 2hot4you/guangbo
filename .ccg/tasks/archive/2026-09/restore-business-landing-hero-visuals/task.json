@@ -1,0 +1,12 @@
+{
+  "id": "restore-business-landing-hero-visuals",
+  "title": "补回信创、专线与绿电内页 Banner 圆形动效",
+  "status": "completed",
+  "complexity": "M",
+  "risk": "medium",
+  "domain": "frontend",
+  "currentPhase": "completed",
+  "nextAction": "归档任务",
+  "createdAt": "2026-09-25T01:45:00+08:00",
+  "branch": "feat/frontend-foundation"
+}
