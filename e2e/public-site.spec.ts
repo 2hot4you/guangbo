@@ -266,14 +266,17 @@ test("AI and IDC hero graphics animate unless reduced motion is requested", asyn
   }
 });
 
-test("energy mobile hero keeps its overview and labelled placeholder compact", async ({page}) => {
+test("energy mobile hero keeps its overview and finished abstract figure compact", async ({page}) => {
   await page.setViewportSize({width: 360, height: 900});
   await page.goto("/energy");
   const hero = await page.locator("#energy-hero").boundingBox();
-  const placeholder = await page.getByRole("figure", {name: "清洁能源项目视觉占位"}).boundingBox();
+  const artwork = page.getByRole("figure", {name: "清洁能源抽象图形"});
+  await expect(artwork).toBeVisible();
+  const figure = await artwork.boundingBox();
   expect(hero!.height).toBeLessThanOrEqual(1000);
-  expect(placeholder!.y + placeholder!.height).toBeLessThanOrEqual(900);
-  await expect(page.getByText("项目图片尚待确认", {exact: true})).toBeVisible();
+  expect(figure!.y + figure!.height).toBeLessThanOrEqual(900);
+  await expect(page.getByRole("figure", {name: "清洁能源项目视觉占位"})).toHaveCount(0);
+  await expect(page.getByText("项目图片尚待确认", {exact: true})).toHaveCount(0);
 });
 
 test("AI and IDC content links offer 44px targets with working padded hit areas", async ({page}) => {
