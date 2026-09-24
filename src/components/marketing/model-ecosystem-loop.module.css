@@ -1,0 +1,62 @@
+.ecosystem {
+  min-width: 0;
+  overflow: clip;
+  background: #080808;
+  color: #fff;
+}
+
+.lane {
+  min-width: 0;
+  min-height: 176px;
+  overflow: clip;
+  border-top: 1px solid #353535;
+  padding-block: 1rem;
+}
+
+.lane:last-child {
+  border-bottom: 1px solid #353535;
+}
+
+.label {
+  margin: 0 0 0.5rem;
+  padding-inline: clamp(1rem, 4vw, 4rem);
+  color: #b9b9b9;
+  font: 700 0.72rem/1.2 ui-monospace, SFMono-Regular, Menlo, monospace;
+  letter-spacing: 0.12em;
+}
+
+.loop :global(li) {
+  height: 184px;
+}
+
+.mark {
+  display: flex;
+  width: 144px;
+  min-height: 160px;
+  flex-direction: column;
+  align-items: center;
+  justify-content: flex-start;
+  background: transparent;
+  text-align: center;
+}
+
+.mark img {
+  display: block;
+  width: 120px;
+  height: 120px;
+  flex: none;
+  object-fit: contain;
+}
+
+.name {
+  display: -webkit-box;
+  max-width: 144px;
+  overflow: hidden;
+  margin-top: 8px;
+  color: #f4f4f4;
+  font-size: 0.8rem;
+  line-height: 1rem;
+  white-space: normal;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+}
