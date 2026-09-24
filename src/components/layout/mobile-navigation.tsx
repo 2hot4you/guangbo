@@ -5,20 +5,22 @@ import {ChevronDown, Menu} from "lucide-react";
 import Link from "next/link";
 import {usePathname} from "next/navigation";
 import {useState} from "react";
-import {navigationGroups} from "@/content";
+import {getNavigationHref, navigationGroups} from "@/content";
 import type {PublicPath} from "@/content";
+import {useNavigationHash} from "./route-transition-focus";
 
 export function MobileNavigation({currentPath}: {currentPath?: PublicPath}) {
   const pathname = usePathname();
   const activePath = currentPath ?? pathname;
-  return <MobileNavigationContent activePath={activePath} key={`${pathname}:${activePath}`} />;
+  const hash = useNavigationHash();
+  return <MobileNavigationContent activePath={activePath} hash={hash} key={`${pathname}:${activePath}`} />;
 }
 
-function MobileNavigationContent({activePath}: {activePath: string}) {
+function MobileNavigationContent({activePath, hash}: {activePath: string; hash: string}) {
   const [isOpen, setIsOpen] = useState(false);
   const [expanded, setExpanded] = useState<Record<string, boolean>>(() => {
     const currentGroup = navigationGroups.find(
-      (item) => item.kind === "group" && item.children.some((child) => child.path === activePath),
+      (item) => item.kind === "group" && (item.overviewPath === activePath || item.columns.some((column) => column.links.some((child) => child.path === activePath))),
     );
     return currentGroup?.kind === "group" ? {[currentGroup.overviewPath]: true} : {};
   });
@@ -92,28 +94,36 @@ function MobileNavigationContent({activePath}: {activePath: string}) {
                             <ChevronDown aria-hidden="true" className={`size-4 transition-transform ${isExpanded ? "rotate-180" : ""}`} />
                           </Button>
                         </div>
-                        <ul
+                        <div
                           className="ml-4 border-l border-divider pl-2"
                           hidden={!isExpanded}
                           id={`mobile-children-${item.overviewPath.slice(1)}`}
                         >
-                            {item.children.map((child) => {
-                              const current = activePath === child.path;
-                              return (
-                                <li key={child.path}>
-                                  <Link
-                                    aria-current={current ? "page" : undefined}
-                                    className="mobile-nav__link link flex min-h-11 items-center px-3 text-sm"
-                                    data-current={current || undefined}
-                                    href={child.path}
-                                    onClick={closeMenu}
-                                  >
-                                    {child.label}
-                                  </Link>
-                                </li>
-                              );
-                            })}
-                        </ul>
+                          {item.columns.map((column) => (
+                            <div key={column.heading}>
+                              <h3 className="px-3 pt-4 pb-1 text-xs font-semibold text-muted">{column.heading}</h3>
+                              <ul>
+                                {column.links.map((child) => {
+                                  const href = getNavigationHref(child);
+                                  const current = activePath === child.path && (!child.sectionId || hash === `#${child.sectionId}`);
+                                  return (
+                                    <li key={href}>
+                                      <Link
+                                        aria-current={current ? child.sectionId ? "location" : "page" : undefined}
+                                        className="mobile-nav__link link flex min-h-11 items-center px-3 text-sm"
+                                        data-current={current || undefined}
+                                        href={href}
+                                        onClick={closeMenu}
+                                      >
+                                        {child.label}
+                                      </Link>
+                                    </li>
+                                  );
+                                })}
+                              </ul>
+                            </div>
+                          ))}
+                        </div>
                       </li>
                     );
                   })}

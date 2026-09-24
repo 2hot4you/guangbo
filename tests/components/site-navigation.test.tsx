@@ -1,4 +1,4 @@
-import {cleanup, render, screen, waitFor, within} from "@testing-library/react";
+import {act, cleanup, fireEvent, render, screen, waitFor, within} from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import {afterEach, describe, expect, it, vi} from "vitest";
 import {MobileNavigation} from "@/components/layout/mobile-navigation";
@@ -6,6 +6,7 @@ import {RouteTransitionFocus} from "@/components/layout/route-transition-focus";
 import {DesktopNavigation} from "@/components/layout/desktop-navigation";
 import {SiteHeader} from "@/components/layout/site-header";
 import {SiteFooter} from "@/components/layout/site-footer";
+import {LandingSection} from "@/components/marketing/landing-page-primitives";
 
 let pathname = "/";
 vi.mock("next/navigation", () => ({usePathname: () => pathname}));
@@ -14,10 +15,59 @@ afterEach(() => {
   cleanup();
   vi.restoreAllMocks();
   vi.unstubAllGlobals();
+  vi.useRealTimers();
+  window.history.replaceState(null, "", "/");
   pathname = "/";
 });
 
 describe("route transitions", () => {
+  it("focuses a same-route Link hash when history changes without hashchange", async () => {
+    pathname = "/energy";
+    window.history.replaceState(null, "", "/energy");
+    const user = userEvent.setup();
+    render(<><RouteTransitionFocus /><a href="/energy#solar" onClick={(event) => {
+      event.preventDefault();
+      window.history.pushState(null, "", "/energy#solar");
+    }}>前往光伏</a><LandingSection id="solar" title="分布式光伏" /></>);
+    const solar = document.getElementById("solar")!;
+    solar.scrollIntoView = vi.fn();
+    await user.click(screen.getByRole("link", {name: "前往光伏"}));
+    await waitFor(() => expect(solar).toHaveFocus());
+  });
+
+  it("focuses a cross-route hash section without resetting to the page top", async () => {
+    const scrollTo = vi.fn();
+    const scrollIntoView = vi.fn();
+    vi.stubGlobal("scrollTo", scrollTo);
+    const view = render(<RouteTransitionFocus />);
+    window.history.pushState(null, "", "/energy#solar");
+    pathname = "/energy";
+    view.rerender(<><RouteTransitionFocus /><LandingSection id="solar" title="分布式光伏" /></>);
+    const target = document.getElementById("solar")!;
+    target.scrollIntoView = scrollIntoView;
+    await waitFor(() => expect(target).toHaveFocus());
+    expect(scrollIntoView).toHaveBeenCalledWith({block: "start", behavior: "auto"});
+    expect(scrollTo).not.toHaveBeenCalled();
+  });
+
+  it("waits for a delayed hash target and responds to same-route hash changes", async () => {
+    vi.stubGlobal("scrollTo", vi.fn());
+    window.history.replaceState(null, "", "/energy#solar");
+    pathname = "/energy";
+    const view = render(<RouteTransitionFocus />);
+    view.rerender(<><RouteTransitionFocus /><LandingSection id="solar" title="分布式光伏" /><LandingSection id="storage" title="储能" /></>);
+    const solar = document.getElementById("solar")!;
+    solar.scrollIntoView = vi.fn();
+    const storage = document.getElementById("storage")!;
+    storage.scrollIntoView = vi.fn();
+    await waitFor(() => expect(solar).toHaveFocus());
+    act(() => {
+      window.history.pushState(null, "", "/energy#storage");
+      window.dispatchEvent(new HashChangeEvent("hashchange"));
+    });
+    await waitFor(() => expect(storage).toHaveFocus());
+  });
+
   it("focuses main without scrolling it and resets a changed route to the absolute top", async () => {
     const scrollTo = vi.fn();
     vi.stubGlobal("scrollTo", scrollTo);
@@ -106,6 +156,23 @@ describe("route transitions", () => {
 });
 
 describe("mobile navigation", () => {
+  it("renders five industry disclosures with grouped hash links and only one current section", async () => {
+    window.history.replaceState(null, "", "/madeinchina#local-ai");
+    const errors = vi.spyOn(console, "error");
+    const user = userEvent.setup();
+    render(<MobileNavigation currentPath="/madeinchina" />);
+    await user.click(screen.getByRole("button", {name: "打开导航菜单"}));
+    const navigation = screen.getByRole("navigation", {name: "移动导航"});
+    expect(within(navigation).getAllByRole("button", {name: /子菜单/})).toHaveLength(5);
+    expect(within(navigation).getByRole("heading", {name: "产品与服务"})).toBeInTheDocument();
+    expect(within(navigation).getByRole("heading", {name: "解决方案"})).toBeInTheDocument();
+    const current = within(navigation).getByRole("link", {name: "本地 AI 部署"});
+    expect(current).toHaveAttribute("href", "/madeinchina#local-ai");
+    expect(current).toHaveAttribute("aria-current", "location");
+    expect(navigation.querySelectorAll('a[href*="#"][aria-current]')).toHaveLength(1);
+    expect(errors).not.toHaveBeenCalled();
+  });
+
   it("shows Home first from the shared primary navigation and marks it current", async () => {
     const user = userEvent.setup();
     render(<MobileNavigation currentPath="/" />);
@@ -197,6 +264,16 @@ describe("mobile navigation", () => {
 });
 
 describe("desktop navigation", () => {
+  it("dismisses a hovered panel with Escape even when focus is outside navigation", async () => {
+    const user = userEvent.setup();
+    render(<DesktopNavigation />);
+    await user.hover(screen.getByRole("link", {name: "大模型与AIGC"}));
+    const toggle = screen.getByRole("button", {name: "收起大模型与AIGC子菜单"});
+    await user.keyboard("{Escape}");
+    expect(toggle).toHaveAttribute("aria-expanded", "false");
+    expect(toggle).toHaveFocus();
+  });
+
   it("shows Home as its first direct link and marks it current on the home page", () => {
     render(<DesktopNavigation currentPath="/" />);
     const navigation = screen.getByRole("navigation", {name: "主导航"});
@@ -206,13 +283,69 @@ describe("desktop navigation", () => {
     expect(firstLink).toHaveAttribute("aria-current", "page");
   });
 
-  it("lays out top-level sections as direct links without overview menus", () => {
+  it("keeps overview links separate and every panel link mounted but unavailable while closed", () => {
     render(<DesktopNavigation currentPath="/ai/llm" />);
     expect(screen.getByRole("link", {name: "大模型与AIGC"})).toHaveAttribute("href", "/ai");
     expect(screen.getByRole("link", {name: "IDC与算力"})).toHaveAttribute("href", "/idc");
-    expect(screen.queryByRole("button", {name: /菜单/})).not.toBeInTheDocument();
+    expect(screen.getAllByRole("button", {name: /子菜单/})).toHaveLength(5);
+    const panel = document.getElementById("desktop-panel-madeinchina")!;
+    expect(panel).toHaveStyle({visibility: "hidden", pointerEvents: "none"});
+    expect(panel).toHaveAttribute("inert");
+    expect(panel.querySelector('a[href="/madeinchina#local-ai"]')).toBeInTheDocument();
+    expect(screen.queryByRole("link", {name: "本地 AI 部署"})).not.toBeInTheDocument();
     expect(screen.queryByText(/总览/)).not.toBeInTheDocument();
     expect(document.querySelector('a[href="/console"]')).toBeNull();
+  });
+
+  it("opens on hover, keeps one panel open, and cancels delayed close when entering its panel", () => {
+    vi.useFakeTimers();
+    render(<DesktopNavigation />);
+    const ai = screen.getByRole("link", {name: "大模型与AIGC"}).closest("li")!;
+    const idc = screen.getByRole("link", {name: "IDC与算力"}).closest("li")!;
+    fireEvent.mouseEnter(ai);
+    expect(document.getElementById("desktop-panel-ai")).toHaveStyle({visibility: "visible"});
+    fireEvent.mouseLeave(ai);
+    act(() => vi.advanceTimersByTime(100));
+    fireEvent.mouseEnter(document.getElementById("desktop-panel-ai")!);
+    act(() => vi.advanceTimersByTime(180));
+    expect(document.getElementById("desktop-panel-ai")).toHaveStyle({visibility: "visible"});
+    fireEvent.mouseEnter(idc);
+    expect(document.getElementById("desktop-panel-ai")).toHaveStyle({visibility: "hidden"});
+    expect(document.getElementById("desktop-panel-idc")).toHaveStyle({visibility: "visible"});
+    fireEvent.mouseLeave(idc);
+    act(() => vi.advanceTimersByTime(179));
+    expect(document.getElementById("desktop-panel-idc")).toHaveStyle({visibility: "visible"});
+    act(() => vi.advanceTimersByTime(1));
+    expect(document.getElementById("desktop-panel-idc")).toHaveStyle({visibility: "hidden"});
+  });
+
+  it("opens on keyboard focus, tabs into links, and closes with Escape returning to its button", async () => {
+    const user = userEvent.setup();
+    render(<DesktopNavigation />);
+    act(() => screen.getByRole("link", {name: "大模型与AIGC"}).focus());
+    const toggle = screen.getByRole("button", {name: "收起大模型与AIGC子菜单"});
+    await user.tab();
+    expect(toggle).toHaveFocus();
+    await user.tab();
+    expect(screen.getByRole("link", {name: "LLM与多模态理解"})).toHaveFocus();
+    await user.keyboard("{Escape}");
+    expect(toggle).toHaveFocus();
+    expect(toggle).toHaveAttribute("aria-expanded", "false");
+    await user.tab();
+    expect(screen.getByRole("link", {name: "IDC与算力"})).toHaveFocus();
+  });
+
+  it("supports touch-style button clicks and closes after route changes", () => {
+    const view = render(<DesktopNavigation />);
+    const toggle = screen.getByRole("button", {name: "展开全国专线租赁子菜单"});
+    fireEvent.click(toggle);
+    expect(toggle).toHaveAttribute("aria-expanded", "true");
+    fireEvent.click(toggle);
+    expect(toggle).toHaveAttribute("aria-expanded", "false");
+    fireEvent.click(toggle);
+    pathname = "/network";
+    view.rerender(<DesktopNavigation />);
+    expect(screen.getByRole("button", {name: "展开全国专线租赁子菜单"})).toHaveAttribute("aria-expanded", "false");
   });
 
   it("uses aria state and styling instead of visible current-section labels", () => {

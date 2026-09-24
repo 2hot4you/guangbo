@@ -73,7 +73,7 @@ export function LandingHero({id, title, lead, eyebrow, children, className = "",
 
 export function LandingSection({id, title, body, eyebrow, number, children, className = "", tone = "light"}: LandingSectionProps) {
   return (
-    <section aria-labelledby={`${id}-heading`} className={`${styles.section} ${toneClass[tone]} ${className}`} data-content-module data-tone={tone} id={id}>
+    <section aria-labelledby={`${id}-heading`} className={`${styles.section} ${toneClass[tone]} ${className}`} data-content-module data-tone={tone} id={id} tabIndex={-1}>
       <div className={styles.container}>
         <div className={styles.sectionHead}>
           {(number || eyebrow) && <p className={styles.eyebrow}>{[number, eyebrow].filter(Boolean).join(" / ")}</p>}
