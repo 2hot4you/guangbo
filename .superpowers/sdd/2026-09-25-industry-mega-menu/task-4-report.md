@@ -25,4 +25,23 @@
 ## Concerns
 
 - No confirmed product defect from this browser pass. The first targeted run failed two tests because the locator used the button's changing “收起” label after Escape; the locator now uses stable `aria-controls`, and the rerun passed 14/14.
-- This report covers browser acceptance and the listed static checks. Other integration gates are owned by the main task.
+
+## Review repair — browser acceptance
+
+- Hash landing now requires focused target sections to intersect the viewport below the sticky header, with their top within 8px of the computed `scroll-margin-top` position. This closes the earlier offscreen false-positive gap.
+- The test collects 36 hash hrefs from the rendered Header, checks 12 unique hrefs per industry, and verifies each resolves to exactly one `data-content-module` section. A real Header deep-link click is exercised on desktop and mobile for each of the three industries, in addition to the cross-route and same-route examples.
+- Hover continuity uses coordinate-driven mouse movement across the trigger/panel boundary, with 70ms and 90ms pauses on either side and a 250ms dwell after entering the panel. Desktop tests also check panel mutual exclusion, absence of a modal overlay or scroll lock, exposed main content, and no overflow while open.
+- Mobile coverage now checks that `/energy#solar` opens with the Energy group expanded, the overview marked `aria-current="page"`, the Solar link marked `aria-current="location"`, and no overflow while the Drawer is open.
+- The server-rendered Header assertion now checks all 36 industry hash hrefs as well as the seven AI/IDC detail hrefs. A reduced-motion browser check verifies that the open menu's trigger icon has no animation and a transition duration at or below 1ms under the site's global reduced-motion rule.
+
+### Review repair verification
+
+- Targeted `pnpm exec playwright test e2e/public-site.spec.ts --grep 'mega menu|industry hubs' --reporter=line`: **24/24 passed** across desktop and mobile Chromium projects.
+- First complete `pnpm test:e2e -- --reporter=line`: **109/110 passed**. The pre-existing mobile carousel autoplay pause assertion expected `ai` but observed `compute`; this was an assertion failure, not a trace artifact error. Its isolated desktop/mobile rerun passed **2/2**. A second complete run passed **110/110**.
+- `pnpm typecheck`, `pnpm exec eslint e2e/public-site.spec.ts`, and `git diff --check`: **passed**.
+- No product-code change was made. The one-off carousel autoplay failure was not reproduced by the focused rerun or complete rerun; it remains a possible timing flake outside this feature's E2E changes.
+
+### Complete integration gate evidence from the main task
+
+- Main agent completed `pnpm verify`: **174 unit tests passed**, typecheck passed, repository lint passed, and production build generated **18 static pages**.
+- Original Task 4 complete E2E run passed **100/100**. The main agent's later complete rerun had **98 passes plus 2 trace artifact `ENOENT` errors**; those two tests passed **2/2** when rerun separately. The strengthened suite's complete rerun passed **110/110** as recorded above.

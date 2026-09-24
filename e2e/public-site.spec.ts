@@ -10,6 +10,11 @@ const topLevelPaths = ["/ai", "/idc", "/madeinchina", "/network", "/energy", "/a
 const topLevelPathSet = new Set<string>(topLevelPaths);
 const sampledPaths = ["/", "/ai/llm", "/idc/colocation", ...topLevelPaths] as const;
 const viewportWidths = [360, 768, 1280, 1440] as const;
+const industryGroups = [
+  {path: "/madeinchina", label: "信创与企业数字化"},
+  {path: "/network", label: "全国专线租赁"},
+  {path: "/energy", label: "绿电与清洁能源"},
+] as const;
 
 async function expectNoHorizontalOverflow(page: import("@playwright/test").Page) {
   const overflow = await page.evaluate(() => {
@@ -202,18 +207,72 @@ test("mega menu spans the desktop viewport and stays open while hovering into it
   await page.setViewportSize({width: 1440, height: 900});
   await page.goto("/");
   const nav = page.getByRole("navigation", {name: "主导航"});
-  await nav.getByRole("link", {name: "全国专线租赁", exact: true}).hover();
+  const trigger = nav.getByRole("link", {name: "全国专线租赁", exact: true});
+  const triggerBounds = await trigger.boundingBox();
+  expect(triggerBounds).not.toBeNull();
+  const crossingX = triggerBounds!.x + triggerBounds!.width / 2;
+  await page.mouse.move(crossingX, triggerBounds!.y + triggerBounds!.height / 2);
   const panel = page.locator("#desktop-panel-network");
   await expect(panel).toBeVisible();
   const bounds = await panel.boundingBox();
   expect(bounds).not.toBeNull();
   expect(Math.abs(bounds!.x), "panel left edge").toBeLessThanOrEqual(1);
   expect(Math.abs(bounds!.width - 1440), "panel viewport width").toBeLessThanOrEqual(1);
-  await panel.getByRole("link", {name: "OTN 三层传输"}).hover();
+  await page.mouse.move(crossingX, bounds!.y - 3, {steps: 6});
+  await page.waitForTimeout(70);
+  await page.mouse.move(crossingX, bounds!.y + 4, {steps: 4});
+  await page.waitForTimeout(90);
+  const childBounds = await panel.getByRole("link", {name: "OTN 三层传输"}).boundingBox();
+  expect(childBounds).not.toBeNull();
+  await page.mouse.move(childBounds!.x + childBounds!.width / 2, childBounds!.y + childBounds!.height / 2, {steps: 12});
   await page.waitForTimeout(250); // Beyond the 180ms leave delay.
   await expect(panel).toBeVisible();
+  await expectNoHorizontalOverflow(page);
   await page.mouse.move(0, 600);
   await expect(panel).toBeHidden();
+});
+
+test("mega menu panels are mutually exclusive and leave page scrolling and content exposed", async ({page}) => {
+  await page.setViewportSize({width: 1440, height: 900});
+  await page.goto("/");
+  const nav = page.getByRole("navigation", {name: "主导航"});
+  const initialOverflow = await page.evaluate(() => ({
+    html: getComputedStyle(document.documentElement).overflowY,
+    body: getComputedStyle(document.body).overflowY,
+  }));
+  await nav.getByRole("link", {name: "全国专线租赁", exact: true}).hover();
+  await expect(page.locator("#desktop-panel-network")).toBeVisible();
+  await nav.getByRole("link", {name: "大模型与AIGC", exact: true}).hover();
+  await expect(page.locator("#desktop-panel-ai")).toBeVisible();
+  await expect(page.locator("#desktop-panel-network")).toBeHidden();
+  await expect(page.locator(".site-nav__panel:visible")).toHaveCount(1);
+  await expect(page.locator('[aria-modal="true"]:visible')).toHaveCount(0);
+  expect(await page.evaluate(() => ({
+    html: getComputedStyle(document.documentElement).overflowY,
+    body: getComputedStyle(document.body).overflowY,
+  }))).toEqual(initialOverflow);
+  const contentExposed = await page.evaluate(() => {
+    const panel = document.querySelector("#desktop-panel-ai")!.getBoundingClientRect();
+    const y = Math.min(window.innerHeight - 10, panel.bottom + 20);
+    return Boolean(document.elementFromPoint(20, y)?.closest("main"));
+  });
+  expect(contentExposed, "main content below the panel is not covered by an overlay").toBe(true);
+  await expectNoHorizontalOverflow(page);
+});
+
+test("mega menu follows the reduced motion preference", async ({page}) => {
+  await page.setViewportSize({width: 1440, height: 900});
+  await page.emulateMedia({reducedMotion: "reduce"});
+  await page.goto("/");
+  await page.getByRole("navigation", {name: "主导航"})
+    .getByRole("link", {name: "全国专线租赁", exact: true}).hover();
+  await expect(page.locator("#desktop-panel-network")).toBeVisible();
+  const motion = await page.locator('button[aria-controls="desktop-panel-network"] svg').evaluate((icon) => {
+    const style = getComputedStyle(icon);
+    return {animation: style.animationName, transitionSeconds: Math.max(...style.transitionDuration.split(",").map((duration) => parseFloat(duration)))};
+  });
+  expect(motion.animation).toBe("none");
+  expect(motion.transitionSeconds).toBeLessThanOrEqual(0.001);
 });
 
 test("mega menu Tab reaches child links and Escape returns focus to its trigger", async ({page}) => {
@@ -277,15 +336,80 @@ test("mega menu mobile Drawer exposes all five industry groups and closes on Esc
   await expect(drawer).toBeHidden();
 });
 
+test("mega menu mobile Drawer defaults to the current industry with active hash state and no overflow", async ({page}) => {
+  await page.setViewportSize({width: 390, height: 844});
+  await page.goto("/energy#solar");
+  await page.getByRole("button", {name: "打开导航菜单"}).click();
+  const drawer = page.getByRole("dialog", {name: "网站导航"});
+  await expect(drawer).toBeVisible();
+  await expect(drawer.getByRole("link", {name: "绿电与清洁能源", exact: true})).toHaveAttribute("aria-current", "page");
+  await expect(drawer.locator('button[aria-controls="mobile-children-energy"]')).toHaveAttribute("aria-expanded", "true");
+  await expect(drawer.getByRole("link", {name: "分布式光伏"})).toHaveAttribute("aria-current", "location");
+  await expectNoHorizontalOverflow(page);
+});
+
 async function expectHashTargetClearOfHeader(page: Page, id: string) {
   const target = page.locator(`#${id}`);
   await expect(target).toBeFocused();
   await expect.poll(async () => {
-    const section = await target.boundingBox();
-    const header = await page.locator(".site-header").boundingBox();
-    return section && header ? section.y - (header.y + header.height) : -1;
-  }, {message: `${id} should land below the sticky header`}).toBeGreaterThanOrEqual(0);
+    return target.evaluate((section) => {
+      const bounds = section.getBoundingClientRect();
+      const header = document.querySelector(".site-header")!.getBoundingClientRect();
+      const margin = parseFloat(getComputedStyle(section).scrollMarginTop);
+      return bounds.top >= header.bottom - 1
+        && bounds.top < window.innerHeight
+        && bounds.bottom > header.bottom
+        && Math.abs(bounds.top - margin) <= 8;
+    });
+  }, {message: `${id} should be visible below the sticky header at its scroll margin`}).toBe(true);
 }
+
+test("industry hubs every Header hash href resolves to exactly one real section", async ({page}) => {
+  await page.setViewportSize({width: 1440, height: 900});
+  await page.goto("/");
+  const hrefs = await page.locator('.site-header .site-nav__panel a[href*="#"]').evaluateAll((links) =>
+    links.map((link) => link.getAttribute("href")!),
+  );
+  expect(hrefs).toHaveLength(36);
+  expect(new Set(hrefs).size).toBe(36);
+  for (const {path} of industryGroups) {
+    const targets = hrefs.filter((href) => href.startsWith(`${path}#`));
+    expect(targets, `${path} Header hashes`).toHaveLength(12);
+    await page.goto(path);
+    for (const href of targets) {
+      const id = href.slice(path.length + 1);
+      await expect(page.locator(`[id="${id}"]`), `${href} unique target`).toHaveCount(1);
+      await expect(page.locator(`section[data-content-module][id="${id}"]`), `${href} content module`).toHaveCount(1);
+    }
+  }
+});
+
+test("industry hubs each industry has a working desktop and mobile Header deep link", async ({page}) => {
+  await page.setViewportSize({width: 1440, height: 900});
+  await page.goto("/");
+  const hrefs = await page.locator('.site-header .site-nav__panel a[href*="#"]').evaluateAll((links) =>
+    links.map((link) => link.getAttribute("href")!),
+  );
+  for (const width of [1440, 390]) {
+    await page.setViewportSize({width, height: 900});
+    for (const {path, label} of industryGroups) {
+      const href = hrefs.find((candidate) => candidate.startsWith(`${path}#`))!;
+      await page.goto("/");
+      if (width === 1440) {
+        await page.getByRole("navigation", {name: "主导航"}).getByRole("link", {name: label, exact: true}).hover();
+        await page.locator(`.site-nav__panel a[href="${href}"]`).click();
+      } else {
+        await page.getByRole("button", {name: "打开导航菜单"}).click();
+        const drawer = page.getByRole("dialog", {name: "网站导航"});
+        await drawer.locator(`button[aria-controls="mobile-children-${path.slice(1)}"]`).click();
+        await drawer.locator(`a[href="${href}"]`).click();
+        await expect(drawer).toBeHidden();
+      }
+      await expect(page).toHaveURL(new URL(href, page.url()).href);
+      await expectHashTargetClearOfHeader(page, href.slice(path.length + 1));
+    }
+  }
+});
 
 test("industry hubs deep links focus visible targets across and within routes", async ({page}) => {
   await page.setViewportSize({width: 1440, height: 900});
@@ -337,6 +461,13 @@ test("mega menu child destinations are present in server-rendered header HTML", 
   expect(header).toContain('href="/idc/bare-metal"');
   expect(header).toContain('href="/idc/colocation"');
   expect(header).toContain('href="/idc/gpu"');
+  const industryHrefs = [...header.matchAll(/href="(\/(?:madeinchina|network|energy)#[^"]+)"/g)]
+    .map((match) => match[1]);
+  expect(industryHrefs).toHaveLength(36);
+  expect(new Set(industryHrefs).size).toBe(36);
+  for (const {path} of industryGroups) {
+    expect(industryHrefs.filter((href) => href.startsWith(`${path}#`)), `${path} SSR hashes`).toHaveLength(12);
+  }
 });
 
 test("dark footer links and home energy link have contrasting keyboard outlines", async ({page}) => {
