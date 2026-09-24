@@ -90,3 +90,15 @@
 
 - 规格确认后按 L+ 任务再次并行调用 antigravity 与 Claude analyzer，分别请求文件影响、响应式、动画、可访问性、目录生成、性能与测试分析。
 - 当前主机仍缺少 `/Users/naf/.claude/bin/codeagent-wrapper`，两路 analyzer 均退出 127；实施计划已在本地按独立文件所有权、TDD 与分层依赖拆分，并要求完成后进行双重内部回退审查。
+
+## 普通轮播与完整 LogoLoop 最终审查
+
+- 首页 sticky story 已替换为五业务普通轮播，支持 6000ms 自动播放、左右按钮、五个圆点、方向键和真实 Pointer/Touch 横滑；纵向触控保持原生页面滚动。
+- 模型生态已替换为完整 Provider 136 / Model 72 双轨 LogoLoop；Provider 向左、Model 向右，速度 160px/s、hover/focus 80px/s、Logo 高 120px、gap 80px，并开启渐隐和 1.16 hover scale。
+- LobeHub 目录固定为 `@lobehub/icons@5.21.0`，本地 manifest 与包内分类逐项一致；彩色资源失败时回退单色，单色资源在深色背景上使用独立高对比处理，再失败保留名称。
+- 外部 antigravity 与 Claude reviewer 在最终审查阶段再次并行调用；两路均因缺少 `/Users/naf/.claude/bin/codeagent-wrapper` 退出 127。
+- 两个独立内部 reviewer 分别完成工程和 UI/交互审查。修复项包括：CTA 连续键盘切换时保持焦点、单色 Logo 深色背景可见性、390×600 AI 圆形节点、hover scale 的 12px 上下安全空间和真实 CDP 触控回归。
+- 最终 scoped re-review 对五个修复项全部给出 ADDRESSED，未发现新的 Critical 或 Important。
+- 新鲜完整验证：Vitest 14 个测试文件、153 项测试通过；TypeScript、ESLint、生产构建通过；Next.js 静态生成 18 页；Playwright 桌面与移动共 84 项通过；本地首页返回 HTTP 200；`git diff --check` 通过。
+- 唯一延期项是通用 LogoLoop 在运行时动态切换横向/纵向方向时可能保留一帧旧轴 transform；首页两条轨道方向固定，不存在触发路径。
+- Spec Evolution：本轮未修改 `.ccg/spec/frontend/index.md`；焦点保持和单色图标处理属于当前轮播/LogoLoop 组件的专项实现与测试约束。
