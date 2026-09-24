@@ -62,7 +62,11 @@ function DesktopNavigationContent({activePath, hash}: {activePath: string; hash:
   }, [openPath]);
 
   return (
-    <nav aria-label="主导航" className="site-nav hidden xl:block">
+    <nav
+      aria-label="主导航"
+      className="site-nav hidden xl:block"
+      onKeyDownCapture={() => { pointerFocus.current = false; }}
+    >
       <ul className="flex items-center gap-1">
         {navigationGroups.map((item) => {
           const path = item.kind === "group" ? item.overviewPath : item.path;
@@ -77,8 +81,14 @@ function DesktopNavigationContent({activePath, hash}: {activePath: string; hash:
             <li
               key={path}
               className="site-nav__group"
-              onMouseEnter={() => item.kind === "group" ? open(path) : close()}
-              onMouseLeave={scheduleClose}
+              onPointerEnter={(event) => {
+                if (event.pointerType !== "mouse") return;
+                if (item.kind === "group") open(path);
+                else close();
+              }}
+              onPointerLeave={(event) => {
+                if (event.pointerType === "mouse") scheduleClose();
+              }}
               onFocus={() => {
                 if (!returningFocus.current && !pointerFocus.current) {
                   if (item.kind === "group") open(path);
@@ -106,9 +116,13 @@ function DesktopNavigationContent({activePath, hash}: {activePath: string; hash:
                     aria-label={`${isOpen ? "收起" : "展开"}${item.label}子菜单`}
                     className="site-nav__trigger inline-flex min-h-11 w-6 items-center justify-center"
                     onPointerDown={() => { pointerFocus.current = true; }}
-                    onPointerUp={() => { pointerFocus.current = false; }}
                     onPointerCancel={() => { pointerFocus.current = false; }}
-                    onClick={() => isOpen ? close() : open(path)}
+                    onClick={() => {
+                      // Touch compatibility focus follows pointerup, before click.
+                      pointerFocus.current = false;
+                      if (isOpen) close();
+                      else open(path);
+                    }}
                     ref={(button) => { buttons.current[path] = button; }}
                     type="button"
                   >
@@ -122,7 +136,9 @@ function DesktopNavigationContent({activePath, hash}: {activePath: string; hash:
                   className="site-nav__panel"
                   id={panelId}
                   inert={!isOpen}
-                  onMouseEnter={() => open(path)}
+                  onPointerEnter={(event) => {
+                    if (event.pointerType === "mouse") open(path);
+                  }}
                   style={{visibility: isOpen ? "visible" : "hidden", pointerEvents: isOpen ? "auto" : "none"}}
                 >
                   <div className="site-container site-nav__columns">

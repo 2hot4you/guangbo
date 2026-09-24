@@ -51,3 +51,30 @@ Implemented the desktop disclosure navigation, mobile grouped navigation, and ha
 - Production build and browser validation are deferred to the integration gate: check full-width geometry/no horizontal overflow, physical touch input, and real Next Link cross-route and same-route hash focus with Drawer focus restoration.
 - Vite emits the existing native config-loader warning; it does not affect focused test results.
 - No changes were made to CCG workflow state, unrelated files, or other agents' work.
+
+## Fix round 1 — W1 touch activation
+
+### Change
+
+Addressed the review's reproduced first-tap failure. Desktop hover now uses pointer enter/leave handlers restricted to `pointerType === "mouse"`, so compatibility mouse events emitted after a touch cannot open the panel. Pointer-induced focus remains suppressed through pointerup until click completes; pointer cancellation or keyboard input resets that suppression. Each click therefore toggles once, while mouse hover, keyboard focus and Escape retain their behavior.
+
+Changed only `desktop-navigation.tsx`, `site-navigation.test.tsx`, and this report. Existing hover timing assertions now dispatch mouse pointer events, matching the browser event boundary.
+
+### RED / GREEN
+
+- RED: added the full `pointerenter(touch) → pointerdown(touch) → pointerup(touch) → mouseover → mousedown → focusin → mouseup → click` regression sequence. `pnpm test tests/components/site-navigation.test.tsx` failed at the first-tap assertion: expected `aria-expanded="true"`, received `"false"`; 23 passed / 1 failed.
+- GREEN: after the fix, the same focused command passed 24/24, including first tap open and second tap close, mouse hover/delayed close, keyboard focus/Tab, and Escape.
+
+### Validation
+
+- `pnpm test tests/components/site-navigation.test.tsx`: **PASS**, 24/24.
+- `pnpm test`: **PASS**, 174/174 across 14 files. The earlier seven industry-page failures have been resolved by the parallel integration work; this task did not modify those files.
+- `pnpm typecheck`: **PASS**.
+- `pnpm lint`: **PASS**.
+- `git diff --check`: **PASS**.
+- Real Chrome via Playwright, 1440×1000 and `hasTouch: true`: **PASS**. Two actual `tap()` calls leave the network disclosure expanded then collapsed. Subsequent mouse hover opens the AI disclosure, and Escape closes it and focuses its button.
+- The default Playwright bundled Chromium executable was absent; the browser verification used the installed Chrome channel successfully without installing dependencies.
+
+### Remaining concerns
+
+No remaining W1 issue observed. Full production build and the complete e2e suite remain the lead agent's integration checks. The existing Vite native-loader warning remains informational.

@@ -302,17 +302,17 @@ describe("desktop navigation", () => {
     render(<DesktopNavigation />);
     const ai = screen.getByRole("link", {name: "大模型与AIGC"}).closest("li")!;
     const idc = screen.getByRole("link", {name: "IDC与算力"}).closest("li")!;
-    fireEvent.mouseEnter(ai);
+    fireEvent.pointerEnter(ai, {pointerType: "mouse"});
     expect(document.getElementById("desktop-panel-ai")).toHaveStyle({visibility: "visible"});
-    fireEvent.mouseLeave(ai);
+    fireEvent.pointerLeave(ai, {pointerType: "mouse"});
     act(() => vi.advanceTimersByTime(100));
-    fireEvent.mouseEnter(document.getElementById("desktop-panel-ai")!);
+    fireEvent.pointerEnter(document.getElementById("desktop-panel-ai")!, {pointerType: "mouse"});
     act(() => vi.advanceTimersByTime(180));
     expect(document.getElementById("desktop-panel-ai")).toHaveStyle({visibility: "visible"});
-    fireEvent.mouseEnter(idc);
+    fireEvent.pointerEnter(idc, {pointerType: "mouse"});
     expect(document.getElementById("desktop-panel-ai")).toHaveStyle({visibility: "hidden"});
     expect(document.getElementById("desktop-panel-idc")).toHaveStyle({visibility: "visible"});
-    fireEvent.mouseLeave(idc);
+    fireEvent.pointerLeave(idc, {pointerType: "mouse"});
     act(() => vi.advanceTimersByTime(179));
     expect(document.getElementById("desktop-panel-idc")).toHaveStyle({visibility: "visible"});
     act(() => vi.advanceTimersByTime(1));
@@ -335,7 +335,26 @@ describe("desktop navigation", () => {
     expect(screen.getByRole("link", {name: "IDC与算力"})).toHaveFocus();
   });
 
-  it("supports touch-style button clicks and closes after route changes", () => {
+  it("toggles once per touch tap despite compatibility mouse and focus events", () => {
+    render(<DesktopNavigation />);
+    const toggle = screen.getByRole("button", {name: "展开全国专线租赁子菜单"});
+    function tap() {
+      fireEvent.pointerEnter(toggle, {pointerType: "touch"});
+      fireEvent.pointerDown(toggle, {pointerType: "touch"});
+      fireEvent.pointerUp(toggle, {pointerType: "touch"});
+      fireEvent.mouseOver(toggle);
+      fireEvent.mouseDown(toggle);
+      fireEvent.focusIn(toggle);
+      fireEvent.mouseUp(toggle);
+      fireEvent.click(toggle, {pointerType: "touch"});
+    }
+    tap();
+    expect(toggle).toHaveAttribute("aria-expanded", "true");
+    tap();
+    expect(toggle).toHaveAttribute("aria-expanded", "false");
+  });
+
+  it("supports button clicks and closes after route changes", () => {
     const view = render(<DesktopNavigation />);
     const toggle = screen.getByRole("button", {name: "展开全国专线租赁子菜单"});
     fireEvent.click(toggle);
