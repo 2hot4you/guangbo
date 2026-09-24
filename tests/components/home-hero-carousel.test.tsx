@@ -12,6 +12,14 @@ const slides = [
   {index: "05", label: "ENERGY", title: "绿电与清洁能源", body: "能源支持增长。", href: "/energy", cta: "了解清洁能源", variant: "energy"},
 ] as const satisfies readonly HomeHeroSlideContent[];
 
+const visualNodeSets = {
+  AI: ["LLM", "IMAGE", "VIDEO"],
+  COMPUTE: ["COMPUTE", "STORAGE", "NETWORK", "POWER", "COOLING"],
+  XINCHUANG: ["HARDWARE", "SYSTEM", "APP", "DATA"],
+  LINK: ["SITE", "ACCESS", "TRANSIT", "TARGET"],
+  ENERGY: ["LOAD", "GREEN", "STORAGE", "CONTROL"],
+} as const;
+
 let motionMatches = false;
 let motionListener: ((event: MediaQueryListEvent) => void) | undefined;
 
@@ -54,6 +62,17 @@ describe("home hero carousel", () => {
     expect(heading()).toHaveTextContent("大模型与AIGC");
     expect(screen.getByRole("link", {name: /探索大模型/})).toHaveAttribute("href", "/ai");
     expect(html).toContain("大模型与AIGC");
+  });
+
+  it("uses English-only labels inside every business visual", () => {
+    render(<HomeHeroCarousel slides={slides} />);
+
+    for (const [label, expectedNodes] of Object.entries(visualNodeSets)) {
+      fireEvent.click(screen.getByRole("button", {name: `转到 ${label} 业务`}));
+      const figure = screen.getByRole("figure", {name: `${label}业务动态图形`});
+      expect(within(figure).getAllByRole("listitem").map((item) => item.textContent)).toEqual(expectedNodes);
+    }
+    expect(screen.getAllByRole("heading", {level: 1})).toHaveLength(1);
   });
 
   it("moves next and previous through all five states and wraps both ways", () => {

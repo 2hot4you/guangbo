@@ -4,9 +4,9 @@ import type {HomeHeroVariant} from "./home-hero-types";
 const visualNodes = {
   ai: ["LLM", "IMAGE", "VIDEO"],
   compute: ["COMPUTE", "STORAGE", "NETWORK", "POWER", "COOLING"],
-  xinchang: ["硬件", "系统", "应用", "数据"],
-  link: ["站点", "接入", "传输", "目标"],
-  energy: ["负荷", "绿电", "储能", "管理"],
+  xinchang: ["HARDWARE", "SYSTEM", "APP", "DATA"],
+  link: ["SITE", "ACCESS", "TRANSIT", "TARGET"],
+  energy: ["LOAD", "GREEN", "STORAGE", "CONTROL"],
 } as const;
 
 const visualLabels: Record<HomeHeroVariant, string> = {

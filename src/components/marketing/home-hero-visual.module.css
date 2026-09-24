@@ -101,14 +101,15 @@
 @keyframes hero-path-travel { to { offset-distance: 100%; } }
 
 @media (max-width: 39.99rem) {
-  .visualNode { min-width: 3.25rem; min-height: 3.25rem; font-size: 0.56rem; }
+  .visualNode { min-width: 3.25rem; min-height: 3.25rem; font-size: 0.625rem; }
+  .compute .visualNode { width: 26%; padding: 0.25rem; }
 }
 
 @media (max-width: 39.99rem) and (max-height: 38rem) {
   .visual { width: min(78vw, 19rem); aspect-ratio: 3; }
   .visualRing { inset: 5% 1%; }
   .visualRingInner { inset: 20% 12%; }
-  .visualNode { top: 22%; right: auto; bottom: auto; width: 2.7rem; height: 2.7rem; min-width: 0; min-height: 0; aspect-ratio: 1; padding: 0.2rem; font-size: 0.65rem; }
+  .visualNode { top: 22%; right: auto; bottom: auto; width: 2.7rem; height: 2.7rem; min-width: 0; min-height: 0; aspect-ratio: 1; padding: 0.2rem; font-size: 0.65rem; line-height: 1; }
   .ai .visualNode { width: 3.1rem; height: 3.1rem; }
   .ai .visualRing { inset: auto; top: 50%; left: 55%; width: 4.5rem; height: 4.5rem; translate: -50% -50%; }
   .ai .visualCore { inset: auto; top: 50%; left: 55%; width: 1.1rem; height: 1.1rem; translate: -50% -50%; box-shadow: 0 0 0 0.25rem #111; }
@@ -116,23 +117,23 @@
   .ai .visualNode:nth-child(1) { top: 10%; left: 7%; width: 3.1rem; }
   .ai .visualNode:nth-child(2) { top: 28%; left: 31%; width: 3.1rem; }
   .ai .visualNode:nth-child(3) { top: 10%; right: 7%; left: auto; width: 3.1rem; }
-  .compute .visualNode { top: 26%; width: 2.7rem; height: 2.7rem; font-size: 0.62rem; }
+  .compute .visualNode { top: 20%; width: 3.3rem; height: 3.3rem; font-size: 0.62rem; }
   .compute .visualNode:nth-child(1) { top: 26%; left: 1%; }
   .compute .visualNode:nth-child(2) { top: 26%; left: 21%; }
   .compute .visualNode:nth-child(3) { top: 26%; right: auto; left: 41%; }
   .compute .visualNode:nth-child(4) { top: 26%; left: 61%; }
   .compute .visualNode:nth-child(5) { top: 26%; left: 81%; }
-  .xinchang .visualNode { width: 2.7rem; height: 2.7rem; }
+  .xinchang .visualNode { width: 3.5rem; height: 3.5rem; }
   .xinchang .visualNode:nth-child(1) { top: 9%; left: 3%; }
   .xinchang .visualNode:nth-child(2) { top: 30%; right: auto; left: 28%; }
   .xinchang .visualNode:nth-child(3) { top: 9%; left: 53%; }
   .xinchang .visualNode:nth-child(4) { top: 30%; right: auto; bottom: auto; left: 78%; }
-  .link .visualNode { top: 23%; width: 2.7rem; height: 2.7rem; }
+  .link .visualNode { top: 13%; width: 3.5rem; height: 3.5rem; }
   .link .visualNode:nth-child(1) { left: 3%; }
   .link .visualNode:nth-child(2) { left: 28%; }
   .link .visualNode:nth-child(3) { left: 53%; }
   .link .visualNode:nth-child(4) { right: auto; left: 78%; }
-  .energy .visualNode { top: 22%; width: 2.7rem; height: 2.7rem; }
+  .energy .visualNode { top: 17%; width: 3.5rem; height: 3.5rem; }
   .energy .visualNode:nth-child(1) { top: 9%; left: 3%; }
   .energy .visualNode:nth-child(2) { top: 30%; right: auto; left: 28%; }
   .energy .visualNode:nth-child(3) { top: 9%; bottom: auto; left: 53%; }

@@ -570,6 +570,48 @@ test("home carousel AI nodes remain circular at 390 by 600", async ({page}) => {
   }
 });
 
+test("home carousel keeps infrastructure banners neutral and English visual nodes contained", async ({page}) => {
+  const visualNodes = {
+    COMPUTE: ["COMPUTE", "STORAGE", "NETWORK", "POWER", "COOLING"],
+    XINCHUANG: ["HARDWARE", "SYSTEM", "APP", "DATA"],
+    LINK: ["SITE", "ACCESS", "TRANSIT", "TARGET"],
+    ENERGY: ["LOAD", "GREEN", "STORAGE", "CONTROL"],
+  } as const;
+
+  await page.emulateMedia({reducedMotion: "reduce"});
+  for (const viewport of [{width: 1440, height: 900}, {width: 390, height: 844}, {width: 390, height: 600}]) {
+    await page.setViewportSize(viewport);
+    await page.goto("/");
+    const carousel = page.getByRole("region", {name: "光波互联业务轮播"});
+    for (const [label, expectedNodes] of Object.entries(visualNodes)) {
+      await carousel.getByRole("button", {name: `转到 ${label} 业务`}).click();
+      await expect(carousel).toHaveCSS("background-color", "rgb(238, 238, 234)");
+      const figure = page.getByRole("figure", {name: `${label}业务动态图形`});
+      const nodes = figure.locator("[data-visual-node]");
+      await expect(nodes).toHaveText(expectedNodes);
+      expect(await nodes.evaluateAll((items) => items.every((item) =>
+        item.scrollWidth <= item.clientWidth + 1 && item.scrollHeight <= item.clientHeight + 1,
+      )), `${label} nodes overflow at ${viewport.width}x${viewport.height}`).toBe(true);
+      const lineCounts = await nodes.evaluateAll((items) => items.map((item) => {
+        const range = document.createRange();
+        range.selectNodeContents(item);
+        return range.getClientRects().length;
+      }));
+      expect(lineCounts.every((count) => count === 1),
+        `${label} labels wrap unnaturally at ${viewport.width}x${viewport.height}: ${lineCounts.join(",")}`).toBe(true);
+      await expectNoHorizontalOverflow(page);
+    }
+
+    await carousel.getByRole("button", {name: "转到 ENERGY 业务"}).click();
+    const energyCopy = carousel.getByRole("heading", {level: 1}).locator("..");
+    await expect(energyCopy).toHaveCSS("background-color", "rgba(0, 0, 0, 0)");
+    for (const side of ["top", "right", "bottom", "left"]) {
+      await expect(energyCopy).toHaveCSS(`border-${side}-width`, "0px");
+      await expect(energyCopy).toHaveCSS(`padding-${side}`, "0px");
+    }
+  }
+});
+
 test("home carousel releases into the preserved full home sections without console errors", async ({page}) => {
   const errors: string[] = [];
   page.on("pageerror", (error) => errors.push(error.message));

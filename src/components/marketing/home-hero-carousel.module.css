@@ -7,9 +7,9 @@
 }
 
 .carousel[data-domain="compute"] { background: #eeeeea; }
-.carousel[data-domain="xinchang"] { background: #e8e9e3; }
-.carousel[data-domain="link"] { background: #dfff46; }
-.carousel[data-domain="energy"] { background: #e9e9e4; }
+.carousel[data-domain="xinchang"],
+.carousel[data-domain="link"],
+.carousel[data-domain="energy"] { background: #eeeeea; }
 
 .slide { animation: slide-enter 450ms ease-out both; }
 .slideAlternate { animation-name: slide-enter-alternate; }
@@ -90,7 +90,6 @@
 .carousel[data-domain="link"] .layout { grid-template-columns: minmax(0, 0.85fr) minmax(0, 1.15fr); }
 .carousel[data-domain="link"] .copy { order: 1; align-self: start; padding-top: clamp(1rem, 4vw, 4rem); }
 .carousel[data-domain="link"] :global(figure) { order: 2; align-self: end; width: min(100%, 36rem); aspect-ratio: 1.2; }
-.carousel[data-domain="energy"] .copy { border: 1px solid #d1d1c8; padding: clamp(1.25rem, 2.5vw, 2.25rem); background: #fbfbf9; }
 .carousel[data-domain="energy"] :global(figure) { transform: translateY(-8%); }
 
 .controls { display: flex; min-height: 5rem; align-items: center; justify-content: center; gap: 1rem; padding-block: 0.5rem 1rem; }
@@ -138,10 +137,15 @@
   .title { font-size: clamp(2.1rem, 8vw, 3.4rem); }
   .body { margin-top: 0.6rem; font-size: 0.86rem; line-height: 1.45; }
   .cta { min-height: 2.75rem; margin-top: 0.75rem; padding: 0.5rem 0.9rem; font-size: 0.85rem; }
-  .carousel[data-domain="energy"] .copy { padding: 0.7rem; }
   .carousel :global(figure) { width: min(62vw, 14rem); }
   .carousel[data-domain="link"] :global(figure) { width: min(70vw, 16rem); }
   .controls { gap: 0.2rem; }
+}
+
+@media (max-width: 39.99rem) and (max-height: 38rem) {
+  .carousel[data-domain="compute"] :global(figure),
+  .carousel[data-domain="xinchang"] :global(figure),
+  .carousel[data-domain="link"] :global(figure) { width: min(88vw, 21rem); }
 }
 
 @media (prefers-reduced-motion: reduce) {
