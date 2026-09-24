@@ -14,13 +14,12 @@ interface HomeHeroCarouselProps {
 }
 
 export function HomeHeroCarousel({slides, autoplayMs = 6000}: HomeHeroCarouselProps): React.ReactElement {
-  const [activeIndex, setActiveIndex] = useState(0);
+  const [{activeIndex, alternateEntry}, setActiveSlide] = useState({activeIndex: 0, alternateEntry: false});
   const [hovered, setHovered] = useState(false);
   const [focusWithin, setFocusWithin] = useState(false);
   const [pageVisible, setPageVisible] = useState(true);
   const [reducedMotion, setReducedMotion] = useState(false);
   const [announcement, setAnnouncement] = useState("");
-  const sectionRef = useRef<HTMLElement | null>(null);
   const pointerStart = useRef<{x: number; y: number; id: number} | null>(null);
   const slide = slides[activeIndex] ?? slides[0];
   const paused = hovered || focusWithin;
@@ -43,17 +42,19 @@ export function HomeHeroCarousel({slides, autoplayMs = 6000}: HomeHeroCarouselPr
 
   useEffect(() => {
     if (paused || reducedMotion || !pageVisible || document.hidden || slides.length < 2) return;
-    const timer = window.setTimeout(() => setActiveIndex((index) => (index + 1) % slides.length), autoplayMs);
+    const timer = window.setTimeout(() => setActiveSlide((current) => ({
+      activeIndex: (current.activeIndex + 1) % slides.length,
+      alternateEntry: !current.alternateEntry,
+    })), autoplayMs);
     return () => window.clearTimeout(timer);
   }, [activeIndex, autoplayMs, paused, reducedMotion, slides.length, pageVisible]);
 
-  useEffect(() => {
-    setFocusWithin(sectionRef.current?.contains(document.activeElement) ?? false);
-  }, [activeIndex]);
-
   function goTo(index: number): void {
     if (!slides[index]) return;
-    setActiveIndex(index);
+    setActiveSlide((current) => current.activeIndex === index ? current : {
+      activeIndex: index,
+      alternateEntry: !current.alternateEntry,
+    });
     setAnnouncement(`${index + 1} / ${slides.length} ${slides[index].title}`);
   }
 
@@ -103,12 +104,11 @@ export function HomeHeroCarousel({slides, autoplayMs = 6000}: HomeHeroCarouselPr
       onPointerCancel={() => { pointerStart.current = null; }}
       onPointerDown={onPointerDown}
       onPointerUp={onPointerUp}
-      ref={sectionRef}
       role="region"
       tabIndex={0}
     >
       {slide && (
-        <div className={styles.slide} data-testid="home-hero-slide" key={slide.index}>
+        <div className={`${styles.slide} ${alternateEntry ? styles.slideAlternate : ""}`} data-testid="home-hero-slide">
           <div className={`${styles.layout} site-container`}>
             <div className={styles.copy}>
               <p className={styles.eyebrow}><span>{slide.index} / 05</span><span>{slide.label}</span></p>

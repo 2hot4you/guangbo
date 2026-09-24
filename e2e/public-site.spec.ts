@@ -450,6 +450,43 @@ test("home carousel controls and keyboard navigate all five states", async ({pag
   await expectActiveHomeHero(page, "energy");
 });
 
+test("home carousel preserves CTA identity and continuous focus across consecutive arrow presses", async ({page}) => {
+  await page.emulateMedia({reducedMotion: "no-preference"});
+  await page.goto("/");
+  await page.mouse.move(0, 0);
+  await expectActiveHomeHero(page, "ai");
+  const carousel = page.getByRole("region", {name: "光波互联业务轮播"});
+  const slide = carousel.getByTestId("home-hero-slide");
+  const cta = carousel.getByRole("link");
+  const originalCTA = await cta.elementHandle();
+  const originalSlide = await slide.elementHandle();
+  await cta.evaluate((element) => {
+    element.dataset.blurCount = "0";
+    element.addEventListener("blur", () => { element.dataset.blurCount = String(Number(element.dataset.blurCount) + 1); });
+  });
+  await cta.focus();
+  let previousAnimation = await slide.evaluate((element) => getComputedStyle(element).animationName);
+  expect(previousAnimation).not.toBe("none");
+  for (const domain of ["compute", "xinchang"] as const) {
+    await page.keyboard.press("ArrowRight");
+    await expectActiveHomeHero(page, domain);
+    await expect(cta).toBeFocused();
+    expect(await originalCTA!.evaluate((element) => element.isConnected && element === document.activeElement)).toBe(true);
+    expect(await originalSlide!.evaluate((element) => element.isConnected)).toBe(true);
+    await expect(cta).toHaveAttribute("data-blur-count", "0");
+    const animation = await slide.evaluate((element) => ({
+      name: getComputedStyle(element).animationName,
+      duration: getComputedStyle(element).animationDuration,
+    }));
+    expect(animation.name).not.toBe(previousAnimation);
+    expect(animation.duration).toBe("0.45s");
+    previousAnimation = animation.name;
+    await page.waitForTimeout(6500);
+    await expectActiveHomeHero(page, domain);
+    await expect(cta).toBeFocused();
+  }
+});
+
 test("home carousel autoplay advances and pauses for hover, focus and reduced motion", async ({page}) => {
   test.setTimeout(60_000);
   await page.emulateMedia({reducedMotion: "no-preference"});
@@ -476,29 +513,61 @@ test("home carousel autoplay advances and pauses for hover, focus and reduced mo
   expect(await carousel.locator("[data-motion-layer]").evaluateAll((layers) =>
     layers.every((layer) => getComputedStyle(layer).animationName === "none"),
   )).toBe(true);
+  await expect(carousel.getByTestId("home-hero-slide")).toHaveCSS("animation-name", "none");
+  await carousel.getByRole("button", {name: "下一项"}).click();
+  await expectActiveHomeHero(page, "compute");
+  await expect(carousel.getByTestId("home-hero-slide")).toHaveCSS("animation-name", "none");
 });
 
-test("home carousel accepts horizontal pointer swipes and leaves vertical wheel scrolling intact", async ({page}) => {
+test("home carousel accepts a real horizontal touch swipe and preserves vertical touch scrolling", async ({page, context}) => {
   await page.setViewportSize({width: 390, height: 844});
+  await page.emulateMedia({reducedMotion: "reduce"});
   await page.goto("/");
   const carousel = page.getByRole("region", {name: "光波互联业务轮播"});
+  await expectActiveHomeHero(page, "ai");
   const box = await carousel.boundingBox();
   expect(box).not.toBeNull();
-  const startX = box!.x + box!.width * 0.7;
-  const startY = box!.y + 120;
-  await page.mouse.move(startX, startY);
-  await page.mouse.down();
-  await page.mouse.move(startX - 80, startY, {steps: 4});
-  await page.mouse.up();
-  await expectActiveHomeHero(page, "compute");
-  await page.mouse.move(startX, startY);
-  await page.mouse.down();
-  await page.mouse.move(startX, startY + 180, {steps: 4});
-  await page.mouse.up();
-  await expectActiveHomeHero(page, "compute");
-  const before = await page.evaluate(() => window.scrollY);
-  await page.mouse.wheel(0, 600);
-  await expect.poll(() => page.evaluate(() => window.scrollY)).toBeGreaterThan(before);
+  const session = await context.newCDPSession(page);
+  async function touchSwipe(startX: number, startY: number, endX: number, endY: number) {
+    await session.send("Input.dispatchTouchEvent", {type: "touchStart", touchPoints: [{x: startX, y: startY}]});
+    for (let step = 1; step <= 8; step += 1) {
+      await session.send("Input.dispatchTouchEvent", {
+        type: "touchMove",
+        touchPoints: [{x: startX + (endX - startX) * step / 8, y: startY + (endY - startY) * step / 8}],
+      });
+      await page.waitForTimeout(16);
+    }
+    await session.send("Input.dispatchTouchEvent", {type: "touchEnd", touchPoints: []});
+  }
+  try {
+    await session.send("Emulation.setTouchEmulationEnabled", {enabled: true, maxTouchPoints: 1});
+    const startX = box!.x + box!.width * 0.7;
+    await touchSwipe(startX, box!.y + 120, startX - 100, box!.y + 120);
+    await expectActiveHomeHero(page, "compute");
+    const before = await page.evaluate(() => window.scrollY);
+    await touchSwipe(startX, box!.y + 360, startX, box!.y + 160);
+    await expect.poll(() => page.evaluate(() => window.scrollY)).toBeGreaterThan(before);
+    await expectActiveHomeHero(page, "compute");
+  } finally {
+    await session.detach();
+  }
+});
+
+test("home carousel AI nodes remain circular at 390 by 600", async ({page}) => {
+  await page.setViewportSize({width: 390, height: 600});
+  await page.emulateMedia({reducedMotion: "reduce"});
+  await page.goto("/");
+  await expectActiveHomeHero(page, "ai");
+  const nodes = page.getByRole("figure", {name: "AI业务动态图形"}).locator("[data-visual-node]");
+  await expect(nodes).toHaveCount(3);
+  for (const node of await nodes.all()) {
+    const dimensions = await node.evaluate((element) => {
+      const rect = element.getBoundingClientRect();
+      return {width: rect.width, height: rect.height};
+    });
+    expect(Math.abs(dimensions.width - dimensions.height), JSON.stringify(dimensions)).toBeLessThanOrEqual(1);
+    await expect(node).toHaveCSS("border-radius", "50%");
+  }
 });
 
 test("home carousel releases into the preserved full home sections without console errors", async ({page}) => {
@@ -517,7 +586,7 @@ test("home carousel releases into the preserved full home sections without conso
   expect(errors).toEqual([]);
 });
 
-test("home carousel and logo loop have no horizontal overflow or clipped hover scale", async ({page}) => {
+test("home carousel and logo loop retain 12px vertical scale clearance without horizontal overflow", async ({page}) => {
   for (const width of [360, 390, 768, 1280, 1440]) {
     await page.setViewportSize({width, height: 900});
     await page.goto("/");
@@ -559,14 +628,41 @@ test("home carousel and logo loop have no horizontal overflow or clipped hover s
       });
       await expect.poll(scaledItem, {message: `${name}: hover scale at ${width}px`}).not.toBeNull();
       const enlarged = (await scaledItem())!;
-      expect(enlarged.scale, `${name}: hover scale at ${width}px`).toBeGreaterThan(1.15);
+      expect(enlarged.scale, `${name}: hover scale at ${width}px`).toBeCloseTo(1.16, 2);
       expect(enlarged.widthRatio).toBeGreaterThan(1.15);
       expect(enlarged.heightRatio).toBeGreaterThan(1.15);
-      expect(enlarged.top, `${name}: clipped at top at ${width}px`).toBeGreaterThanOrEqual(enlarged.loopTop - 1);
-      expect(enlarged.bottom, `${name}: clipped at bottom at ${width}px`).toBeLessThanOrEqual(enlarged.loopBottom + 1);
+      expect(enlarged.top - enlarged.loopTop, `${name}: top scale clearance at ${width}px`).toBeGreaterThanOrEqual(12);
+      expect(enlarged.loopBottom - enlarged.bottom, `${name}: bottom scale clearance at ${width}px`).toBeGreaterThanOrEqual(12);
     }
     await expectNoHorizontalOverflow(page);
   }
+});
+
+test("logo loop lights only loaded mono fallbacks on the dark ecosystem surface", async ({page}) => {
+  const cdn = "https://unpkg.com/@lobehub/icons-static-svg@latest/icons/";
+  const monoURL = `${cdn}anthropic.svg`;
+  const colorURL = `${cdn}zeroone-color.svg`;
+  const svg = (fill: string) => `<svg xmlns="http://www.w3.org/2000/svg" width="120" height="120"><path fill="${fill}" d="M10 110 60 10l50 100Z"/></svg>`;
+  await page.route(`${cdn}anthropic-color.svg`, (route) => route.fulfill({status: 404, body: "No color variant"}));
+  await page.route(monoURL, (route) => route.fulfill({contentType: "image/svg+xml", body: svg("#000")}));
+  await page.route(colorURL, (route) => route.fulfill({contentType: "image/svg+xml", body: svg("#dfff46")}));
+  await page.emulateMedia({reducedMotion: "reduce"});
+  await page.goto("/");
+  const ecosystem = page.getByRole("region", {name: "AI Model Ecosystem"});
+  await expect(ecosystem).toHaveCSS("background-color", "rgb(8, 8, 8)");
+  const providers = page.getByRole("region", {name: "AI Providers"});
+  const color = providers.getByRole("listitem", {name: "01.AI (零一万物)", exact: true}).locator("img");
+  await color.scrollIntoViewIfNeeded();
+  await expect.poll(() => color.evaluate((image: HTMLImageElement) => image.complete && image.naturalWidth > 0)).toBe(true);
+  await expect(color).toHaveCSS("filter", "none");
+  const anthropic = providers.getByRole("listitem").filter({hasText: /^Anthropic$/});
+  await anthropic.scrollIntoViewIfNeeded();
+  const mono = anthropic.locator("img");
+  await expect(mono).toHaveAttribute("src", monoURL);
+  await expect.poll(() => mono.evaluate((image: HTMLImageElement) => image.complete && image.naturalWidth > 0)).toBe(true);
+  await expect(mono).toHaveCSS("filter", "brightness(0) invert(1)");
+  await expect(mono.locator("..")).toHaveAttribute("data-image-stage", "mono");
+  await expect(color.locator("..")).toHaveAttribute("data-image-stage", "color");
 });
 
 test("logo loop exposes exact settings and only the two original catalog lists", async ({page}) => {

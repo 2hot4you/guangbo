@@ -1,5 +1,3 @@
-import {readFileSync} from "node:fs";
-import {join} from "node:path";
 import {act, cleanup, createEvent, fireEvent, render, screen, within} from "@testing-library/react";
 import {renderToStaticMarkup} from "react-dom/server";
 import {afterEach, beforeEach, describe, expect, it, vi} from "vitest";
@@ -122,16 +120,25 @@ describe("home hero carousel", () => {
     expect(heading()).toHaveTextContent("IDC与算力");
   });
 
-  it("resumes autoplay when switching removes the focused CTA", () => {
+  it("keeps the same CTA focused across consecutive arrow presses and keeps autoplay paused", () => {
     render(<HomeHeroCarousel slides={slides} />);
     const link = screen.getByRole("link", {name: /探索大模型/});
-    link.focus();
+    act(() => link.focus());
     expect(document.activeElement).toBe(link);
-    fireEvent.keyDown(link, {key: "ArrowRight"});
+    fireEvent.keyDown(document.activeElement!, {key: "ArrowRight"});
     expect(heading()).toHaveTextContent("IDC与算力");
-    expect(document.activeElement).toBe(document.body);
-    advance(6000);
+    expect(screen.getByRole("link", {name: /查看IDC与算力/})).toBe(link);
+    expect(document.activeElement).toBe(link);
+    advance(9000);
+    expect(heading()).toHaveTextContent("IDC与算力");
+
+    fireEvent.keyDown(document.activeElement!, {key: "ArrowRight"});
     expect(heading()).toHaveTextContent("信创与企业数字化");
+    expect(screen.getByRole("link", {name: /了解信创与数字化/})).toBe(link);
+    expect(document.activeElement).toBe(link);
+    advance(9000);
+    expect(heading()).toHaveTextContent("信创与企业数字化");
+    expect(document.activeElement).toBe(link);
   });
 
   it("politely announces only user-selected slides", () => {
@@ -156,17 +163,18 @@ describe("home hero carousel", () => {
     expect(status).toHaveTextContent("绿电与清洁能源");
   });
 
-  it("mounts a fresh slide with an entry animation disabled for reduced motion", () => {
+  it("replays entry animation without replacing the slide or CTA for adjacent and dot navigation", () => {
     render(<HomeHeroCarousel slides={slides} />);
     const initialSlide = screen.getByTestId("home-hero-slide");
-    expect(initialSlide.className).toMatch(/slide/);
-    fireEvent.click(screen.getByRole("button", {name: "下一项"}));
-    expect(screen.getByTestId("home-hero-slide")).not.toBe(initialSlide);
-
-    const css = readFileSync(join(process.cwd(), "src/components/marketing/home-hero-carousel.module.css"), "utf8");
-    expect(css).toMatch(/\.slide\s*\{[^}]*animation:\s*slide-enter\s+450ms/);
-    expect(css).toMatch(/@keyframes slide-enter\s*\{[\s\S]*?opacity:\s*0;[\s\S]*?translateY\(1\.5rem\)/);
-    expect(css).toMatch(/@media\s*\(prefers-reduced-motion:\s*reduce\)\s*\{[\s\S]*?\.slide\s*\{\s*animation:\s*none;/);
+    const initialLink = screen.getByRole("link");
+    let previousClass = initialSlide.className;
+    for (const button of ["下一项", "下一项", "转到 AI 业务"]) {
+      fireEvent.click(screen.getByRole("button", {name: button}));
+      expect(screen.getByTestId("home-hero-slide")).toBe(initialSlide);
+      expect(screen.getByRole("link")).toBe(initialLink);
+      expect(initialSlide.className).not.toBe(previousClass);
+      previousClass = initialSlide.className;
+    }
   });
 
   it("pauses when the document is hidden and resumes when visible", () => {

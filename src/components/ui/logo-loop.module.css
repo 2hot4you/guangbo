@@ -70,7 +70,7 @@
 }
 
 .scaleOnHover {
-  padding-block: calc(var(--logoloop-logo-height) * 0.18);
+  padding-block: calc(var(--logoloop-logo-height) * 0.24);
 }
 
 .scaleOnHover .item:hover,

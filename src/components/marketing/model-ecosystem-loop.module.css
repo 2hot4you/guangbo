@@ -48,6 +48,10 @@
   object-fit: contain;
 }
 
+.mark img.mono {
+  filter: brightness(0) invert(1);
+}
+
 .name {
   display: -webkit-box;
   max-width: 144px;

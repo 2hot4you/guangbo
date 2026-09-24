@@ -55,13 +55,18 @@ describe("ModelEcosystemLoop", () => {
     const firstColor = "https://unpkg.com/@lobehub/icons-static-svg@latest/icons/zeroone-color.svg";
     const firstMono = "https://unpkg.com/@lobehub/icons-static-svg@latest/icons/zeroone.svg";
     const image = firstProvider.querySelector("img");
+    const mark = image!.parentElement;
 
     expect(image).toHaveAttribute("src", firstColor);
     expect(image).toHaveAttribute("alt", "");
+    expect(mark).toHaveAttribute("data-image-stage", "color");
+    expect(image!.className).not.toMatch(/mono/);
     expect(firstProvider).toHaveTextContent(firstName);
 
     fireEvent.error(image!);
     expect(firstProvider.querySelector("img")).toHaveAttribute("src", firstMono);
+    expect(mark).toHaveAttribute("data-image-stage", "mono");
+    expect(firstProvider.querySelector("img")!.className).toMatch(/mono/);
     expect(firstProvider).toHaveTextContent(firstName);
     expect(unaffectedItems).toHaveLength(207);
     unaffectedItems.forEach((item, index) => expect(item.querySelector("img")).toBe(unaffectedImages[index]));
@@ -70,6 +75,7 @@ describe("ModelEcosystemLoop", () => {
 
     fireEvent.error(firstProvider.querySelector("img")!);
     expect(firstProvider.querySelector("img")).toBeNull();
+    expect(mark).toHaveAttribute("data-image-stage", "name");
     expect(firstProvider).toHaveTextContent(firstName);
     unaffectedItems.forEach((item, index) => expect(item.querySelector("img")).toBe(unaffectedImages[index]));
     expect(within(providers).getAllByRole("listitem")).toHaveLength(136);

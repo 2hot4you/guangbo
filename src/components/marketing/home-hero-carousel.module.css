@@ -12,8 +12,14 @@
 .carousel[data-domain="energy"] { background: #e9e9e4; }
 
 .slide { animation: slide-enter 450ms ease-out both; }
+.slideAlternate { animation-name: slide-enter-alternate; }
 
 @keyframes slide-enter {
+  from { opacity: 0; transform: translateY(1.5rem); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes slide-enter-alternate {
   from { opacity: 0; transform: translateY(1.5rem); }
   to { opacity: 1; transform: translateY(0); }
 }

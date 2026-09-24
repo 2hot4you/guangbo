@@ -19,10 +19,11 @@ function CatalogMark({item}: {item: LobeCatalogItem}) {
   });
 
   return (
-    <span className={styles.mark} title={item.name}>
+    <span className={styles.mark} data-image-stage={imageStage} title={item.name}>
       {src && (
         <img
           alt=""
+          className={imageStage === "mono" ? styles.mono : undefined}
           decoding="async"
           height={120}
           loading="lazy"
