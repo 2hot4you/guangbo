@@ -231,11 +231,11 @@ describe("marketing page templates", () => {
 
   it("shows a semantic station connection route with the source explanation", () => {
     render(<MarketingPageView page={getPageByPath("/network")} />);
-    const topology = document.getElementById("topology");
-    expect(topology).not.toBeNull();
-    expect(within(topology!).getByText(/客户站点通过本地接入连接区域汇聚资源/)).toBeInTheDocument();
-    expect(within(topology!).getByRole("figure", {name: "站点连接结构"})).toBeInTheDocument();
-    const route = within(topology!).getByRole("list", {name: "站点连接路径"});
+    const otn = document.getElementById("otn");
+    expect(otn).not.toBeNull();
+    expect(within(otn!).getByText(/以本地接入、区域汇聚和骨干传输组织可选链路/)).toBeInTheDocument();
+    expect(within(otn!).getByRole("figure", {name: "站点连接结构"})).toBeInTheDocument();
+    const route = within(otn!).getByRole("list", {name: "站点连接路径"});
     expect(within(route).getAllByRole("listitem").map((item) => item.textContent)).toEqual([
       "客户站点", "本地接入", "区域汇聚资源", "骨干传输", "目标区域与站点",
     ]);

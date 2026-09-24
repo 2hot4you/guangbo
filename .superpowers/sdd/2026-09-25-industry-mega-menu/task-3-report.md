@@ -23,7 +23,16 @@ Implemented twelve body modules on each of `/madeinchina`, `/network`, and `/ene
 - `pnpm typecheck`: PASS.
 - Targeted ESLint on six changed code/test files: PASS.
 - `git diff --check`: PASS.
-- `pnpm test`: FAIL in the current shared checkout, 157 passed and 14 failed. Six failures in `tests/components/business-landing-pages.test.tsx` reflect its former fixed nine module/legacy ID expectations (`applications`, `topology`, `boundaries`, `projects`); that test is outside Task 3 file scope. Other failures are in navigation transition and menu tests while Task 2 navigation changes are in progress, plus one marketing page assertion for the retired `topology` ID. No files outside this task's ownership were changed to address those integration tests.
+- Initial `pnpm test` before integration: FAIL, 157 passed and 14 failed while the shared navigation implementation was still in progress and legacy page tests expected old module IDs.
+
+## Integration repair round 1
+
+- Updated the seven stale industry page assertions: signal, network and energy now expect a hero plus twelve body modules; About still expects a hero plus eight. Retired `topology`, `boundaries`, and `projects` assertions now target the real `otn`, `continuity`/`interfaces`, and `solar` modules with their current copy.
+- The server render test now reads the actual `navigationGroups` configuration and verifies all twelve hash targets per industry path occur exactly once in that page's rendered sections. This complements the fixed content map assertion and catches later navigation drift.
+- Related tests: `pnpm test tests/components/business-landing-pages.test.tsx tests/components/marketing-page.test.tsx tests/app/public-pages.test.tsx tests/content/pages.test.ts` PASS, 78/78 across four files.
+- Full suite: `pnpm test` PASS, 174/174 across fourteen files.
+- `pnpm typecheck` and targeted ESLint on the four repaired test files: PASS.
+- The Vite native config loader warning and jsdom performance note remain informational.
 
 ## Files changed
 
@@ -33,4 +42,6 @@ Implemented twelve body modules on each of `/madeinchina`, `/network`, and `/ene
 - `src/components/marketing/energy-landing-page.tsx`
 - `tests/app/public-pages.test.tsx`
 - `tests/content/pages.test.ts`
+- `tests/components/business-landing-pages.test.tsx` (integration repair)
+- `tests/components/marketing-page.test.tsx` (integration repair)
 - `.superpowers/sdd/2026-09-25-industry-mega-menu/task-3-report.md`

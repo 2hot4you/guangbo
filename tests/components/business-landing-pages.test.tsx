@@ -11,9 +11,9 @@ import type {ContentSection} from "@/content/types";
 afterEach(cleanup);
 
 const pages = [
-  {name: "信创", page: madeInChina, Component: XinchangLandingPage, ids: ["diagnostic", "layers", "hardware", "applications", "data", "compatibility", "industries", "delivery"]},
-  {name: "专线", page: network, Component: NetworkLandingPage, ids: ["products", "inputs", "topology", "solutions", "continuity", "interfaces", "rollout", "boundaries"]},
-  {name: "能源", page: energy, Component: EnergyLandingPage, ids: ["inputs", "green-power", "purchase", "management", "projects", "carbon", "scenarios", "delivery"]},
+  {name: "信创", page: madeInChina, Component: XinchangLandingPage, ids: ["diagnostic", "layers", "hardware", "local-ai", "customer-service", "online-services", "orders", "after-sales", "data", "compatibility", "industries", "delivery"]},
+  {name: "专线", page: network, Component: NetworkLandingPage, ids: ["products", "inputs", "enterprise-line", "data-center-interconnect", "fiber-cloud", "otn", "branch-network", "compute-interconnect", "industry-network", "continuity", "interfaces", "rollout"]},
+  {name: "能源", page: energy, Component: EnergyLandingPage, ids: ["inputs", "services", "purchase", "green-power", "management", "efficiency", "solar", "storage", "charging", "carbon", "scenarios", "delivery"]},
   {name: "关于我们", page: about, Component: AboutLandingPage, ids: ["identity", "business-map", "approach", "practice", "ecosystem", "principles", "delivery", "contact"]},
 ] as const;
 
@@ -29,7 +29,7 @@ describe("distinct business landing pages", () => {
     expect(document.getElementById(first)).toHaveAttribute("data-tone", firstTone);
   });
 
-  it.each(pages)("renders the $name content as one h1 and nine addressable modules", ({page, Component, ids}) => {
+  it.each(pages)("renders the $name content as one h1 with every addressable module", ({page, Component, ids}) => {
     render(<Component page={page} />);
 
     expect(screen.getAllByRole("heading", {level: 1})).toHaveLength(1);
@@ -38,7 +38,7 @@ describe("distinct business landing pages", () => {
     expect(root).not.toBeNull();
     expect(root?.tagName).toBe("DIV");
     const modules = [...root!.querySelectorAll("section[data-content-module]")];
-    expect(modules).toHaveLength(9);
+    expect(modules).toHaveLength(ids.length + 1);
     expect(modules.map((module) => module.id)).toEqual([`${page.key}-hero`, ...ids]);
     expect(new Set(modules.map((module) => module.id)).size).toBe(modules.length);
     for (const contentModule of modules) {
@@ -103,7 +103,7 @@ describe("distinct business landing pages", () => {
 
   it.each([
     {name: "信创", page: madeInChina, Component: XinchangLandingPage, section: "layers", figure: "系统分层详图", caption: "架构示意"},
-    {name: "专线", page: network, Component: NetworkLandingPage, section: "topology", figure: "站点连接结构", caption: "示意路径"},
+    {name: "专线", page: network, Component: NetworkLandingPage, section: "otn", figure: "站点连接结构", caption: "示意路径"},
     {name: "能源", page: energy, Component: EnergyLandingPage, section: "inputs", figure: "企业用能输入资料", caption: "输入资料"},
   ])("keeps the $name detail figure caption readable", ({page, Component, section, figure, caption}) => {
     const html = renderToStaticMarkup(<Component page={page} />);
@@ -140,7 +140,8 @@ describe("distinct business landing pages", () => {
       "客户站点", "本地接入", "区域汇聚资源", "骨干传输", "目标区域与站点",
     ]);
     expect(within(document.getElementById("interfaces")!).getByRole("heading", {level: 3, name: "客户侧"})).toBeInTheDocument();
-    expect(within(document.getElementById("boundaries")!).getByText(/按具体线路确认/)).toBeInTheDocument();
+    expect(within(document.getElementById("continuity")!).getByText(/取决于两端实际资源条件/)).toBeInTheDocument();
+    expect(within(document.getElementById("interfaces")!).getByText(/责任分工以具体方案为准/)).toBeInTheDocument();
     const overview = within(document.getElementById("network-hero")!).getByRole("list", {name: "首屏连接概览"});
     expect(within(overview).getAllByRole("listitem")).toHaveLength(3);
     expect(within(overview).queryByText("区域汇聚资源")).not.toBeInTheDocument();
@@ -154,7 +155,7 @@ describe("distinct business landing pages", () => {
     for (const label of ["所在地区", "用电规模", "历史负荷", "绿色用能目标"]) {
       expect(within(flow).getByText(label)).toBeInTheDocument();
     }
-    expect(within(document.getElementById("projects")!).getByRole("heading", {level: 3, name: "分布式光伏"})).toBeInTheDocument();
+    expect(within(document.getElementById("solar")!).getByRole("heading", {level: 2, name: "分布式光伏"})).toBeInTheDocument();
     expect(within(document.getElementById("carbon")!).getByText(/服务边界/)).toBeInTheDocument();
     expect(within(document.getElementById("energy-hero")!).getByRole("list", {name: "首屏用能路径"}).querySelectorAll("li")).toHaveLength(4);
     expect(within(document.getElementById("energy-hero")!).queryByText("地区 · 规模 · 负荷 · 目标")).not.toBeInTheDocument();
