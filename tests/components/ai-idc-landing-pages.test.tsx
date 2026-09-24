@@ -24,10 +24,32 @@ describe("distinct AI and IDC landing pages", () => {
     expect(modules.length).toBeGreaterThanOrEqual(8);
     expect(modules.map((contentModule) => contentModule.id)).toEqual(["hero", ...page.sections.map((section) => section.id)]);
     expect(new Set(modules.map((contentModule) => contentModule.id)).size).toBe(modules.length);
+
+    const serverDocument = new DOMParser().parseFromString(renderToStaticMarkup(<Component page={page} />), "text/html");
+    expect(serverDocument.querySelector("#hero")?.textContent).toContain(page.hero.lead);
     for (const section of page.sections) {
       const contentModule = document.getElementById(section.id);
+      const serverModule = serverDocument.getElementById(section.id);
       expect(contentModule).toHaveAttribute("aria-labelledby", `${section.id}-heading`);
       expect(within(contentModule!).getByRole("heading", {level: 2, name: section.title})).toBeInTheDocument();
+      expect(serverModule).not.toBeNull();
+      expect(serverModule!.textContent).toContain(section.title);
+      if (section.body) {
+        expect(within(contentModule!).getByText(section.body, {exact: true})).toBeInTheDocument();
+        expect(serverModule!.textContent).toContain(section.body);
+      }
+      for (const item of section.items ?? []) {
+        const heading = within(contentModule!).getByRole("heading", {level: 3, name: item.title});
+        const itemContainer = heading.closest("article, li");
+        expect(itemContainer).not.toBeNull();
+        expect(within(itemContainer as HTMLElement).getByText(item.body, {exact: true})).toBeInTheDocument();
+        expect(serverModule!.textContent).toContain(item.title);
+        expect(serverModule!.textContent).toContain(item.body);
+        if ("meta" in item && item.meta) {
+          expect(within(itemContainer as HTMLElement).getByText(item.meta, {exact: false})).toBeInTheDocument();
+          expect(serverModule!.textContent).toContain(item.meta);
+        }
+      }
     }
   });
 
@@ -39,7 +61,11 @@ describe("distinct AI and IDC landing pages", () => {
     expect(within(capabilities).getByRole("link", {name: /LLM与多模态理解/})).toHaveAttribute("href", "/ai/llm");
     expect(within(capabilities).getByRole("link", {name: /图像生成与编辑/})).toHaveAttribute("href", "/ai/image");
     expect(within(capabilities).getByRole("link", {name: /视频生成与编辑/})).toHaveAttribute("href", "/ai/video");
-    expect(within(document.getElementById("ecosystem")!).getAllByRole("heading", {level: 3})).toHaveLength(4);
+    expect([...capabilities.querySelectorAll("article")]).toHaveLength(3);
+    expect([...capabilities.querySelectorAll("article")].every((row) => row.classList.contains("grid"))).toBe(true);
+    const ecosystem = document.getElementById("ecosystem")!;
+    expect(within(ecosystem).getAllByRole("heading", {level: 3})).toHaveLength(4);
+    expect(ecosystem.querySelector(".md\\:grid-cols-2")).not.toBeNull();
     expect(within(document.getElementById("workflows")!).getByRole("list", {name: "模型任务工作流"})).toBeInTheDocument();
     expect(within(document.getElementById("selection")!).getAllByRole("listitem")).toHaveLength(5);
     expect(within(document.getElementById("availability")!).getByText(/实际开放型号与价格以平台目录为准/)).toBeInTheDocument();
@@ -54,8 +80,12 @@ describe("distinct AI and IDC landing pages", () => {
     expect(within(matrix).getAllByRole("link")).toHaveLength(4);
     expect(within(matrix).getByRole("link", {name: /VPS租赁/})).toHaveAttribute("href", "/idc/vps");
     expect(within(matrix).getByRole("link", {name: /GPU算力/})).toHaveAttribute("href", "/idc/gpu");
+    expect([...matrix.querySelectorAll("article")]).toHaveLength(4);
+    expect(matrix.querySelector(".xl\\:grid-cols-4")).not.toBeNull();
     expect(within(document.getElementById("workload-map")!).getByRole("figure", {name: "业务负载与资源匹配图"})).toBeInTheDocument();
-    expect(within(document.getElementById("infrastructure-stack")!).getAllByRole("listitem")).toHaveLength(5);
+    const stack = document.getElementById("infrastructure-stack")!;
+    expect(within(stack).getByRole("list", {name: "五层基础设施条件"})).toBeInTheDocument();
+    expect(within(stack).getAllByRole("listitem")).toHaveLength(5);
     expect(within(document.getElementById("migration")!).getByRole("list", {name: "迁移与扩容步骤"})).toBeInTheDocument();
     expect(within(document.getElementById("delivery")!).getByText(/具体配置及服务指标以选定节点和交付方案为准/)).toBeInTheDocument();
     expect(screen.getByRole("figure", {name: "机柜与数据中心示意"})).toBeInTheDocument();
