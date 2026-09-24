@@ -3,21 +3,11 @@
 import {ArrowUpRight} from "lucide-react";
 import Link from "next/link";
 import {useEffect, useRef, useState} from "react";
-import type {PublicPath} from "@/content";
+import type {HomeHeroSlideContent} from "./home-hero-types";
 import {HomeHeroVisual} from "./home-hero-visual";
 import styles from "./home-hero-story.module.css";
 
-export type HomeHeroVariant = "ai" | "compute" | "xinchang" | "link" | "energy";
-
-export interface HomeHeroSlideContent {
-  index: "01" | "02" | "03" | "04" | "05";
-  label: "AI" | "COMPUTE" | "XINCHUANG" | "LINK" | "ENERGY";
-  title: string;
-  body: string;
-  href: PublicPath;
-  cta: string;
-  variant: HomeHeroVariant;
-}
+export type {HomeHeroVariant, HomeHeroSlideContent} from "./home-hero-types";
 
 export function HomeHeroStory({slides}: {slides: readonly HomeHeroSlideContent[]}): React.ReactElement {
   const [enhanced, setEnhanced] = useState(false);

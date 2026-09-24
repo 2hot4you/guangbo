@@ -1,5 +1,5 @@
 import styles from "./home-hero-story.module.css";
-import type {HomeHeroVariant} from "./home-hero-story";
+import type {HomeHeroVariant} from "./home-hero-types";
 
 const visualNodes = {
   ai: ["LLM", "IMAGE", "VIDEO"],
