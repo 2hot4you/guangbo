@@ -18,7 +18,10 @@ export function RouteTransitionFocus() {
     const frame = window.requestAnimationFrame(() => {
       root.style.scrollBehavior = previousBehavior;
     });
-    return () => window.cancelAnimationFrame(frame);
+    return () => {
+      window.cancelAnimationFrame(frame);
+      root.style.scrollBehavior = previousBehavior;
+    };
   }, [pathname]);
 
   return null;

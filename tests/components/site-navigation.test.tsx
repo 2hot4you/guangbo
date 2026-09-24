@@ -32,6 +32,44 @@ describe("route transitions", () => {
     await waitFor(() => expect(scrollTo).toHaveBeenCalledWith({left: 0, top: 0, behavior: "auto"}));
     expect(focus).toHaveBeenCalledWith({preventScroll: true});
   });
+
+  it("restores the root scroll behavior when rapid routes and unmount cancel pending frames", () => {
+    const root = document.documentElement;
+    const originalBehavior = root.style.scrollBehavior;
+    root.style.scrollBehavior = "smooth";
+    const frames = new Map<number, FrameRequestCallback>();
+    let nextFrame = 0;
+    const cancelFrame = vi.fn((frame: number) => frames.delete(frame));
+    vi.stubGlobal("requestAnimationFrame", vi.fn((callback: FrameRequestCallback) => {
+      const frame = ++nextFrame;
+      frames.set(frame, callback);
+      return frame;
+    }));
+    vi.stubGlobal("cancelAnimationFrame", cancelFrame);
+    vi.stubGlobal("scrollTo", vi.fn());
+    const view = render(<><RouteTransitionFocus /><main id="main-content" tabIndex={-1} /></>);
+
+    try {
+      pathname = "/idc";
+      view.rerender(<><RouteTransitionFocus /><main id="main-content" tabIndex={-1} /></>);
+      expect(root.style.scrollBehavior).toBe("auto");
+      expect(frames.size).toBe(1);
+
+      pathname = "/about";
+      view.rerender(<><RouteTransitionFocus /><main id="main-content" tabIndex={-1} /></>);
+      expect(cancelFrame).toHaveBeenCalledWith(1);
+      expect(root.style.scrollBehavior).toBe("auto");
+      expect(frames.size).toBe(1);
+
+      view.unmount();
+      expect(cancelFrame).toHaveBeenCalledWith(2);
+      expect(frames.size).toBe(0);
+      expect(root.style.scrollBehavior).toBe("smooth");
+    } finally {
+      view.unmount();
+      root.style.scrollBehavior = originalBehavior;
+    }
+  });
 });
 
 describe("mobile navigation", () => {
