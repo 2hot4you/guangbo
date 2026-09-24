@@ -222,7 +222,7 @@ test("every dark landing surface supplies a contrasting focus treatment", async 
   }
 });
 
-test("AI and IDC visuals share the desktop hero and follow the title on mobile", async ({page}) => {
+test("AI stays visual-right while IDC places its infrastructure graphic on the left", async ({page}) => {
   for (const width of [360, 1280, 1440]) {
     await page.setViewportSize({width, height: 900});
     for (const path of ["/ai", "/idc"]) {
@@ -232,13 +232,37 @@ test("AI and IDC visuals share the desktop hero and follow the title on mobile",
       expect(title).not.toBeNull();
       expect(visual).not.toBeNull();
       if (width >= 1280) {
-        expect(visual!.x, `${path} visual beside title at ${width}px`).toBeGreaterThan(title!.x + title!.width);
+        if (path === "/idc") {
+          expect(visual!.x + visual!.width, `${path} visual left of title at ${width}px`).toBeLessThanOrEqual(title!.x);
+        } else {
+          expect(visual!.x, `${path} visual right of title at ${width}px`).toBeGreaterThan(title!.x + title!.width);
+        }
         expect(visual!.y).toBeLessThan(title!.y + title!.height);
         expect(visual!.y + visual!.height).toBeLessThanOrEqual(900);
       } else {
         expect(visual!.y).toBeGreaterThan(title!.y + title!.height);
       }
     }
+  }
+});
+
+test("AI and IDC hero graphics animate unless reduced motion is requested", async ({page}) => {
+  await page.setViewportSize({width: 1280, height: 900});
+  for (const path of ["/ai", "/idc"]) {
+    await page.emulateMedia({reducedMotion: "no-preference"});
+    await page.goto(path);
+    const motionLayers = page.locator("#hero [data-motion-layer]");
+    expect(await motionLayers.count()).toBeGreaterThanOrEqual(3);
+    const runningAnimations = await motionLayers.evaluateAll((elements) => elements.filter((element) => {
+      const style = getComputedStyle(element);
+      return style.animationName !== "none" && style.animationPlayState === "running";
+    }).length);
+    expect(runningAnimations).toBeGreaterThanOrEqual(3);
+
+    await page.emulateMedia({reducedMotion: "reduce"});
+    await page.reload();
+    const reducedAnimations = await motionLayers.evaluateAll((elements) => elements.filter((element) => getComputedStyle(element).animationName !== "none").length);
+    expect(reducedAnimations).toBe(0);
   }
 });
 

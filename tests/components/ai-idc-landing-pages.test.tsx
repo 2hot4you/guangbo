@@ -69,7 +69,11 @@ describe("distinct AI and IDC landing pages", () => {
     expect(within(document.getElementById("workflows")!).getByRole("list", {name: "模型任务工作流"})).toBeInTheDocument();
     expect(within(document.getElementById("selection")!).getAllByRole("listitem")).toHaveLength(5);
     expect(within(document.getElementById("availability")!).getByText(/实际开放型号与价格以平台目录为准/)).toBeInTheDocument();
-    expect(screen.getByRole("figure", {name: "模型能力轨道图"})).toBeInTheDocument();
+    const heroGraphic = screen.getByRole("figure", {name: "模型能力轨道图"});
+    expect(heroGraphic).toBeInTheDocument();
+    expect(within(heroGraphic).getByText("LLM")).toBeInTheDocument();
+    expect(within(heroGraphic).getByText("IMAGE")).toBeInTheDocument();
+    expect(within(heroGraphic).getByText("VIDEO")).toBeInTheDocument();
     expect(renderToStaticMarkup(<AiLandingPage page={ai} />)).toContain("模型任务工作流");
   });
 
@@ -88,7 +92,10 @@ describe("distinct AI and IDC landing pages", () => {
     expect(within(stack).getAllByRole("listitem")).toHaveLength(5);
     expect(within(document.getElementById("migration")!).getByRole("list", {name: "迁移与扩容步骤"})).toBeInTheDocument();
     expect(within(document.getElementById("delivery")!).getByText(/具体配置及服务指标以选定节点和交付方案为准/)).toBeInTheDocument();
-    expect(screen.getByRole("figure", {name: "机柜与数据中心示意"})).toBeInTheDocument();
+    const heroGraphic = screen.getByRole("figure", {name: "IDC五层基础设施动态示意"});
+    for (const layer of ["COMPUTE", "STORAGE", "NETWORK", "POWER", "COOLING"]) {
+      expect(within(heroGraphic).getByText(layer)).toBeInTheDocument();
+    }
     expect(renderToStaticMarkup(<IdcLandingPage page={idc} />)).toContain("业务负载与资源匹配图");
   });
 });

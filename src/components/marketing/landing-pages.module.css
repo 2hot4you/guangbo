@@ -84,6 +84,145 @@
 .placeholderCaption strong { font-weight: 700; }
 .placeholderCaption span { opacity: 0.7; }
 
+.heroGraphicFigure {
+  display: grid;
+  min-width: 0;
+  gap: 1.5rem;
+  margin: 0;
+  padding-top: 1.25rem;
+  border-top: 1px solid;
+}
+.aiOrbitalGraphic,
+.idcInfrastructureGraphic {
+  position: relative;
+  width: min(100%, 23rem);
+  aspect-ratio: 1;
+  margin-inline: auto;
+  isolation: isolate;
+}
+.aiOrbitalGraphic {
+  display: grid;
+  place-items: center;
+  border: 1px solid rgb(0 0 0 / 0.25);
+  border-radius: 50%;
+  background: var(--accent);
+}
+.aiOrbitOuter,
+.aiOrbitInner,
+.aiOrbitGlow,
+.idcOrbitOuter,
+.idcOrbitInner,
+.idcSignal,
+.aiCore,
+.idcCore,
+.heroNode,
+.infrastructureNode { position: absolute; }
+.aiOrbitOuter {
+  inset: 12%;
+  border: 1px solid rgb(0 0 0 / 0.38);
+  border-top-color: transparent;
+  border-radius: 50%;
+  animation: heroOrbitSpin 24s linear infinite;
+}
+.aiOrbitInner {
+  inset: 28%;
+  border: 1px dashed rgb(0 0 0 / 0.46);
+  border-radius: 50%;
+  animation: heroOrbitSpin 17s linear infinite reverse;
+}
+.aiOrbitGlow {
+  inset: 38%;
+  border-radius: 50%;
+  background: rgb(255 255 255 / 0.7);
+  filter: blur(1.5rem);
+  animation: heroCorePulse 5s ease-in-out infinite;
+}
+.aiCore,
+.idcCore {
+  z-index: 2;
+  top: 50%;
+  left: 50%;
+  display: grid;
+  width: 6rem;
+  aspect-ratio: 1;
+  place-items: center;
+  border-radius: 50%;
+  font: 800 0.72rem/1.35 ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+  letter-spacing: 0.16em;
+  text-align: center;
+  transform: translate(-50%, -50%);
+}
+.aiCore { background: #050505; color: #fff; animation: heroCenteredPulse 5s ease-in-out infinite; }
+.heroNode,
+.infrastructureNode {
+  z-index: 3;
+  border-radius: 999px;
+  font: 750 0.64rem/1 ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+  letter-spacing: 0.06em;
+  white-space: nowrap;
+  animation: heroNodeFloat 6s ease-in-out infinite;
+}
+.heroNode { background: #050505; color: #fff; padding: 0.45rem 0.7rem; }
+.aiNodeLlm { top: 7%; left: 41%; }
+.aiNodeImage { right: 0; bottom: 27%; animation-delay: -2s; }
+.aiNodeVideo { bottom: 7%; left: 8%; animation-delay: -4s; }
+
+.idcHeroGraphic { border-color: rgb(255 255 255 / 0.32); }
+.idcGraphicCaption { max-width: 31rem; color: rgb(255 255 255 / 0.68); font-size: 0.86rem; line-height: 1.7; }
+.idcGraphicCaption span { display: block; margin-bottom: 0.45rem; color: var(--accent); font: 700 0.68rem/1.4 ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace; letter-spacing: 0.12em; }
+.idcInfrastructureGraphic {
+  border: 1px solid rgb(255 255 255 / 0.2);
+  border-radius: 50%;
+  background: radial-gradient(circle at 50% 50%, rgb(217 255 67 / 0.08), transparent 52%);
+}
+.idcInfrastructureGraphic::before,
+.idcInfrastructureGraphic::after {
+  position: absolute;
+  z-index: -1;
+  top: 50%;
+  left: 50%;
+  width: 72%;
+  height: 1px;
+  background: rgb(255 255 255 / 0.16);
+  content: "";
+  transform: translate(-50%, -50%) rotate(32deg);
+}
+.idcInfrastructureGraphic::after { transform: translate(-50%, -50%) rotate(-38deg); }
+.idcOrbitOuter {
+  inset: 6%;
+  border: 1px dashed rgb(255 255 255 / 0.3);
+  border-right-color: var(--accent);
+  border-radius: 50%;
+  animation: heroOrbitSpin 30s linear infinite;
+}
+.idcOrbitInner {
+  inset: 28%;
+  border: 1px solid rgb(217 255 67 / 0.58);
+  border-left-color: transparent;
+  border-radius: 50%;
+  animation: heroOrbitSpin 18s linear infinite reverse;
+}
+.idcSignal {
+  inset: 39%;
+  border-radius: 50%;
+  background: var(--accent);
+  filter: blur(1.25rem);
+  opacity: 0.35;
+  animation: heroCorePulse 4.5s ease-in-out infinite;
+}
+.idcCore {
+  background: var(--accent);
+  color: #050505;
+  font-size: 1rem;
+  animation: heroCenteredPulse 4.5s ease-in-out infinite;
+}
+.infrastructureNode { border: 1px solid rgb(255 255 255 / 0.34); background: #080808; color: #fff; padding: 0.5rem 0.72rem; }
+.idcNodeCompute { top: 5%; left: 37%; }
+.idcNodeStorage { top: 28%; right: -2%; animation-delay: -1.2s; }
+.idcNodeNetwork { right: 5%; bottom: 15%; animation-delay: -2.4s; }
+.idcNodePower { bottom: 8%; left: 9%; animation-delay: -3.6s; }
+.idcNodeCooling { top: 31%; left: -4%; animation-delay: -4.8s; }
+
 .numberedList { margin: 0; padding: 0; list-style: none; border-top: 1px solid color-mix(in srgb, currentColor 24%, transparent); }
 .numberedItem { display: grid; grid-template-columns: 3rem minmax(0, 1fr); gap: clamp(1rem, 3vw, 3rem); padding-block: 1.65rem; border-bottom: 1px solid color-mix(in srgb, currentColor 24%, transparent); }
 .number,
@@ -100,9 +239,15 @@
 .processNumber { display: inline-block; margin-bottom: 2rem; }
 
 @keyframes orbitDrift { to { transform: rotate(360deg); } }
+@keyframes heroOrbitSpin { to { transform: rotate(360deg); } }
+@keyframes heroCorePulse { 0%, 100% { opacity: 0.28; transform: scale(0.9); } 50% { opacity: 0.6; transform: scale(1.12); } }
+@keyframes heroCenteredPulse { 0%, 100% { transform: translate(-50%, -50%) scale(1); } 50% { transform: translate(-50%, -50%) scale(1.06); } }
+@keyframes heroNodeFloat { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-0.35rem); } }
 
 @media (min-width: 64rem) {
   .heroSplit { grid-template-columns: minmax(0, 1.2fr) minmax(0, 1fr); }
+  .heroSplitVisualStart { grid-template-columns: minmax(0, 1fr) minmax(0, 1.2fr); }
+  .heroSplitVisualStart .heroVisual { order: -1; }
   .heroSplit .heroTitle { font-size: clamp(3.5rem, 5.5vw, 5rem); }
   .heroSplit .placeholderArt { min-height: clamp(15rem, 24vw, 22rem); }
 }
@@ -117,5 +262,6 @@
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .placeholderArt::after { animation: none; }
+  .placeholderArt::after,
+  .heroGraphicFigure [data-motion-layer] { animation: none; }
 }

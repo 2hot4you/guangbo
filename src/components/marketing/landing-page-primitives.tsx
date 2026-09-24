@@ -16,6 +16,7 @@ interface LandingHeroProps {
   className?: string;
   tone?: LandingTone;
   layout?: "stacked" | "split";
+  visualPosition?: "start" | "end";
   compact?: boolean;
 }
 
@@ -55,10 +56,10 @@ const toneClass: Record<LandingTone, string> = {
   accent: styles.toneAccent,
 };
 
-export function LandingHero({id, title, lead, eyebrow, children, className = "", tone = "light", layout = "stacked", compact = false}: LandingHeroProps) {
+export function LandingHero({id, title, lead, eyebrow, children, className = "", tone = "light", layout = "stacked", visualPosition = "end", compact = false}: LandingHeroProps) {
   return (
     <section aria-labelledby={`${id}-heading`} className={`${styles.hero} ${toneClass[tone]} ${compact ? styles.heroCompact : ""} ${className}`} data-content-module id={id}>
-      <div className={`${styles.container} ${layout === "split" ? styles.heroSplit : ""}`}>
+      <div className={`${styles.container} ${layout === "split" ? styles.heroSplit : ""} ${layout === "split" && visualPosition === "start" ? styles.heroSplitVisualStart : ""}`}>
         <div className={styles.heroCopy}>
           {eyebrow && <p className={styles.eyebrow}>{eyebrow}</p>}
           <h1 className={styles.heroTitle} id={`${id}-heading`}>{title}</h1>

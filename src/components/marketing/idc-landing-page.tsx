@@ -20,13 +20,24 @@ export function IdcLandingPage({page}: {page: MarketingPage}) {
 
   return (
     <div className="idc-landing min-w-0 overflow-x-clip" data-landing-page="idc">
-      <LandingHero id="hero" eyebrow="IDC / 基础设施资源矩阵" title={page.hero.title} lead={page.hero.lead} tone="dark" layout="split">
-        <div className="grid gap-5">
-          <p className="border-t border-white/35 pt-5 font-mono text-xs leading-7 tracking-[0.15em] text-white/70 uppercase">
-            Compute / Storage / Network / Power / Cooling
-          </p>
-          <VisualPlaceholder label="机柜与数据中心示意" description="机房项目图片待确认；示意不代表具体站点配置" />
-        </div>
+      <LandingHero id="hero" eyebrow="IDC / 基础设施资源矩阵" title={page.hero.title} lead={page.hero.lead} tone="dark" layout="split" visualPosition="start">
+        <figure aria-label="IDC五层基础设施动态示意" className={`${styles.heroGraphicFigure} ${styles.idcHeroGraphic}`}>
+          <figcaption className={styles.idcGraphicCaption}>
+            <span>INFRASTRUCTURE / 05 LAYERS</span>
+            计算、存储、网络、电力与制冷共同构成可持续运行的基础环境。
+          </figcaption>
+          <div className={styles.idcInfrastructureGraphic}>
+            <span aria-hidden="true" className={styles.idcOrbitOuter} data-motion-layer />
+            <span aria-hidden="true" className={styles.idcOrbitInner} data-motion-layer />
+            <span aria-hidden="true" className={styles.idcSignal} data-motion-layer />
+            <span className={styles.idcCore} data-motion-layer>IDC</span>
+            <span className={`${styles.infrastructureNode} ${styles.idcNodeCompute}`} data-motion-layer>COMPUTE</span>
+            <span className={`${styles.infrastructureNode} ${styles.idcNodeStorage}`} data-motion-layer>STORAGE</span>
+            <span className={`${styles.infrastructureNode} ${styles.idcNodeNetwork}`} data-motion-layer>NETWORK</span>
+            <span className={`${styles.infrastructureNode} ${styles.idcNodePower}`} data-motion-layer>POWER</span>
+            <span className={`${styles.infrastructureNode} ${styles.idcNodeCooling}`} data-motion-layer>COOLING</span>
+          </div>
+        </figure>
       </LandingHero>
 
       <LandingSection id={services.id} number="01" eyebrow="SERVICE MATRIX" title={services.title} body={services.body} tone="light">

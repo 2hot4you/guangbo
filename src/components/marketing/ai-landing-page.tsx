@@ -21,18 +21,19 @@ export function AiLandingPage({page}: {page: MarketingPage}) {
   return (
     <div className="ai-landing min-w-0 overflow-x-clip" data-landing-page="ai">
       <LandingHero id="hero" eyebrow="AI / 模型生态编辑部" title={page.hero.title} lead={page.hero.lead} tone="light" layout="split" className="relative border-b border-black/15">
-        <figure aria-label="模型能力轨道图" className="grid gap-6 border-t border-black/20 pt-6">
+        <figure aria-label="模型能力轨道图" className={`${styles.heroGraphicFigure} border-black/20`}>
           <figcaption className="max-w-xl text-sm leading-7 text-black/65">
             <span className="mb-3 block font-mono text-xs tracking-[0.2em] uppercase">INPUT → MODEL → OUTPUT</span>
             以真实任务为中心，沿语言理解、图像创作和视频表达三条轨道寻找可验证的能力。
           </figcaption>
-          <div aria-hidden="true" className="relative mx-auto grid aspect-square w-[min(100%,22rem)] place-items-center rounded-full border border-black/25 bg-[#d9ff43]">
-            <div className="absolute inset-[13%] rounded-full border border-black/35" />
-            <div className="absolute inset-[29%] rounded-full border border-black/35" />
-            <span className="z-10 grid size-24 place-items-center rounded-full bg-black text-center font-mono text-xs font-bold tracking-[0.18em] text-white">TASK<br />FIRST</span>
-            <span className="absolute top-[8%] left-[42%] rounded-full bg-black px-3 py-1 font-mono text-xs text-white">LLM</span>
-            <span className="absolute right-[2%] bottom-[28%] rounded-full bg-black px-3 py-1 font-mono text-xs text-white">IMAGE</span>
-            <span className="absolute bottom-[8%] left-[9%] rounded-full bg-black px-3 py-1 font-mono text-xs text-white">VIDEO</span>
+          <div className={styles.aiOrbitalGraphic}>
+            <span aria-hidden="true" className={styles.aiOrbitOuter} data-motion-layer />
+            <span aria-hidden="true" className={styles.aiOrbitInner} data-motion-layer />
+            <span aria-hidden="true" className={styles.aiOrbitGlow} data-motion-layer />
+            <span className={styles.aiCore} data-motion-layer>TASK<br />FIRST</span>
+            <span className={`${styles.heroNode} ${styles.aiNodeLlm}`} data-motion-layer>LLM</span>
+            <span className={`${styles.heroNode} ${styles.aiNodeImage}`} data-motion-layer>IMAGE</span>
+            <span className={`${styles.heroNode} ${styles.aiNodeVideo}`} data-motion-layer>VIDEO</span>
           </div>
         </figure>
       </LandingHero>
