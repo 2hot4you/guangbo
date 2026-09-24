@@ -55,6 +55,7 @@ export function HomeHeroStory({slides}: {slides: readonly HomeHeroSlideContent[]
 
   return (
     <section aria-label="业务领域" className={styles.story} data-enhanced={enhanced} data-testid="home-hero-story">
+      {enhanced && <h1 className={styles.screenReaderOnly}>{slides[0]?.title}</h1>}
       <div className={styles.stage}>
         <div className={styles.slides}>
           {slides.map((slide, index) => (
@@ -71,7 +72,7 @@ export function HomeHeroStory({slides}: {slides: readonly HomeHeroSlideContent[]
               <div className={`${styles.layout} site-container`}>
                 <div className={styles.copy}>
                   <p className={styles.eyebrow}><span>{slide.index} / 05</span><span>{slide.label}</span></p>
-                  {index === 0
+                  {index === 0 && !enhanced
                     ? <h1 className={styles.title}>{slide.title}</h1>
                     : <h2 className={styles.title}>{slide.title}</h2>}
                   <p className={styles.body}>{slide.body}</p>
@@ -83,17 +84,20 @@ export function HomeHeroStory({slides}: {slides: readonly HomeHeroSlideContent[]
           ))}
         </div>
         <nav aria-label="业务领域进度" className={styles.progress}>
-          {slides.map((slide, index) => (
-            <button
-              aria-current={index === activeIndex ? "step" : undefined}
-              className={styles.progressButton}
-              key={slide.index}
-              onClick={() => goTo(index)}
-              type="button"
-            >
-              <span>{slide.index}</span><span>{slide.label}</span>
-            </button>
-          ))}
+          <ol className={styles.progressList}>
+            {slides.map((slide, index) => (
+              <li key={slide.index}>
+                <button
+                  aria-current={index === activeIndex ? "step" : undefined}
+                  className={styles.progressButton}
+                  onClick={() => goTo(index)}
+                  type="button"
+                >
+                  <span>{slide.index}</span><span>{slide.label}</span>
+                </button>
+              </li>
+            ))}
+          </ol>
         </nav>
       </div>
       <div aria-hidden="true" className={styles.steps}>

@@ -51,16 +51,54 @@ describe("home hero story", () => {
   });
 
   it.each([
-    ["ai", "AI", ["LLM", "IMAGE", "VIDEO"]],
-    ["compute", "COMPUTE", ["COMPUTE", "STORAGE", "NETWORK", "POWER", "COOLING"]],
-    ["xinchang", "XINCHUANG", ["硬件", "系统", "应用", "数据"]],
-    ["link", "LINK", ["站点", "接入", "传输", "目标"]],
-    ["energy", "ENERGY", ["负荷", "绿电", "储能", "管理"]],
-  ] as const)("renders the %s visual as a labelled figure with readable nodes", (variant, label, nodes) => {
+    ["ai", "AI", ["LLM", "IMAGE", "VIDEO"], ["ai-orbit", "ai-core"]],
+    ["compute", "COMPUTE", ["COMPUTE", "STORAGE", "NETWORK", "POWER", "COOLING"], ["compute-track-forward", "compute-track-reverse"]],
+    ["xinchang", "XINCHUANG", ["硬件", "系统", "应用", "数据"], ["xinchang-system"]],
+    ["link", "LINK", ["站点", "接入", "传输", "目标"], ["link-signal"]],
+    ["energy", "ENERGY", ["负荷", "绿电", "储能", "管理"], ["energy-core", "energy-flow"]],
+  ] as const)("renders the %s visual as a labelled figure with readable nodes and its own motion", (variant, label, nodes, motions) => {
     render(<HomeHeroVisual variant={variant} active />);
     const figure = screen.getByRole("figure", {name: `${label}业务动态图形`});
-    expect([...figure.querySelectorAll("[data-motion-layer]")].map((node) => node.textContent))
+    expect([...figure.querySelectorAll("[data-visual-node]")].map((node) => node.textContent))
       .toEqual(nodes);
+    expect([...figure.querySelectorAll("[data-motion-kind]")].map((node) => node.getAttribute("data-motion-kind")))
+      .toEqual(motions);
+    for (const layer of figure.querySelectorAll("[data-motion-kind]")) {
+      expect(layer).toHaveAttribute("data-motion-layer");
+    }
+  });
+
+  it("keeps one accessible page h1 after a later state becomes active", () => {
+    let callback: IntersectionObserverCallback | undefined;
+    class Observer {
+      constructor(receive: IntersectionObserverCallback) { callback = receive; }
+      observe() {}
+      disconnect() {}
+    }
+    vi.stubGlobal("IntersectionObserver", Observer);
+    render(<HomeHeroStory slides={slides} />);
+    const steps = [...screen.getByTestId("home-hero-story").querySelectorAll<HTMLElement>("[data-home-hero-step]")];
+    steps.forEach((step, index) => {
+      vi.spyOn(step, "getBoundingClientRect").mockReturnValue({
+        top: index === 3 ? 200 : 1200 + index * 400,
+        bottom: index === 3 ? 600 : 1600 + index * 400,
+      } as DOMRect);
+    });
+    act(() => callback?.([], {} as IntersectionObserver));
+
+    expect(screen.getAllByTestId("home-hero-slide")[3]).toHaveAttribute("data-active", "true");
+    expect(screen.getAllByRole("heading", {level: 1})).toHaveLength(1);
+    expect(screen.getByRole("heading", {level: 1})).toHaveTextContent("大模型与AIGC");
+    expect(document.querySelectorAll("h1")).toHaveLength(1);
+  });
+
+  it("offers the five progress controls as an ordered list with a current step", () => {
+    render(<HomeHeroStory slides={slides} />);
+    const progress = screen.getByRole("navigation", {name: "业务领域进度"});
+    const list = within(progress).getByRole("list");
+    expect(list.tagName).toBe("OL");
+    expect(within(list).getAllByRole("listitem")).toHaveLength(5);
+    expect(within(list).getAllByRole("button")[0]).toHaveAttribute("aria-current", "step");
   });
 
   it("enhances with observed steps and moves to a requested state without moving focus", () => {
