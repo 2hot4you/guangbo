@@ -5,7 +5,7 @@ import {ChevronDown, Menu} from "lucide-react";
 import Link from "next/link";
 import {usePathname} from "next/navigation";
 import {useEffect, useRef, useState} from "react";
-import {navigationGroups, routeEntries} from "@/content";
+import {navigationGroups} from "@/content";
 import type {PublicPath} from "@/content";
 
 function CurrentMarker() {
@@ -63,16 +63,6 @@ function MobileNavigationContent({activePath}: {activePath: string}) {
             <Drawer.Body>
               <nav aria-label="移动导航">
                 <ul className="space-y-1">
-                  <li>
-                    <Link
-                      aria-current={activePath === "/" ? "page" : undefined}
-                      className="link flex min-h-11 items-center rounded-lg px-3 text-foreground focus-visible:outline-2 focus-visible:outline-accent"
-                      href={routeEntries[0].path}
-                      onClick={closeMenu}
-                    >
-                      首页{activePath === "/" && <CurrentMarker />}
-                    </Link>
-                  </li>
                   {navigationGroups.map((item) => {
                     if (item.kind === "link") {
                       const current = activePath === item.path;

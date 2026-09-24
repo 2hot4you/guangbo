@@ -41,6 +41,7 @@ function group(key: PageKey, children: readonly PageKey[]): NavigationSection {
 }
 
 export const navigationGroups: readonly NavigationItem[] = [
+  link("home"),
   group("ai", ["aiLlm", "aiImage", "aiVideo"]),
   group("idc", ["idcVps", "idcBareMetal", "idcColocation", "idcGpu"]),
   link("madeInChina"),

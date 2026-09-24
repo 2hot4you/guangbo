@@ -1,4 +1,4 @@
-import {cleanup, render, screen, waitFor} from "@testing-library/react";
+import {cleanup, render, screen, waitFor, within} from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import {afterEach, describe, expect, it, vi} from "vitest";
 import {MobileNavigation} from "@/components/layout/mobile-navigation";
@@ -13,6 +13,18 @@ afterEach(() => {
 });
 
 describe("mobile navigation", () => {
+  it("shows Home first from the shared primary navigation and marks it current", async () => {
+    const user = userEvent.setup();
+    render(<MobileNavigation currentPath="/" />);
+    await user.click(screen.getByRole("button", {name: "打开导航菜单"}));
+
+    const navigation = screen.getByRole("navigation", {name: "移动导航"});
+    const firstLink = within(navigation).getAllByRole("link")[0];
+    expect(firstLink).toHaveTextContent("首页");
+    expect(firstLink).toHaveAttribute("href", "/");
+    expect(firstLink).toHaveAttribute("aria-current", "page");
+  });
+
   it("keeps AI overview reachable independently from submenu expansion", async () => {
     const user = userEvent.setup();
     render(<MobileNavigation currentPath="/" />);
@@ -89,6 +101,15 @@ describe("mobile navigation", () => {
 });
 
 describe("desktop navigation", () => {
+  it("shows Home as its first direct link and marks it current on the home page", () => {
+    render(<DesktopNavigation currentPath="/" />);
+    const navigation = screen.getByRole("navigation", {name: "主导航"});
+    const firstLink = within(navigation).getAllByRole("link")[0];
+    expect(firstLink).toHaveTextContent("首页");
+    expect(firstLink).toHaveAttribute("href", "/");
+    expect(firstLink).toHaveAttribute("aria-current", "page");
+  });
+
   it("offers a keyboard-operable menu with overview and child link targets", async () => {
     const user = userEvent.setup();
     render(<DesktopNavigation currentPath="/ai/llm" />);
