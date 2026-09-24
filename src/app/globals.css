@@ -168,6 +168,7 @@
     width: clamp(9rem, 16vw, 13.5rem);
     aspect-ratio: 1;
     margin-top: clamp(2.5rem, 5vw, 4.5rem);
+    overflow: clip;
   }
   .home-domain__ring,
   .home-domain__nodes,
