@@ -80,6 +80,10 @@ describe("visitor content", () => {
       lead: "围绕企业计算环境、业务应用和数据保护，光波互联结合合作生态开展方案对接与系统集成。以现有系统和业务目标为起点，评估软硬件适配、部署方式及后续扩展。",
     });
     expect(marketingPages.madeInChina.sections[0]).toMatchObject({
+      id: "diagnostic",
+      title: "从现状问题开始",
+    });
+    expect(marketingPages.madeInChina.sections.find((section) => section.id === "hardware")).toMatchObject({
       title: "计算硬件与本地AI部署",
       body: "从桌面工作站、企业服务器到多卡计算节点，按任务规模与现场条件组织选型。针对本地模型推理、知识检索和行业计算，综合评估处理器、GPU、内存、存储与网络，明确软件环境及适配要求。面向信创需求，按项目逐项核对处理器、操作系统、数据库与业务软件的兼容情况，形成可验证的配置清单。",
     });
@@ -88,6 +92,10 @@ describe("visitor content", () => {
       lead: "成都光波互联科技有限公司成立于2019年，围绕光纤网络、数据中心互联、算力租赁和系统研发集成开展业务，为企业数字化建设提供资源连接与技术服务。",
     });
     expect(marketingPages.about.sections[0]).toMatchObject({
+      id: "identity",
+      title: "从 2019 年出发",
+    });
+    expect(marketingPages.about.sections.find((section) => section.id === "approach")).toMatchObject({
       title: "连接资源，也连接业务需求",
       body: "我们从客户的业务场景出发，将网络、计算、托管和系统集成需求放在一起考虑。结合合作生态资源，组织选型与方案沟通，让基础设施配置更贴近应用需求。",
     });

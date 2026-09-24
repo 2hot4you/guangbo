@@ -5,9 +5,20 @@ export function XinchangLandingPage({page}: {page: MarketingPage}) {
   const [diagnostic, layers, hardware, applications, data, compatibility, industries, delivery] = page.sections;
 
   return (
-    <main data-landing-page={page.key}>
+    <div data-landing-page={page.key}>
       <LandingHero id="madeInChina-hero" eyebrow="XINCHUANG / SYSTEM BLUEPRINT" title={page.hero.title} lead={page.hero.lead} tone="dark">
-        <p className="mt-12 border-l-2 border-lime-300 pl-5 text-sm uppercase tracking-[0.15em] text-white/70">现状诊断 → 系统分层 → 适配验证 → 分阶段交付</p>
+        <figure aria-label="企业系统四层架构蓝图" className="mt-12 border border-white/30">
+          <ol className="m-0 list-none p-0">
+            {layers.items?.map((item, index) => (
+              <li className="grid gap-2 border-b border-white/25 px-5 py-4 last:border-b-0 md:grid-cols-[5rem_minmax(0,1fr)_minmax(0,2fr)] md:items-baseline" key={item.title}>
+                <span className="font-mono text-xs text-lime-300">L{index + 1}</span>
+                <strong className="text-lg font-semibold">{item.title}</strong>
+                <span className="text-sm leading-relaxed text-white/70">{item.body}</span>
+              </li>
+            ))}
+          </ol>
+          <figcaption className="border-t border-white/25 px-5 py-3 text-sm text-white/65">架构概览：从接入到基础设施，按业务范围组合验证。</figcaption>
+        </figure>
       </LandingHero>
 
       <LandingSection id={diagnostic.id} title={diagnostic.title} body={diagnostic.body} number="01" tone="muted">
@@ -19,7 +30,7 @@ export function XinchangLandingPage({page}: {page: MarketingPage}) {
       </LandingSection>
 
       <LandingSection id={layers.id} title={layers.title} body={layers.body} number="02">
-        <figure aria-label="企业系统四层架构蓝图" className="architecture-blueprint border border-current/20">
+        <figure aria-label="系统分层详图" className="architecture-blueprint border border-current/20">
           <ol className="m-0 list-none p-0">
             {layers.items?.map((item, index) => (
               <li className="grid gap-4 border-b border-current/20 p-5 last:border-b-0 md:grid-cols-[7rem_minmax(0,1fr)_minmax(0,2fr)] md:items-baseline md:px-8" key={item.title}>
@@ -90,6 +101,6 @@ export function XinchangLandingPage({page}: {page: MarketingPage}) {
           {title: "逐步扩展", body: "在验证结果基础上连接后续系统。"},
         ]} />
       </LandingSection>
-    </main>
+    </div>
   );
 }

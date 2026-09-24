@@ -7,14 +7,16 @@ export function NetworkLandingPage({page}: {page: MarketingPage}) {
   const [products, inputs, topology, solutions, continuity, interfaces, rollout, boundaries] = page.sections;
 
   return (
-    <main data-landing-page={page.key}>
+    <div data-landing-page={page.key}>
       <LandingHero id="network-hero" eyebrow="NETWORK / CONNECTION ROUTE" title={page.hero.title} lead={page.hero.lead} tone="dark">
-        <div aria-hidden="true" className="mt-14 flex items-center gap-2 text-lime-300">
-          <span className="size-3 shrink-0 rounded-full bg-current" /><span className="h-px min-w-0 flex-1 bg-current" />
-          <span className="size-3 shrink-0 rounded-full border border-current" /><span className="h-px min-w-0 flex-1 bg-current" />
-          <span className="size-3 shrink-0 rounded-full bg-current" />
-        </div>
-        <p className="mt-4 font-mono text-xs tracking-[0.12em] text-white/60">LOCAL ACCESS · REGIONAL AGGREGATION · BACKBONE</p>
+        <figure aria-label="首屏站点连接路径" className="mt-14 border-y border-white/30 py-6 text-white">
+          <ol aria-label="首屏五站路径" className="m-0 grid list-none gap-3 p-0 md:grid-cols-5">
+            {stations.map((station) => (
+              <li className="min-w-0 border-l-2 border-lime-300 py-3 pl-4 text-lg leading-tight md:border-l-0 md:border-t-2 md:pl-0 md:pt-5" key={station}>{station}</li>
+            ))}
+          </ol>
+          <figcaption className="mt-5 text-sm text-white/65">站点路径示意：接入与传输方式按具体线路条件确认。</figcaption>
+        </figure>
       </LandingHero>
 
       <LandingSection id={products.id} title={products.title} number="01">
@@ -38,7 +40,7 @@ export function NetworkLandingPage({page}: {page: MarketingPage}) {
       </LandingSection>
 
       <LandingSection id={topology.id} title={topology.title} body={topology.body} number="03" tone="dark">
-        <figure aria-label="站点连接结构" className="network-topology border-y border-white/30 py-8">
+        <figure aria-label="站点连接结构" className="network-landing-topology border-y border-white/30 bg-[#080808] py-8 text-white">
           <ol aria-label="站点连接路径" className="m-0 grid list-none gap-4 p-0 md:grid-cols-5 md:gap-2">
             {stations.map((station) => (
               <li className="relative flex min-w-0 items-center gap-4 border-l-2 border-lime-300 py-4 pl-4 md:min-h-36 md:flex-col md:items-start md:border-l-0 md:border-t-2 md:pl-0" key={station}>
@@ -89,6 +91,6 @@ export function NetworkLandingPage({page}: {page: MarketingPage}) {
       <LandingSection id={boundaries.id} title={boundaries.title} body={boundaries.body} number="08" tone="dark">
         <p className="max-w-3xl border-t border-white/30 pt-7 text-sm leading-relaxed text-white/65">线路可行性、时延、保护方式、服务指标及施工周期均以实际勘察和具体方案为准。</p>
       </LandingSection>
-    </main>
+    </div>
   );
 }

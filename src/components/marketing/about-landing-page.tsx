@@ -1,11 +1,11 @@
 import type {MarketingPage} from "@/content";
-import {LandingHero, LandingSection, ProcessRail, VisualPlaceholder} from "./landing-page-primitives";
+import {LandingHero, LandingSection, NumberedList, ProcessRail, VisualPlaceholder} from "./landing-page-primitives";
 
 export function AboutLandingPage({page}: {page: MarketingPage}) {
   const [identity, businessMap, approach, practice, ecosystem, principles, delivery, contact] = page.sections;
 
   return (
-    <main data-landing-page={page.key}>
+    <div data-landing-page={page.key}>
       <LandingHero id="about-hero" eyebrow="ABOUT / GUANGBO" title={page.hero.title} lead={page.hero.lead} tone="light">
         <div className="mt-12 max-w-4xl"><VisualPlaceholder label="公司形象视觉占位" description="公司图片尚待确认" /></div>
       </LandingHero>
@@ -26,6 +26,7 @@ export function AboutLandingPage({page}: {page: MarketingPage}) {
           </ol>
           <figcaption className="mt-7 text-sm opacity-60">业务方向可按项目需求组合评估，资源归属以具体方案为准。</figcaption>
         </figure>
+        <div className="mt-10"><NumberedList label="业务版图说明" items={businessMap.items ?? []} /></div>
       </LandingSection>
 
       <LandingSection id={approach.id} title={approach.title} body={approach.body} number="03">
@@ -70,6 +71,6 @@ export function AboutLandingPage({page}: {page: MarketingPage}) {
       <LandingSection id={contact.id} title={contact.title} body={contact.body} number="08" tone="dark">
         <p className="max-w-3xl border-t border-white/30 pt-7 text-sm leading-relaxed text-white/65">待公开联系方式经核实后，再提供可用的联系入口。</p>
       </LandingSection>
-    </main>
+    </div>
   );
 }

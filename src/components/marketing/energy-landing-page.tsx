@@ -5,9 +5,28 @@ export function EnergyLandingPage({page}: {page: MarketingPage}) {
   const [inputs, greenPower, purchase, management, projects, carbon, scenarios, delivery] = page.sections;
 
   return (
-    <main data-landing-page={page.key}>
+    <div data-landing-page={page.key}>
       <LandingHero id="energy-hero" eyebrow="ENERGY / ENTERPRISE PATH" title={page.hero.title} lead={page.hero.lead} tone="accent">
-        <div className="mt-12 max-w-3xl"><VisualPlaceholder label="清洁能源项目视觉占位" description="项目图片尚待确认" /></div>
+        <div className="mt-12 grid min-w-0 gap-6 lg:grid-cols-[minmax(0,1.25fr)_minmax(0,1fr)]">
+          <figure aria-label="首屏企业用能路径" className="min-w-0 border-y border-current/35 py-5">
+            <ol aria-label="首屏用能路径" className="m-0 grid list-none gap-3 p-0 sm:grid-cols-2">
+              {[
+                ["用能起点", "地区 · 规模 · 负荷 · 目标"],
+                ["需求分析", "核对历史数据与经营计划"],
+                ["方案对接", "采购、绿电及项目资源"],
+                ["项目评估", "确认条件与实施范围"],
+              ].map(([title, detail], index) => (
+                <li className="min-w-0 border-l-2 border-current/50 py-3 pl-4" key={title}>
+                  <span className="font-mono text-xs opacity-60">0{index + 1}</span>
+                  <strong className="mt-3 block text-xl">{title}</strong>
+                  <span className="mt-2 block text-sm opacity-70">{detail}</span>
+                </li>
+              ))}
+            </ol>
+            <figcaption className="mt-5 text-sm opacity-70">用能路径示意：从企业数据到可行性沟通。</figcaption>
+          </figure>
+          <VisualPlaceholder label="清洁能源项目视觉占位" description="项目图片尚待确认" />
+        </div>
       </LandingHero>
 
       <LandingSection id={inputs.id} title={inputs.title} body={inputs.body} number="01">
@@ -86,6 +105,6 @@ export function EnergyLandingPage({page}: {page: MarketingPage}) {
           {title: "范围确认", body: "明确主体、服务内容与下一步。"},
         ]} />
       </LandingSection>
-    </main>
+    </div>
   );
 }
