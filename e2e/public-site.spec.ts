@@ -1,4 +1,4 @@
-import {expect, test} from "@playwright/test";
+import {expect, test, type Locator, type Page} from "@playwright/test";
 
 const publicPaths = [
   "/", "/ai", "/ai/llm", "/ai/image", "/ai/video",
@@ -19,6 +19,51 @@ async function expectNoHorizontalOverflow(page: import("@playwright/test").Page)
   expect(overflow.scrollWidth, `horizontal overflow: ${page.url()} at ${overflow.clientWidth}px`).toBeLessThanOrEqual(overflow.clientWidth);
 }
 
+async function expectContrastingKeyboardFocus(page: Page, target: Locator) {
+  await target.focus();
+  await page.keyboard.press("Shift+Tab");
+  await page.keyboard.press("Tab");
+  await expect(target).toBeFocused();
+  const treatment = await target.evaluate((element) => {
+    const context = document.createElement("canvas").getContext("2d")!;
+    function rgba(color: string) {
+      context.clearRect(0, 0, 1, 1);
+      context.fillStyle = color;
+      context.fillRect(0, 0, 1, 1);
+      return [...context.getImageData(0, 0, 1, 1).data];
+    }
+    function luminance(channels: number[]) {
+      return channels.slice(0, 3).map((channel) => {
+        const value = channel / 255;
+        return value <= 0.04045 ? value / 12.92 : ((value + 0.055) / 1.055) ** 2.4;
+      }).reduce((total, value, index) => total + value * [0.2126, 0.7152, 0.0722][index], 0);
+    }
+    const ancestors = [];
+    for (let current = element.parentElement; current; current = current.parentElement) ancestors.unshift(current);
+    let background = [255, 255, 255];
+    for (const ancestor of ancestors) {
+      const color = rgba(getComputedStyle(ancestor).backgroundColor);
+      background = background.map((channel, index) => color[index] * color[3] / 255 + channel * (1 - color[3] / 255));
+    }
+    const style = getComputedStyle(element);
+    const outline = rgba(style.outlineColor);
+    const paintedOutline = background.map((channel, index) => outline[index] * outline[3] / 255 + channel * (1 - outline[3] / 255));
+    const first = luminance(paintedOutline);
+    const second = luminance(background);
+    return {
+      visible: element.matches(":focus-visible"),
+      width: parseFloat(style.outlineWidth),
+      style: style.outlineStyle,
+      color: style.outlineColor,
+      contrast: (Math.max(first, second) + 0.05) / (Math.min(first, second) + 0.05),
+    };
+  });
+  expect(treatment.visible).toBe(true);
+  expect(treatment.style).toBe("solid");
+  expect(treatment.width).toBeGreaterThanOrEqual(2);
+  expect(treatment.contrast, JSON.stringify(treatment)).toBeGreaterThanOrEqual(3);
+}
+
 for (const path of publicPaths) {
   test(`${path} responds with one visible H1 and fits the project viewport`, async ({page}) => {
     const response = await page.goto(path);
@@ -35,7 +80,7 @@ for (const path of publicPaths) {
     if (topLevelPathSet.has(path)) {
       const landing = page.locator("[data-landing-page]");
       await expect(landing).toHaveCount(1);
-      expect(await landing.locator("section[data-content-module]").count(), `${path} content modules`).toBeGreaterThanOrEqual(8);
+      await expect(landing.locator("section[data-content-module]")).toHaveCount(9);
     }
     await expectNoHorizontalOverflow(page);
   });
@@ -148,6 +193,103 @@ test("desktop navigation uses direct links with Home first and visible keyboard 
   expect(await aiLink.evaluate((element) => element.matches(":focus-visible"))).toBe(true);
   await page.keyboard.press("Enter");
   await expect(page).toHaveURL(/\/ai$/);
+});
+
+test("dark footer links and home energy link have contrasting keyboard outlines", async ({page}) => {
+  await page.emulateMedia({reducedMotion: "reduce"});
+  await page.goto("/");
+  await expectContrastingKeyboardFocus(page, page.locator(".home-domain--energy a"));
+  for (const path of topLevelPaths) {
+    await page.goto(path);
+    for (const link of await page.locator("footer a").all()) await expectContrastingKeyboardFocus(page, link);
+  }
+});
+
+test("every dark landing surface supplies a contrasting focus treatment", async ({page}) => {
+  for (const path of topLevelPaths) {
+    await page.goto(path);
+    const darkSections = page.locator('[data-content-module][class*="toneDark"]');
+    await expect(darkSections.first()).toHaveCSS("background-color", "rgb(8, 8, 8)");
+    expect(await darkSections.count()).toBeGreaterThan(0);
+    for (const section of await darkSections.all()) {
+      // Content-only surfaces have no links today. Temporarily focus their real heading
+      // to exercise the inherited token with the shared [tabindex] focus rule.
+      const heading = section.locator("h1, h2").first();
+      await heading.evaluate((element) => element.setAttribute("tabindex", "0"));
+      await expectContrastingKeyboardFocus(page, heading);
+      await heading.evaluate((element) => element.removeAttribute("tabindex"));
+    }
+  }
+});
+
+test("AI and IDC visuals share the desktop hero and follow the title on mobile", async ({page}) => {
+  for (const width of [360, 1280, 1440]) {
+    await page.setViewportSize({width, height: 900});
+    for (const path of ["/ai", "/idc"]) {
+      await page.goto(path);
+      const title = await page.locator("h1").boundingBox();
+      const visual = await page.locator("#hero figure").boundingBox();
+      expect(title).not.toBeNull();
+      expect(visual).not.toBeNull();
+      if (width >= 1280) {
+        expect(visual!.x, `${path} visual beside title at ${width}px`).toBeGreaterThan(title!.x + title!.width);
+        expect(visual!.y).toBeLessThan(title!.y + title!.height);
+        expect(visual!.y + visual!.height).toBeLessThanOrEqual(900);
+      } else {
+        expect(visual!.y).toBeGreaterThan(title!.y + title!.height);
+      }
+    }
+  }
+});
+
+test("energy mobile hero keeps its overview and labelled placeholder compact", async ({page}) => {
+  await page.setViewportSize({width: 360, height: 900});
+  await page.goto("/energy");
+  const hero = await page.locator("#energy-hero").boundingBox();
+  const placeholder = await page.getByRole("figure", {name: "清洁能源项目视觉占位"}).boundingBox();
+  expect(hero!.height).toBeLessThanOrEqual(1000);
+  expect(placeholder!.y + placeholder!.height).toBeLessThanOrEqual(900);
+  await expect(page.getByText("项目图片尚待确认", {exact: true})).toBeVisible();
+});
+
+test("AI and IDC content links offer 44px targets with working padded hit areas", async ({page}) => {
+  await page.setViewportSize({width: 360, height: 900});
+  for (const path of ["/ai", "/idc"]) {
+    await page.goto(path);
+    const links = await page.locator("[data-landing-page] a").evaluateAll((elements) => elements.map((element) => ({
+      href: element.getAttribute("href")!,
+      label: element.textContent!,
+      height: element.getBoundingClientRect().height,
+    })));
+    expect(links.length).toBeGreaterThanOrEqual(4);
+    for (const link of links) {
+      expect(link.height, `${path}: ${link.label}`).toBeGreaterThanOrEqual(44);
+      const target = page.locator(`[data-landing-page] a[href="${link.href}"]`).filter({hasText: link.label}).first();
+      await target.click({position: {x: 4, y: 3}});
+      await expect(page).toHaveURL(new RegExp(`${link.href}$`));
+      await page.goto(path);
+    }
+  }
+});
+
+test("small landing labels retain at least 65 percent effective text opacity", async ({page}) => {
+  for (const path of topLevelPaths) {
+    await page.goto(path);
+    const fadedLabels = await page.locator("[data-landing-page] *").evaluateAll((elements) => {
+      const context = document.createElement("canvas").getContext("2d")!;
+      return elements.flatMap((element) => {
+        const style = getComputedStyle(element);
+        if (element.children.length || !element.textContent?.trim() || parseFloat(style.fontSize) > 13) return [];
+        context.clearRect(0, 0, 1, 1);
+        context.fillStyle = style.color;
+        context.fillRect(0, 0, 1, 1);
+        let opacity = context.getImageData(0, 0, 1, 1).data[3] / 255;
+        for (let current: Element | null = element; current; current = current.parentElement) opacity *= Number(getComputedStyle(current).opacity);
+        return opacity < 0.645 ? [`${element.textContent}: ${opacity}`] : [];
+      });
+    });
+    expect(fadedLabels, path).toEqual([]);
+  }
 });
 
 test("unknown route responds 404 with the intended H1", async ({page}) => {

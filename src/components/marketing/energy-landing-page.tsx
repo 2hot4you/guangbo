@@ -6,46 +6,40 @@ export function EnergyLandingPage({page}: {page: MarketingPage}) {
 
   return (
     <div data-landing-page={page.key}>
-      <LandingHero id="energy-hero" eyebrow="ENERGY / ENTERPRISE PATH" title={page.hero.title} lead={page.hero.lead} tone="accent">
-        <div className="mt-12 grid min-w-0 gap-6 lg:grid-cols-[minmax(0,1.25fr)_minmax(0,1fr)]">
-          <figure aria-label="首屏企业用能路径" className="min-w-0 border-y border-current/35 py-5">
-            <ol aria-label="首屏用能路径" className="m-0 grid list-none gap-3 p-0 sm:grid-cols-2">
-              {[
-                ["用能起点", "地区 · 规模 · 负荷 · 目标"],
-                ["需求分析", "核对历史数据与经营计划"],
-                ["方案对接", "采购、绿电及项目资源"],
-                ["项目评估", "确认条件与实施范围"],
-              ].map(([title, detail], index) => (
-                <li className="min-w-0 border-l-2 border-current/50 py-3 pl-4" key={title}>
-                  <span className="font-mono text-xs opacity-60">0{index + 1}</span>
-                  <strong className="mt-3 block text-xl">{title}</strong>
-                  <span className="mt-2 block text-sm opacity-70">{detail}</span>
+      <LandingHero id="energy-hero" eyebrow="ENERGY / ENTERPRISE PATH" title={page.hero.title} lead={page.hero.lead} tone="accent" compact>
+        <div className="mt-6 grid min-w-0 gap-4 lg:grid-cols-[minmax(0,1.25fr)_minmax(0,1fr)]">
+          <figure aria-label="首屏企业用能路径" className="min-w-0 border-y border-current/35 py-3">
+            <ol aria-label="首屏用能路径" className="m-0 grid list-none grid-cols-2 gap-3 p-0">
+              {["用能起点", "需求分析", "方案对接", "项目评估"].map((title, index) => (
+                <li className="flex min-w-0 items-baseline gap-2 border-l-2 border-current/50 py-2 pl-3" key={title}>
+                  <span aria-hidden="true" className="font-mono text-xs opacity-65">0{index + 1}</span>
+                  <strong className="text-base">{title}</strong>
                 </li>
               ))}
             </ol>
-            <figcaption className="mt-5 text-sm opacity-70">用能路径示意：从企业数据到可行性沟通。</figcaption>
+            <figcaption className="mt-3 text-sm opacity-70">用能路径示意：从企业数据到可行性沟通。</figcaption>
           </figure>
           <VisualPlaceholder label="清洁能源项目视觉占位" description="项目图片尚待确认" />
         </div>
       </LandingHero>
 
       <LandingSection id={inputs.id} title={inputs.title} body={inputs.body} number="01">
-        <figure aria-label="企业用能服务路径" className="energy-flow border-y border-current/20 py-7">
+        <figure aria-label="企业用能输入资料" className="energy-flow border-y border-current/20 py-7">
           <ol className="m-0 grid list-none gap-4 p-0 md:grid-cols-4">
             {[
-              ["用能起点", "地区 · 规模 · 负荷 · 目标"],
-              ["需求分析", "历史数据与经营计划"],
-              ["方案对接", "采购 · 绿电 · 项目资源"],
-              ["项目评估", "条件、主体与实施范围"],
+              ["所在地区", "提供用能位置与场地条件，明确讨论的项目范围。"],
+              ["用电规模", "汇总用电数据与现有采购安排，说明需求规模。"],
+              ["历史负荷", "准备负荷曲线和生产计划，梳理用电变化。"],
+              ["绿色用能目标", "说明绿电、绿证或节能项目方向，明确评估重点。"],
             ].map(([title, detail], index) => (
               <li className="min-w-0 border-l-2 border-lime-500 py-3 pl-4 md:border-l-0 md:border-t-2 md:pl-0 md:pt-5" key={title}>
-                <span className="font-mono text-xs opacity-50">0{index + 1}</span>
+                <span aria-hidden="true" className="font-mono text-xs opacity-65">0{index + 1}</span>
                 <h3 className="mt-3 text-xl font-semibold">{title}</h3>
                 <p className="mt-2 text-sm opacity-65">{detail}</p>
               </li>
             ))}
           </ol>
-          <figcaption className="mt-7 text-sm opacity-60">路径示意：各阶段均以企业数据与项目条件为依据。</figcaption>
+          <figcaption className="mt-7 text-sm opacity-65">输入资料：先梳理四项起点，再结合企业数据与项目条件沟通。</figcaption>
         </figure>
       </LandingSection>
 
@@ -68,7 +62,7 @@ export function EnergyLandingPage({page}: {page: MarketingPage}) {
         <div className="grid gap-0 border-y border-current/20 md:grid-cols-3">
           {["数据汇集", "运行分析", "改造评估"].map((label, index) => (
             <div className="border-b border-current/20 py-6 last:border-b-0 md:border-b-0 md:border-r md:px-6 first:md:pl-0 last:md:border-r-0" key={label}>
-              <span className="font-mono text-xs opacity-50">0{index + 1}</span><h3 className="mt-5 text-2xl font-semibold">{label}</h3>
+              <span aria-hidden="true" className="font-mono text-xs opacity-65">0{index + 1}</span><h3 className="mt-5 text-2xl font-semibold">{label}</h3>
             </div>
           ))}
         </div>
@@ -83,7 +77,7 @@ export function EnergyLandingPage({page}: {page: MarketingPage}) {
             ["合同能源管理", "明确实施主体与合作方式。"],
           ].map(([title, body], index) => (
             <li className="grid gap-3 border-b border-current/30 py-5 md:grid-cols-[4rem_minmax(0,1fr)_minmax(0,2fr)]" key={title}>
-              <span className="font-mono text-xs opacity-60">0{index + 1}</span><h3 className="text-xl font-semibold">{title}</h3><p>{body}</p>
+              <span aria-hidden="true" className="font-mono text-xs opacity-65">0{index + 1}</span><h3 className="text-xl font-semibold">{title}</h3><p>{body}</p>
             </li>
           ))}
         </ol>

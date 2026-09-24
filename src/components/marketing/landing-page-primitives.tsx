@@ -15,6 +15,8 @@ interface LandingHeroProps {
   children?: ReactNode;
   className?: string;
   tone?: LandingTone;
+  layout?: "stacked" | "split";
+  compact?: boolean;
 }
 
 interface LandingSectionProps {
@@ -53,14 +55,16 @@ const toneClass: Record<LandingTone, string> = {
   accent: styles.toneAccent,
 };
 
-export function LandingHero({id, title, lead, eyebrow, children, className = "", tone = "light"}: LandingHeroProps) {
+export function LandingHero({id, title, lead, eyebrow, children, className = "", tone = "light", layout = "stacked", compact = false}: LandingHeroProps) {
   return (
-    <section aria-labelledby={`${id}-heading`} className={`${styles.hero} ${toneClass[tone]} ${className}`} data-content-module id={id}>
-      <div className={styles.container}>
-        {eyebrow && <p className={styles.eyebrow}>{eyebrow}</p>}
-        <h1 className={styles.heroTitle} id={`${id}-heading`}>{title}</h1>
-        <p className={styles.heroLead}>{lead}</p>
-        {children}
+    <section aria-labelledby={`${id}-heading`} className={`${styles.hero} ${toneClass[tone]} ${compact ? styles.heroCompact : ""} ${className}`} data-content-module id={id}>
+      <div className={`${styles.container} ${layout === "split" ? styles.heroSplit : ""}`}>
+        <div className={styles.heroCopy}>
+          {eyebrow && <p className={styles.eyebrow}>{eyebrow}</p>}
+          <h1 className={styles.heroTitle} id={`${id}-heading`}>{title}</h1>
+          <p className={styles.heroLead}>{lead}</p>
+        </div>
+        {children && <div className={styles.heroVisual}>{children}</div>}
       </div>
     </section>
   );

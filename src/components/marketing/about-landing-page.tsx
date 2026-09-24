@@ -19,7 +19,7 @@ export function AboutLandingPage({page}: {page: MarketingPage}) {
           <ol className="m-0 grid list-none gap-4 p-0 md:grid-cols-5">
             {["模型", "算力", "网络", "系统", "能源"].map((domain, index) => (
               <li className="border-l border-current/30 py-3 pl-4" key={domain}>
-                <span className="font-mono text-xs opacity-50">0{index + 1}</span>
+                <span aria-hidden="true" className="font-mono text-xs opacity-65">0{index + 1}</span>
                 <h3 className="mt-8 text-2xl font-semibold">{domain}</h3>
               </li>
             ))}
@@ -37,7 +37,7 @@ export function AboutLandingPage({page}: {page: MarketingPage}) {
         <ol aria-label="业务实践方向" className="m-0 list-none border-t border-current/30 p-0">
           {practice.items?.map((item, index) => (
             <li className="grid gap-3 border-b border-current/30 py-7 md:grid-cols-[4rem_minmax(0,1fr)_minmax(0,2fr)]" key={item.title}>
-              <span className="font-mono text-xs opacity-60">0{index + 1}</span><h3 className="text-2xl font-semibold">{item.title}</h3><p className="leading-relaxed">{item.body}</p>
+              <span aria-hidden="true" className="font-mono text-xs opacity-65">0{index + 1}</span><h3 className="text-2xl font-semibold">{item.title}</h3><p className="leading-relaxed">{item.body}</p>
             </li>
           ))}
         </ol>

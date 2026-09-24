@@ -20,8 +20,8 @@ export function AiLandingPage({page}: {page: MarketingPage}) {
 
   return (
     <div className="ai-landing min-w-0 overflow-x-clip" data-landing-page="ai">
-      <LandingHero id="hero" eyebrow="AI / 模型生态编辑部" title={page.hero.title} lead={page.hero.lead} tone="light" className="relative border-b border-black/15">
-        <figure aria-label="模型能力轨道图" className="mt-14 grid gap-5 border-t border-black/20 pt-6 lg:grid-cols-[minmax(0,1fr)_minmax(18rem,0.8fr)] lg:items-center">
+      <LandingHero id="hero" eyebrow="AI / 模型生态编辑部" title={page.hero.title} lead={page.hero.lead} tone="light" layout="split" className="relative border-b border-black/15">
+        <figure aria-label="模型能力轨道图" className="grid gap-6 border-t border-black/20 pt-6">
           <figcaption className="max-w-xl text-sm leading-7 text-black/65">
             <span className="mb-3 block font-mono text-xs tracking-[0.2em] uppercase">INPUT → MODEL → OUTPUT</span>
             以真实任务为中心，沿语言理解、图像创作和视频表达三条轨道寻找可验证的能力。
@@ -41,9 +41,9 @@ export function AiLandingPage({page}: {page: MarketingPage}) {
         <div className="border-t border-black/30">
           {capability.items?.map((item, index) => (
             <article className="grid gap-3 border-b border-black/25 py-7 md:grid-cols-[5rem_minmax(12rem,0.8fr)_minmax(0,1fr)] md:gap-8 md:py-10" key={item.title}>
-              <span aria-hidden="true" className="font-mono text-xs text-black/55">0{index + 1}</span>
+              <span aria-hidden="true" className="font-mono text-xs text-black/65">0{index + 1}</span>
               <h3 className="text-2xl font-semibold tracking-tight md:text-3xl">
-                {item.href ? <Link className="underline decoration-[#b6e825] decoration-4 underline-offset-6 hover:decoration-black focus-visible:outline-2" href={item.href}>{item.title}</Link> : item.title}
+                {item.href ? <Link className={styles.textLink} href={item.href}>{item.title}</Link> : item.title}
               </h3>
               <p className="max-w-2xl leading-8 text-black/70">{item.body}</p>
             </article>

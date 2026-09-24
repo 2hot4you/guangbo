@@ -74,7 +74,7 @@ describe("distinct business landing pages", () => {
   it.each([
     {name: "信创", page: madeInChina, Component: XinchangLandingPage, section: "layers", figure: "系统分层详图", caption: "架构示意"},
     {name: "专线", page: network, Component: NetworkLandingPage, section: "topology", figure: "站点连接结构", caption: "示意路径"},
-    {name: "能源", page: energy, Component: EnergyLandingPage, section: "inputs", figure: "企业用能服务路径", caption: "路径示意"},
+    {name: "能源", page: energy, Component: EnergyLandingPage, section: "inputs", figure: "企业用能输入资料", caption: "输入资料"},
   ])("keeps the $name detail figure caption readable", ({page, Component, section, figure, caption}) => {
     const html = renderToStaticMarkup(<Component page={page} />);
     render(<Component page={page} />);
@@ -92,6 +92,10 @@ describe("distinct business landing pages", () => {
     for (const layer of ["接入层", "业务层", "数据与集成层", "基础设施层"]) {
       expect(within(blueprint).getByText(layer)).toBeInTheDocument();
     }
+    for (const layer of madeInChina.sections[1].items ?? []) {
+      expect(within(blueprint).queryByText(layer.body)).not.toBeInTheDocument();
+      expect(within(document.getElementById("layers")!).getByText(layer.body)).toBeInTheDocument();
+    }
     expect(within(document.getElementById("compatibility")!).getByText(/处理器、操作系统、数据库与业务软件/)).toBeInTheDocument();
   });
 
@@ -107,20 +111,23 @@ describe("distinct business landing pages", () => {
     ]);
     expect(within(document.getElementById("interfaces")!).getByRole("heading", {level: 3, name: "客户侧"})).toBeInTheDocument();
     expect(within(document.getElementById("boundaries")!).getByText(/按具体线路确认/)).toBeInTheDocument();
-    expect(within(document.getElementById("network-hero")!).getByRole("list", {name: "首屏五站路径"}).querySelectorAll("li")).toHaveLength(5);
+    const overview = within(document.getElementById("network-hero")!).getByRole("list", {name: "首屏连接概览"});
+    expect(within(overview).getAllByRole("listitem")).toHaveLength(3);
+    expect(within(overview).queryByText("区域汇聚资源")).not.toBeInTheDocument();
   });
 
   it("follows energy inputs through service paths and project options", () => {
     render(<EnergyLandingPage page={energy} />);
 
-    const flow = screen.getByRole("figure", {name: "企业用能服务路径"});
+    const flow = screen.getByRole("figure", {name: "企业用能输入资料"});
     expect(within(flow).getAllByRole("listitem")).toHaveLength(4);
-    for (const label of ["用能起点", "需求分析", "方案对接", "项目评估"]) {
+    for (const label of ["所在地区", "用电规模", "历史负荷", "绿色用能目标"]) {
       expect(within(flow).getByText(label)).toBeInTheDocument();
     }
     expect(within(document.getElementById("projects")!).getByRole("heading", {level: 3, name: "分布式光伏"})).toBeInTheDocument();
     expect(within(document.getElementById("carbon")!).getByText(/服务边界/)).toBeInTheDocument();
     expect(within(document.getElementById("energy-hero")!).getByRole("list", {name: "首屏用能路径"}).querySelectorAll("li")).toHaveLength(4);
+    expect(within(document.getElementById("energy-hero")!).queryByText("地区 · 规模 · 负荷 · 目标")).not.toBeInTheDocument();
     const placeholder = within(document.getElementById("energy-hero")!).getByRole("figure", {name: "清洁能源项目视觉占位"});
     expect(within(placeholder).getByText("项目图片尚待确认")).toBeInTheDocument();
   });

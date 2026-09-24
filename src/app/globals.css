@@ -41,6 +41,11 @@
 }
 
 @layer components {
+  .site-footer,
+  .home-models,
+  .home-domain--energy,
+  .home-delivery { --focus-ring: var(--accent); }
+
   .site-container { width: min(100% - 2rem, var(--content-width)); margin-inline: auto; }
   .section-space { padding-block: var(--section-gap); }
   .text-balance { text-wrap: balance; }

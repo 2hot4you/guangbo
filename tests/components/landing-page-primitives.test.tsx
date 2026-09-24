@@ -42,6 +42,20 @@ describe("landing page primitives", () => {
     expect(html).toContain("机房资源图片待确认");
   });
 
+  it("keeps the title and lead before a split hero visual in server reading order", () => {
+    const html = renderToStaticMarkup(
+      <LandingHero id="intro" title="模型能力" lead="按任务选型。" layout="split" compact>
+        <figure aria-label="能力示意"><figcaption>从任务到输出</figcaption></figure>
+      </LandingHero>,
+    );
+    const document = new DOMParser().parseFromString(html, "text/html");
+    const hero = document.getElementById("intro")!;
+    expect(hero.querySelectorAll("h1")).toHaveLength(1);
+    expect(hero.textContent).toBe("模型能力按任务选型。从任务到输出");
+    expect(hero.querySelector("h1")!.compareDocumentPosition(hero.querySelector("figure")!))
+      .toBe(Node.DOCUMENT_POSITION_FOLLOWING);
+  });
+
   it("renders numbered choices and process steps as ordered lists", () => {
     render(
       <>

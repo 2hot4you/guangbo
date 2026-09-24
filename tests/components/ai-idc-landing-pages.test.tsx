@@ -21,7 +21,7 @@ describe("distinct AI and IDC landing pages", () => {
     expect(screen.getByRole("heading", {level: 1})).toHaveTextContent(page.hero.title);
 
     const modules = [...root!.querySelectorAll<HTMLElement>("section[data-content-module]")];
-    expect(modules.length).toBeGreaterThanOrEqual(8);
+    expect(modules).toHaveLength(9);
     expect(modules.map((contentModule) => contentModule.id)).toEqual(["hero", ...page.sections.map((section) => section.id)]);
     expect(new Set(modules.map((contentModule) => contentModule.id)).size).toBe(modules.length);
 

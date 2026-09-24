@@ -10,9 +10,9 @@ export function NetworkLandingPage({page}: {page: MarketingPage}) {
     <div data-landing-page={page.key}>
       <LandingHero id="network-hero" eyebrow="NETWORK / CONNECTION ROUTE" title={page.hero.title} lead={page.hero.lead} tone="dark">
         <figure aria-label="首屏站点连接路径" className="mt-14 border-y border-white/30 py-6 text-white">
-          <ol aria-label="首屏五站路径" className="m-0 grid list-none gap-3 p-0 md:grid-cols-5">
-            {stations.map((station) => (
-              <li className="min-w-0 border-l-2 border-lime-300 py-3 pl-4 text-lg leading-tight md:border-l-0 md:border-t-2 md:pl-0 md:pt-5" key={station}>{station}</li>
+          <ol aria-label="首屏连接概览" className="m-0 grid list-none grid-cols-3 gap-3 p-0">
+            {["业务站点", "接入与传输", "目标业务"].map((station) => (
+              <li className="min-w-0 border-t-2 border-lime-300 pt-4 text-base leading-relaxed md:text-xl" key={station}>{station}</li>
             ))}
           </ol>
           <figcaption className="mt-5 text-sm text-white/65">站点路径示意：接入与传输方式按具体线路条件确认。</figcaption>
@@ -32,7 +32,7 @@ export function NetworkLandingPage({page}: {page: MarketingPage}) {
             ["04", "业务用途", "确认承载业务与连续性要求。"],
           ].map(([number, title, body]) => (
             <div className="border-b border-current/30 py-6" key={number}>
-              <dt className="font-mono text-xs opacity-60">{number} / {title}</dt>
+              <dt className="font-mono text-xs opacity-65">{number} / {title}</dt>
               <dd className="mt-5 text-lg leading-relaxed">{body}</dd>
             </div>
           ))}
@@ -56,7 +56,7 @@ export function NetworkLandingPage({page}: {page: MarketingPage}) {
         <ol aria-label="组网场景" className="m-0 list-none border-t border-current/20 p-0">
           {solutions.items?.map((item, index) => (
             <li className="grid gap-3 border-b border-current/20 py-7 md:grid-cols-[5rem_minmax(0,1fr)_minmax(0,2fr)]" key={item.title}>
-              <span className="font-mono text-xs opacity-50">0{index + 1}</span>
+              <span aria-hidden="true" className="font-mono text-xs opacity-65">0{index + 1}</span>
               <h3 className="text-2xl font-semibold">{item.title}</h3>
               <p className="leading-relaxed opacity-70">{item.body}</p>
             </li>

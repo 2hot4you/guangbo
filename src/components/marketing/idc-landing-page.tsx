@@ -20,12 +20,12 @@ export function IdcLandingPage({page}: {page: MarketingPage}) {
 
   return (
     <div className="idc-landing min-w-0 overflow-x-clip" data-landing-page="idc">
-      <LandingHero id="hero" eyebrow="IDC / 基础设施资源矩阵" title={page.hero.title} lead={page.hero.lead} tone="dark">
-        <div className="mt-14 grid gap-5 lg:grid-cols-[minmax(0,1fr)_minmax(18rem,0.9fr)] lg:items-end">
+      <LandingHero id="hero" eyebrow="IDC / 基础设施资源矩阵" title={page.hero.title} lead={page.hero.lead} tone="dark" layout="split">
+        <div className="grid gap-5">
           <p className="border-t border-white/35 pt-5 font-mono text-xs leading-7 tracking-[0.15em] text-white/70 uppercase">
             Compute / Storage / Network / Power / Cooling
           </p>
-          <VisualPlaceholder label="机柜与数据中心示意" description="机房项目图片待确认；示意不代表具体站点配置" className="min-h-64" />
+          <VisualPlaceholder label="机柜与数据中心示意" description="机房项目图片待确认；示意不代表具体站点配置" />
         </div>
       </LandingHero>
 
@@ -33,7 +33,7 @@ export function IdcLandingPage({page}: {page: MarketingPage}) {
         <div className="grid border-t border-black/25 md:grid-cols-2 xl:grid-cols-4">
           {services.items?.map((item, index) => (
             <article className="min-w-0 border-b border-black/25 px-0 py-8 md:border-r md:px-6 md:first:pl-0 xl:last:border-r-0" key={item.title}>
-              <span className="mb-12 block font-mono text-xs text-black/55">RESOURCE / 0{index + 1}</span>
+              <span className="mb-12 block font-mono text-xs text-black/65">RESOURCE / 0{index + 1}</span>
               <h3 className="mb-5 text-2xl font-semibold tracking-tight">
                 {item.href ? <Link className={styles.textLink} href={item.href}>{item.title}</Link> : item.title}
               </h3>
@@ -46,11 +46,11 @@ export function IdcLandingPage({page}: {page: MarketingPage}) {
 
       <LandingSection id={workloads.id} number="02" eyebrow="WORKLOAD MAP" title={workloads.title} body={workloads.body} tone="muted">
         <figure aria-label="业务负载与资源匹配图" className="border-t border-black/30">
-          <figcaption className="py-4 font-mono text-xs tracking-[0.12em] text-black/60 uppercase">业务负载 → 资源方向 → 方案核对</figcaption>
+          <figcaption className="py-4 font-mono text-xs tracking-[0.12em] text-black/65 uppercase">业务负载 → 资源方向 → 方案核对</figcaption>
           <div className="grid gap-px bg-black/20 md:grid-cols-2">
             {workloads.items?.map((item, index) => (
               <article className="grid min-w-0 grid-cols-[2.5rem_minmax(0,1fr)] gap-3 bg-[var(--surface-secondary)] p-5 sm:p-7" key={item.title}>
-                <span aria-hidden="true" className="font-mono text-xs text-black/55">0{index + 1}</span>
+                <span aria-hidden="true" className="font-mono text-xs text-black/65">0{index + 1}</span>
                 <div>
                   <h3 className="mb-3 text-xl font-semibold">{item.title}</h3>
                   <p className="leading-7 text-black/70">{item.body}</p>
@@ -95,7 +95,7 @@ export function IdcLandingPage({page}: {page: MarketingPage}) {
         <div className="grid gap-px border border-black/20 bg-black/20 sm:grid-cols-2">
           {scenarios.items?.map((item, index) => (
             <article className="min-w-0 bg-[var(--background)] p-6 sm:p-8" key={item.title}>
-              <span className="mb-10 block font-mono text-xs text-black/55">CASE / 0{index + 1}</span>
+              <span className="mb-10 block font-mono text-xs text-black/65">CASE / 0{index + 1}</span>
               <h3 className="mb-4 text-2xl font-semibold">{item.title}</h3>
               <p className="leading-7 text-black/70">{item.body}</p>
             </article>

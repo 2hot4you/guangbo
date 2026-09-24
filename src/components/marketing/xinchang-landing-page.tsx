@@ -8,12 +8,11 @@ export function XinchangLandingPage({page}: {page: MarketingPage}) {
     <div data-landing-page={page.key}>
       <LandingHero id="madeInChina-hero" eyebrow="XINCHUANG / SYSTEM BLUEPRINT" title={page.hero.title} lead={page.hero.lead} tone="dark">
         <figure aria-label="企业系统四层架构蓝图" className="mt-12 border border-white/30">
-          <ol className="m-0 list-none p-0">
+          <ol className="m-0 grid list-none grid-cols-2 p-0 md:grid-cols-4">
             {layers.items?.map((item, index) => (
-              <li className="grid gap-2 border-b border-white/25 px-5 py-4 last:border-b-0 md:grid-cols-[5rem_minmax(0,1fr)_minmax(0,2fr)] md:items-baseline" key={item.title}>
+              <li className="min-w-0 border-b border-white/25 px-4 py-4 md:border-b-0" key={item.title}>
                 <span className="font-mono text-xs text-lime-300">L{index + 1}</span>
-                <strong className="text-lg font-semibold">{item.title}</strong>
-                <span className="text-sm leading-relaxed text-white/70">{item.body}</span>
+                <strong className="mt-2 block text-lg font-semibold">{item.title}</strong>
               </li>
             ))}
           </ol>
@@ -34,7 +33,7 @@ export function XinchangLandingPage({page}: {page: MarketingPage}) {
           <ol className="m-0 list-none p-0">
             {layers.items?.map((item, index) => (
               <li className="grid gap-4 border-b border-current/20 p-5 last:border-b-0 md:grid-cols-[7rem_minmax(0,1fr)_minmax(0,2fr)] md:items-baseline md:px-8" key={item.title}>
-                <span className="font-mono text-xs opacity-50">LAYER {String(index + 1).padStart(2, "0")}</span>
+                <span className="font-mono text-xs opacity-65">LAYER {String(index + 1).padStart(2, "0")}</span>
                 <h3 className="text-2xl font-semibold tracking-tight">{item.title}</h3>
                 <p className="max-w-2xl leading-relaxed opacity-70">{item.body}</p>
               </li>
@@ -59,7 +58,7 @@ export function XinchangLandingPage({page}: {page: MarketingPage}) {
         <ol aria-label="企业业务应用流程" className="m-0 list-none border-t border-current/20 p-0">
           {applications.items?.map((item, index) => (
             <li className="grid gap-3 border-b border-current/20 py-6 md:grid-cols-[4rem_minmax(0,1fr)_minmax(0,2fr)] md:gap-8" key={item.title}>
-              <span className="font-mono text-xs opacity-50">0{index + 1}</span>
+              <span aria-hidden="true" className="font-mono text-xs opacity-65">0{index + 1}</span>
               <h3 className="text-xl font-semibold">{item.title}</h3>
               <p className="leading-relaxed opacity-70">{item.body}</p>
             </li>
