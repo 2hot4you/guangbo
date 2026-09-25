@@ -98,8 +98,8 @@ export function HomePage({page}: {page: MarketingPage}) {
           </ol>
         </div>
         <div aria-labelledby="model-ecosystem-heading" className="home-models" id="model-ecosystem">
-          <div className="site-container home-models__layout">
-            <div>
+          <div className="home-models__layout">
+            <div className="site-container">
               <p className="home-section__index home-section__index--dark">AI / MODEL ECOSYSTEM</p>
               <h3 id="model-ecosystem-heading">{ecosystem.title}</h3>
               <p>{ecosystem.body}</p>

@@ -993,6 +993,20 @@ test("home carousel releases into the preserved full home sections without conso
   expect(errors).toEqual([]);
 });
 
+test("home model ecosystem logo lanes span the full browser width", async ({page}) => {
+  for (const width of [360, 768, 1280, 1440]) {
+    await page.setViewportSize({width, height: 900});
+    await page.goto("/");
+    const ecosystem = page.getByRole("region", {name: "AI Model Ecosystem"});
+    await ecosystem.scrollIntoViewIfNeeded();
+    const bounds = await ecosystem.boundingBox();
+    expect(bounds, `missing ecosystem at ${width}px`).not.toBeNull();
+    expect(bounds!.x, `ecosystem left edge at ${width}px`).toBeCloseTo(0, 0);
+    expect(bounds!.width, `ecosystem width at ${width}px`).toBeCloseTo(width, 0);
+    await expectNoHorizontalOverflow(page);
+  }
+});
+
 test("home carousel and logo loop retain 12px vertical scale clearance without horizontal overflow", async ({page}) => {
   for (const width of [360, 390, 768, 1280, 1440]) {
     await page.setViewportSize({width, height: 900});

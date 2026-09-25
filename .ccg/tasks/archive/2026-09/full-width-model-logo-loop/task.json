@@ -1,0 +1,12 @@
+{
+  "id": "full-width-model-logo-loop",
+  "title": "让首页模型生态 Logo Loop 铺满浏览器宽度",
+  "status": "completed",
+  "complexity": "S",
+  "risk": "low",
+  "domain": "frontend",
+  "currentPhase": "completed",
+  "nextAction": "归档任务并重新启动本地开发服务",
+  "createdAt": "2026-09-25T17:00:00+08:00",
+  "branch": "feat/frontend-foundation"
+}
