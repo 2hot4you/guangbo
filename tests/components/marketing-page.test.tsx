@@ -145,25 +145,10 @@ describe("marketing page templates", () => {
     expect(screen.queryByRole("link", {name: /联系项目顾问|立即咨询/})).not.toBeInTheDocument();
   });
 
-  it("keeps breadcrumbs off home and top-level landing pages, but shows them on detail pages", () => {
+  it("keeps breadcrumbs off every public page", () => {
     for (const path of PUBLIC_PATHS) {
       const view = render(<MarketingPageView page={getPageByPath(path)} />);
-      const parents = PUBLIC_PATHS.filter((candidate) => candidate !== "/" && path.startsWith(`${candidate}/`));
-      if (parents.length === 0) {
-        expect(screen.queryByRole("navigation", {name: "面包屑导航"})).not.toBeInTheDocument();
-      } else {
-        const nav = screen.getByRole("navigation", {name: "面包屑导航"});
-        const expected = ["/", ...parents, path];
-        expect(within(nav).getAllByRole("listitem")).toHaveLength(expected.length);
-        const links = within(nav).getAllByRole("link").filter((link) => link.hasAttribute("href"));
-        expect(links.map((link) => link.getAttribute("href"))).toEqual(expected.slice(0, -1));
-        expect(links.map((link) => link.textContent)).toEqual(
-          expected.slice(0, -1).map((candidate) => getRouteByPath(candidate as PublicPath).navLabel),
-        );
-        const current = within(nav).getByText(getRouteByPath(path).navLabel);
-        expect(current).toHaveAttribute("aria-current", "page");
-        expect(current).not.toHaveAttribute("href");
-      }
+      expect(screen.queryByRole("navigation", {name: "面包屑导航"})).not.toBeInTheDocument();
       view.unmount();
     }
   });

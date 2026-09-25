@@ -2,7 +2,6 @@ import {getRouteByPath} from "@/content";
 import type {MarketingPage, PageTemplate} from "@/content";
 import {AboutLandingPage} from "./about-landing-page";
 import {AiLandingPage} from "./ai-landing-page";
-import {MarketingBreadcrumbs} from "./breadcrumbs";
 import {CompanyPage} from "./company-page";
 import {EnergyLandingPage} from "./energy-landing-page";
 import {HomePage} from "./home-page";
@@ -41,5 +40,5 @@ export function MarketingPageView({page}: {page: MarketingPage}) {
       }
   }
 
-  return <><MarketingBreadcrumbs path={page.path} />{content}<RelatedServices paths={route.relatedPaths} /></>;
+  return <>{content}<RelatedServices paths={route.relatedPaths} /></>;
 }

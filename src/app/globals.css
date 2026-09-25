@@ -266,8 +266,6 @@
   .network-topology__station { padding: 1rem; background: var(--surface-secondary); color: var(--foreground); font-weight: 650; }
   .network-topology__connection { color: var(--foreground); font-weight: 600; }
   .network-topology__connection::before { display: block; line-height: 1; content: "↓"; }
-  .breadcrumbs-wrap { color: #777771; font-size: 0.82rem; }
-
   .related-services { border-top: 1px solid var(--border); background: #f0f0ec; }
   .related-services__layout { display: grid; gap: 2rem; }
   .related-services ul { border-top: 1px solid var(--border); }

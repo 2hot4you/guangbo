@@ -75,13 +75,7 @@ for (const path of publicPaths) {
     expect(response?.status()).toBe(200);
     await expect(page.locator("h1")).toHaveCount(1);
     await expect(page.locator("h1")).toBeVisible();
-    if (path === "/" || topLevelPathSet.has(path)) {
-      await expect(page.getByRole("navigation", {name: "面包屑导航"})).toHaveCount(0);
-    } else {
-      const breadcrumbs = page.getByRole("navigation", {name: "面包屑导航"});
-      await expect(breadcrumbs).toBeVisible();
-      await expect(breadcrumbs.locator('[aria-current="page"]')).toHaveText(getRouteLabel(path));
-    }
+    await expect(page.getByRole("navigation", {name: "面包屑导航"})).toHaveCount(0);
     if (topLevelPathSet.has(path)) {
       const landing = page.locator("[data-landing-page]");
       await expect(landing).toHaveCount(1);
@@ -91,26 +85,6 @@ for (const path of publicPaths) {
     }
     await expectNoHorizontalOverflow(page);
   });
-}
-
-function getRouteLabel(path: (typeof publicPaths)[number]) {
-  const labels: Record<(typeof publicPaths)[number], string> = {
-    "/": "首页",
-    "/ai": "大模型与AIGC",
-    "/ai/llm": "LLM与多模态理解",
-    "/ai/image": "图像生成与编辑",
-    "/ai/video": "视频生成与编辑",
-    "/idc": "IDC与算力",
-    "/idc/vps": "全国VPS租赁",
-    "/idc/bare-metal": "全国裸金属服务器租赁",
-    "/idc/colocation": "全国机房机柜租赁",
-    "/idc/gpu": "GPU算力服务",
-    "/madeinchina": "信创与企业数字化",
-    "/network": "全国专线租赁",
-    "/energy": "绿电与清洁能源",
-    "/about": "关于我们",
-  };
-  return labels[path];
 }
 
 test("sample pages fit all required CSS viewport widths", async ({page}) => {

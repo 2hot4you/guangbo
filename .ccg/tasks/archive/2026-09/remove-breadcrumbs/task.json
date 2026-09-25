@@ -1,0 +1,12 @@
+{
+  "id": "remove-breadcrumbs",
+  "title": "移除全站面包屑导航",
+  "status": "completed",
+  "complexity": "S",
+  "risk": "low",
+  "domain": "frontend",
+  "currentPhase": "completed",
+  "nextAction": "归档任务并重新启动本地开发服务",
+  "createdAt": "2026-09-25T13:00:00+08:00",
+  "branch": "feat/frontend-foundation"
+}
