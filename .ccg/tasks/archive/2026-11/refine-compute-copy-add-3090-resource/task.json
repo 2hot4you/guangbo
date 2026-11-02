@@ -1,0 +1,13 @@
+{
+  "id": "refine-compute-copy-add-3090-resource",
+  "title": "移除计算与托管的全国表述并加入3090裸金属资源",
+  "status": "completed",
+  "complexity": "M",
+  "risk": "medium",
+  "domain": "frontend",
+  "currentPhase": "completed",
+  "nextAction": "归档任务并提交本次变更",
+  "createdAt": "2026-11-02T00:00:00+08:00",
+  "branch": "feat/frontend-foundation",
+  "baseCommit": "65c08452b477"
+}
