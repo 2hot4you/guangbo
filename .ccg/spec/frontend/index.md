@@ -10,3 +10,7 @@
 - Treat actual `history.pushState` / `history.replaceState` commits as the source of truth for hash navigation. A click handler alone misses delayed commits and repeated activation of the current hash.
 - Keep ordinary route-top restoration separate from hash-navigation revisions. Coupling both concerns in one effect can cancel the corrective animation frame during a route transition and leave the page a few pixels below the absolute top.
 - After a mobile navigation drawer exits, focus the unique hash target without adding it to the normal tab order; support browser back/forward and repeated same-hash activation as first-class cases.
+
+## Next.js verification cache
+
+- Do not run persistent `next dev` and `next build` against the same checkout at the same time. Both write generated `.next` state; concurrent verification can create duplicate type files and false TypeScript conflicts. Stop the local dev process before `pnpm verify`, then restart it after the build.
