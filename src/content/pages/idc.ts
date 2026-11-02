@@ -1,4 +1,5 @@
 import type {MarketingPage} from "../types";
+import {bareMetalResources} from "../resources/bare-metal";
 
 export const idc = {
   key: "idc", path: "/idc",
@@ -85,12 +86,7 @@ export const idcBareMetal = {
       {title: "企业业务系统", body: "根据部署规范与软件要求，确定硬件配置、操作环境及网络连接方式。"},
       {title: "自建计算环境", body: "面向需要自行规划运行环境的团队，评估设备配置及管理需求。"},
     ]},
-    {id: "available-resource", title: "RTX 3090 双卡裸金属资源", eyebrow: "AVAILABLE RESOURCE", body: "以下为资料所列的裸金属配置，可用于方案沟通。库存、价格、端口与开通条件以实际确认为准。", items: [
-      {title: "DeepBlue bz-4002", meta: "2U 机型｜64 位 CentOS 7.9｜Edgeray IaaS", body: "双路 Intel® Xeon® Gold 6133（单颗 2.5 GHz、20 核 40 线程），DDR4 512 GB（64 GB × 8），RTX 3090 涡轮版 × 2。"},
-      {title: "存储与网络", meta: "端口可用情况以交付确认为准", body: "480 GB M.2 SSD × 1；4 TB U.2 NVMe SSD（2.5 英寸）× 1；1GbE 电口 × 1；10GbE 光口 × 4；板载电口 × 1。"},
-      {title: "参考租赁价格", meta: "价格与开通条件以实际确认为准", body: "整机双卡参考价 ¥1,200/月；单卡参考价 ¥600/月或 ¥20/天。"},
-      {title: "适用任务与咨询", meta: "咨询：15390073913 / 19382091612", body: "可评估用于 FP16 / INT4 推理、LoRA、Stable Diffusion、SDXL、Flux、RAG、视频剪辑、渲染及 3D 建模等任务；实际性能需结合模型、数据量和软件环境评估。"},
-    ]},
+    {id: "available-resource", title: "裸金属资源配置", eyebrow: "RESOURCE CONFIGURATIONS", body: "每张卡片对应一项独立资源，集中展示设备配置、参考价格、适用任务与咨询信息，便于逐项比较和确认。", resourceCards: bareMetalResources},
     {id: "infrastructure", title: "从服务器到机房，一起规划", body: "服务器配置决定计算能力，部署环境影响业务运行。选型过程中同步考虑机房位置、带宽、供电、设备管理和维护安排，让硬件与基础设施相互匹配。"},
     {id: "boundaries", title: "明确配置，也明确服务边界", body: "在方案中列明硬件清单、网络配置、交付环境、使用周期及设备故障处理方式。涉及硬件更换、数据迁移或系统操作时，提前确认责任分工与执行条件。"},
   ], contactEnabled: false,

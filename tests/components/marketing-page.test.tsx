@@ -2,7 +2,10 @@ import {cleanup, render, screen, within} from "@testing-library/react";
 import {afterEach, describe, expect, it} from "vitest";
 import {renderToStaticMarkup} from "react-dom/server";
 import {getPageByPath, getRouteByPath, PUBLIC_PATHS} from "@/content";
+import type {ResourceCard} from "@/content";
+import {BareMetalResourceCards} from "@/components/marketing/bare-metal-resource-cards";
 import {MarketingPageView} from "@/components/marketing/marketing-page";
+import {bareMetalResources} from "@/content/resources/bare-metal";
 import type {PublicPath} from "@/content/types";
 
 afterEach(cleanup);
@@ -193,39 +196,73 @@ describe("marketing page templates", () => {
     expect(screen.getByRole("heading", {name: "制冷条件"})).toBeInTheDocument();
   });
 
-  it("publishes the RTX 3090 bare-metal resource with complete specifications and caveats", () => {
+  it("groups every specification for one bare-metal resource inside a single resource card", () => {
     const page = getPageByPath("/idc/bare-metal");
     render(<MarketingPageView page={page} />);
 
     const resource = document.getElementById("available-resource");
     expect(resource).not.toBeNull();
-    expect(resource).toHaveTextContent("DeepBlue bz-4002");
-    expect(resource).toHaveTextContent("Intel® Xeon® Gold 6133");
-    expect(resource).toHaveTextContent("2.5 GHz、20 核 40 线程");
-    expect(resource).toHaveTextContent("RTX 3090 涡轮版 × 2");
-    expect(resource).toHaveTextContent("DDR4 512 GB（64 GB × 8）");
-    expect(resource).toHaveTextContent("480 GB M.2 SSD × 1");
-    expect(resource).toHaveTextContent("4 TB U.2 NVMe SSD（2.5 英寸）× 1");
-    expect(resource).toHaveTextContent("1GbE 电口 × 1");
-    expect(resource).toHaveTextContent("10GbE 光口 × 4");
-    expect(resource).toHaveTextContent("CentOS 7.9");
-    expect(resource).toHaveTextContent("Edgeray IaaS");
-    expect(resource).toHaveTextContent("整机双卡参考价 ¥1,200/月");
-    expect(resource).toHaveTextContent("单卡参考价 ¥600/月或 ¥20/天");
-    expect(resource).toHaveTextContent("LoRA");
-    expect(resource).toHaveTextContent("Stable Diffusion");
-    expect(resource).toHaveTextContent("SDXL");
-    expect(resource).toHaveTextContent("Flux");
-    expect(resource).toHaveTextContent("RAG");
-    expect(resource).toHaveTextContent("视频剪辑、渲染及 3D 建模");
-    expect(resource).toHaveTextContent("15390073913");
-    expect(resource).toHaveTextContent("19382091612");
-    expect(resource).toHaveTextContent("库存、价格、端口与开通条件以实际确认为准");
+    expect(within(resource!).getByRole("heading", {level: 2, name: "裸金属资源配置"})).toBeInTheDocument();
+
+    const cards = within(resource!).getAllByRole("article");
+    expect(cards).toHaveLength(1);
+    const card = cards[0];
+    expect(within(card).getByRole("heading", {level: 3, name: "DeepBlue bz-4002"})).toBeInTheDocument();
+    expect(card).toHaveTextContent("Intel® Xeon® Gold 6133");
+    expect(card).toHaveTextContent("2.5 GHz、20 核 40 线程");
+    expect(card).toHaveTextContent("RTX 3090 涡轮版 × 2");
+    expect(card).toHaveTextContent("DDR4 512 GB（64 GB × 8）");
+    expect(card).toHaveTextContent("480 GB M.2 SSD × 1");
+    expect(card).toHaveTextContent("4 TB U.2 NVMe SSD（2.5 英寸）× 1");
+    expect(card).toHaveTextContent("1GbE 电口 × 1");
+    expect(card).toHaveTextContent("10GbE 光口 × 4");
+    expect(card).toHaveTextContent("CentOS 7.9");
+    expect(card).toHaveTextContent("Edgeray IaaS");
+    expect(card).toHaveTextContent("整机双卡参考价 ¥1,200/月");
+    expect(card).toHaveTextContent("单卡参考价 ¥600/月或 ¥20/天");
+    expect(card).toHaveTextContent("LoRA");
+    expect(card).toHaveTextContent("Stable Diffusion");
+    expect(card).toHaveTextContent("SDXL");
+    expect(card).toHaveTextContent("Flux");
+    expect(card).toHaveTextContent("RAG");
+    expect(card).toHaveTextContent("视频剪辑、渲染及 3D 建模");
+    expect(card).toHaveTextContent("15390073913");
+    expect(card).toHaveTextContent("19382091612");
+    expect(card).toHaveTextContent("库存、价格、端口与开通条件以实际确认为准");
 
     const html = renderToStaticMarkup(<MarketingPageView page={page} />);
     expect(html).toContain("DeepBlue bz-4002");
     expect(html).toContain("15390073913");
     expect(html).toContain("19382091612");
+  });
+
+  it("keeps multiple bare-metal resources isolated in their own cards", () => {
+    const secondResource: ResourceCard = {
+      id: "resource-two",
+      name: "测试资源 B",
+      category: "计算裸金属",
+      meta: "测试资源 B 元信息",
+      specifications: [{label: "处理器", value: "测试资源 B 处理器"}],
+      pricing: [{label: "整机", value: "测试资源 B 价格"}],
+      workloads: "测试资源 B 适用任务",
+      contacts: ["测试资源 B 咨询"],
+      notice: "测试资源 B 交付说明",
+    };
+
+    render(<BareMetalResourceCards resources={[bareMetalResources[0], secondResource]} />);
+
+    const cards = screen.getAllByRole("article");
+    expect(cards).toHaveLength(2);
+    const deepBlue = screen.getByRole("article", {name: "DeepBlue bz-4002"});
+    const resourceTwo = screen.getByRole("article", {name: "测试资源 B"});
+    expect(deepBlue).toHaveTextContent("RTX 3090 涡轮版 × 2");
+    expect(deepBlue).toHaveTextContent("15390073913");
+    expect(deepBlue).not.toHaveTextContent("测试资源 B 处理器");
+    expect(resourceTwo).toHaveTextContent("测试资源 B 处理器");
+    expect(resourceTwo).toHaveTextContent("测试资源 B 价格");
+    expect(resourceTwo).toHaveTextContent("测试资源 B 咨询");
+    expect(resourceTwo).toHaveTextContent("测试资源 B 交付说明");
+    expect(resourceTwo).not.toHaveTextContent("RTX 3090 涡轮版 × 2");
   });
 
   it("places the public copy and links in server-rendered HTML", () => {

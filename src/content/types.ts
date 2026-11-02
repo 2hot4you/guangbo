@@ -27,13 +27,35 @@ export interface ContentItem {
   meta?: string;
 }
 
-export interface ContentSection {
+export interface ResourceCard {
+  id: string;
+  name: string;
+  category: string;
+  meta: string;
+  specifications: readonly {
+    label: string;
+    value: string;
+  }[];
+  pricing: readonly {
+    label: string;
+    value: string;
+  }[];
+  workloads: string;
+  contacts: readonly string[];
+  notice: string;
+}
+
+interface ContentSectionBase {
   id: string;
   eyebrow?: string;
   title: string;
   body?: string;
-  items?: readonly ContentItem[];
 }
+
+export type ContentSection = ContentSectionBase & (
+  | {items?: readonly ContentItem[]; resourceCards?: never}
+  | {items?: never; resourceCards: readonly ResourceCard[]}
+);
 
 export interface MarketingPage {
   key: PageKey;

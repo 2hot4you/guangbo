@@ -1,4 +1,5 @@
 import type {MarketingPage} from "@/content";
+import {BareMetalResourceCards} from "./bare-metal-resource-cards";
 import {ContentCards} from "./content-card";
 import {PageHero} from "./page-hero";
 import {SectionShell} from "./section-shell";
@@ -25,7 +26,9 @@ export function SolutionPage({page}: {page: MarketingPage}) {
       {page.sections.map((section) => (
         <SectionShell className={section.id === "delivery" ? "solution-delivery" : "solution-detail"} key={section.id} section={section}>
           {page.path === "/network" && section.id === "topology" && <NetworkTopology />}
-          <ContentCards items={section.items} />
+          {section.resourceCards
+            ? <BareMetalResourceCards resources={section.resourceCards} />
+            : <ContentCards items={section.items} />}
         </SectionShell>
       ))}
     </>
