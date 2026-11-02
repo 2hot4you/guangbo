@@ -2,10 +2,11 @@ import type {ResourceCard} from "../types";
 
 export const bareMetalResources = [
   {
-    id: "deepblue-bz-4002",
-    name: "DeepBlue bz-4002",
+    id: "deepblue-server-dual-rtx3090",
+    name: "DeepBlue Server",
     category: "GPU 裸金属",
     meta: "2U 机型｜64 位 CentOS 7.9｜Edgeray IaaS",
+    summary: "双 RTX 3090 GPU 裸金属资源，可评估用于大模型推理、LoRA、图像生成、视频处理与渲染等计算任务。",
     specifications: [
       {label: "处理器", value: "双路 Intel® Xeon® Gold 6133（单颗 2.5 GHz、20 核 40 线程）"},
       {label: "内存", value: "DDR4 512 GB（64 GB × 8）"},

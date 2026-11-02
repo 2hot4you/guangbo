@@ -157,6 +157,7 @@
 
   .home-idc { background: #fbfbf9; }
   .home-idc__layout { display: grid; gap: clamp(3rem, 8vw, 7rem); }
+  .home-idc__content { display: grid; min-width: 0; gap: clamp(2.5rem, 5vw, 4rem); }
   .home-service-list { border-top: 1px solid var(--border); }
   .home-service-list li { border-bottom: 1px solid var(--border); }
   .home-service-item { display: grid; grid-template-columns: 2.75rem minmax(0, 1fr) auto; gap: 1rem; align-items: start; padding-block: 1.75rem; color: var(--foreground); }
@@ -167,6 +168,27 @@
   .home-service-item__content > p { max-width: 45rem; margin-top: 0.35rem; color: var(--muted); }
   .home-service-list svg { width: 1.2rem; transition: transform 180ms ease; }
   .home-service-list a:hover svg { transform: translate(0.2rem, -0.2rem); }
+  .home-idc__resource { --focus-ring: var(--accent); position: relative; min-width: 0; overflow: hidden; border: 1px solid #2b2b28; background: #0a0a0a; color: #ffffff; }
+  .home-idc__resource::before { display: block; height: 0.3rem; background: var(--accent); content: ""; }
+  .home-idc__resource-header { display: flex; min-width: 0; align-items: start; justify-content: space-between; gap: 1.5rem; padding: clamp(1.4rem, 3vw, 2rem); border-bottom: 1px solid #2b2b28; }
+  .home-idc__resource-header h3 { margin-top: 0.65rem; font-size: clamp(1.85rem, 4vw, 3.25rem); line-height: 1; letter-spacing: -0.05em; }
+  .home-idc__resource-header > span { flex: 0 0 auto; border: 1px solid #44443f; border-radius: 999px; padding: 0.4rem 0.7rem; color: #b7b7b0; font-size: 0.72rem; }
+  .home-idc__resource-eyebrow { color: var(--accent); font: 700 0.68rem/1 ui-monospace, monospace; letter-spacing: 0.09em; }
+  .home-idc__resource-summary { max-width: 47rem; padding: clamp(1.4rem, 3vw, 2rem); color: #c6c6bf; font-size: 0.98rem; }
+  .home-idc__resource-specs { display: grid; gap: 1px; border-block: 1px solid #2b2b28; background: #2b2b28; }
+  .home-idc__resource-specs > div { min-width: 0; padding: 1rem clamp(1.15rem, 2.5vw, 1.5rem); background: #11110f; }
+  .home-idc__resource-specs dt { color: #85857f; font: 700 0.67rem/1.2 ui-monospace, monospace; letter-spacing: 0.08em; text-transform: uppercase; }
+  .home-idc__resource-specs dd { margin-top: 0.45rem; color: #f3f3ef; font-size: 0.88rem; line-height: 1.55; overflow-wrap: anywhere; }
+  .home-idc__resource-pricing { display: grid; gap: 1px; background: #2b2b28; }
+  .home-idc__resource-pricing p { display: grid; min-width: 0; gap: 0.35rem; padding: 1rem clamp(1.15rem, 2.5vw, 1.5rem); background: color-mix(in srgb, var(--accent) 12%, #11110f); }
+  .home-idc__resource-pricing span { color: #9e9e97; font-size: 0.75rem; }
+  .home-idc__resource-pricing strong { color: var(--accent); font-size: 1rem; overflow-wrap: anywhere; }
+  .home-idc__resource-footer { display: grid; gap: 1rem; align-items: center; padding: 1.1rem clamp(1.15rem, 2.5vw, 1.5rem); }
+  .home-idc__resource-footer p { color: #f1f1ed; font-size: 0.84rem; overflow-wrap: anywhere; }
+  .home-idc__resource-footer p span { margin-right: 0.65rem; color: #8d8d87; font: 700 0.65rem/1 ui-monospace, monospace; letter-spacing: 0.08em; }
+  .home-idc__resource-footer a { display: inline-flex; min-height: 2.75rem; align-items: center; justify-content: center; gap: 0.45rem; padding-inline: 1rem; background: var(--accent); color: var(--accent-foreground); font-size: 0.82rem; font-weight: 700; }
+  .home-idc__resource-footer svg { width: 1rem; }
+  .home-idc__resource-notice { padding: 0 1.5rem 1.4rem; color: #7e7e78; font-size: 0.72rem; }
 
   .home-domain { border-top: 1px solid var(--border); background: #f0f0ec; }
   .home-domain__layout { display: grid; gap: clamp(3rem, 8vw, 7rem); }
@@ -327,6 +349,9 @@
   .bare-metal-resource__details section + section { border-left: 1px solid var(--border); }
   .bare-metal-resource__footer { grid-template-columns: auto minmax(0, 1fr); align-items: center; justify-content: space-between; }
   .bare-metal-resource__footer p:last-child { text-align: right; }
+  .home-idc__resource-specs,
+  .home-idc__resource-pricing { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .home-idc__resource-footer { grid-template-columns: minmax(0, 1fr) auto; }
 }
 
 @media (min-width: 56rem) {

@@ -207,7 +207,7 @@ describe("marketing page templates", () => {
     const cards = within(resource!).getAllByRole("article");
     expect(cards).toHaveLength(1);
     const card = cards[0];
-    expect(within(card).getByRole("heading", {level: 3, name: "DeepBlue bz-4002"})).toBeInTheDocument();
+    expect(within(card).getByRole("heading", {level: 3, name: "DeepBlue Server"})).toBeInTheDocument();
     expect(card).toHaveTextContent("Intel® Xeon® Gold 6133");
     expect(card).toHaveTextContent("2.5 GHz、20 核 40 线程");
     expect(card).toHaveTextContent("RTX 3090 涡轮版 × 2");
@@ -231,7 +231,8 @@ describe("marketing page templates", () => {
     expect(card).toHaveTextContent("库存、价格、端口与开通条件以实际确认为准");
 
     const html = renderToStaticMarkup(<MarketingPageView page={page} />);
-    expect(html).toContain("DeepBlue bz-4002");
+    expect(html).toContain("DeepBlue Server");
+    expect(html).not.toContain("bz-4002");
     expect(html).toContain("15390073913");
     expect(html).toContain("19382091612");
   });
@@ -242,6 +243,7 @@ describe("marketing page templates", () => {
       name: "测试资源 B",
       category: "计算裸金属",
       meta: "测试资源 B 元信息",
+      summary: "测试资源 B 摘要",
       specifications: [{label: "处理器", value: "测试资源 B 处理器"}],
       pricing: [{label: "整机", value: "测试资源 B 价格"}],
       workloads: "测试资源 B 适用任务",
@@ -253,7 +255,7 @@ describe("marketing page templates", () => {
 
     const cards = screen.getAllByRole("article");
     expect(cards).toHaveLength(2);
-    const deepBlue = screen.getByRole("article", {name: "DeepBlue bz-4002"});
+    const deepBlue = screen.getByRole("article", {name: "DeepBlue Server"});
     const resourceTwo = screen.getByRole("article", {name: "测试资源 B"});
     expect(deepBlue).toHaveTextContent("RTX 3090 涡轮版 × 2");
     expect(deepBlue).toHaveTextContent("15390073913");
@@ -263,6 +265,35 @@ describe("marketing page templates", () => {
     expect(resourceTwo).toHaveTextContent("测试资源 B 咨询");
     expect(resourceTwo).toHaveTextContent("测试资源 B 交付说明");
     expect(resourceTwo).not.toHaveTextContent("RTX 3090 涡轮版 × 2");
+  });
+
+  it("promotes a concise DeepBlue Server resource in the home compute section without exposing its internal SKU", () => {
+    render(<MarketingPageView page={getPageByPath("/")} />);
+
+    const compute = document.getElementById("idc");
+    expect(compute).not.toBeNull();
+    const card = within(compute!).getByRole("article", {name: "DeepBlue Server"});
+    expect(card).toHaveTextContent("双 RTX 3090 GPU 裸金属资源，可评估用于大模型推理、LoRA、图像生成、视频处理与渲染等计算任务");
+    expect(card).toHaveTextContent("双路 Intel® Xeon® Gold 6133");
+    expect(card).toHaveTextContent("RTX 3090 涡轮版 × 2");
+    expect(card).toHaveTextContent("DDR4 512 GB");
+    expect(card).toHaveTextContent("4 TB U.2 NVMe SSD");
+    expect(card).toHaveTextContent("整机双卡参考价 ¥1,200/月");
+    expect(card).toHaveTextContent("单卡参考价 ¥600/月或 ¥20/天");
+    expect(within(card).getByRole("region", {name: "参考租赁价格"})).toBeInTheDocument();
+    expect(card).toHaveTextContent("15390073913");
+    expect(card).toHaveTextContent("19382091612");
+    expect(card).toHaveTextContent("库存、价格、端口与开通条件以实际确认为准");
+    expect(within(card).getByRole("link", {name: "查看 DeepBlue Server 详情"})).toHaveAttribute("href", "/idc/bare-metal");
+    expect(card).not.toHaveTextContent("1GbE 电口");
+    expect(card).not.toHaveTextContent("Edgeray IaaS");
+
+    const homeHtml = renderToStaticMarkup(<MarketingPageView page={getPageByPath("/")} />);
+    const detailHtml = renderToStaticMarkup(<MarketingPageView page={getPageByPath("/idc/bare-metal")} />);
+    for (const html of [homeHtml, detailHtml]) {
+      expect(html).toContain("DeepBlue Server");
+      expect(html).not.toContain("bz-4002");
+    }
   });
 
   it("places the public copy and links in server-rendered HTML", () => {

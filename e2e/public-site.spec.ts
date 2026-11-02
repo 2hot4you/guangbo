@@ -555,27 +555,34 @@ test("mega menu child destinations are present in server-rendered header HTML", 
   }
 });
 
-test("bare-metal navigation and RTX 3090 resource are present in public HTML", async ({request}) => {
+test("DeepBlue Server is promoted without exposing its internal SKU in public HTML", async ({request}) => {
   const home = await request.get("/");
   expect(home.status()).toBe(200);
-  const header = (await home.text()).match(/<header[\s\S]*?<\/header>/)?.[0] ?? "";
+  const homeHtml = await home.text();
+  const header = homeHtml.match(/<header[\s\S]*?<\/header>/)?.[0] ?? "";
   expect(header).toContain("裸金属服务器租赁");
   expect(header).not.toContain("全国裸金属服务器租赁");
+  expect(homeHtml).toContain("DeepBlue Server");
+  expect(homeHtml).toContain("双 RTX 3090 GPU 裸金属资源");
+  expect(homeHtml).toContain('href="/idc/bare-metal"');
+  expect(homeHtml).not.toContain("bz-4002");
 
   const response = await request.get("/idc/bare-metal");
   expect(response.status()).toBe(200);
   const html = await response.text();
   expect(html).toContain('id="available-resource"');
-  expect(html).toContain("DeepBlue bz-4002");
+  expect(html).toContain("DeepBlue Server");
+  expect(html).not.toContain("bz-4002");
   expect(html).toContain("15390073913");
   expect(html).toContain("19382091612");
   expect(html).toContain("库存、价格、端口与开通条件以实际确认为准");
 });
 
-test("dark footer links and home energy link have contrasting keyboard outlines", async ({page}) => {
+test("dark footer links and home dark-surface actions have contrasting keyboard outlines", async ({page}) => {
   await page.emulateMedia({reducedMotion: "reduce"});
   await page.goto("/");
   await expectContrastingKeyboardFocus(page, page.locator(".home-domain--energy a"));
+  await expectContrastingKeyboardFocus(page, page.getByRole("link", {name: "查看 DeepBlue Server 详情"}));
   for (const path of topLevelPaths) {
     await page.goto(path);
     for (const link of await page.locator("footer a").all()) await expectContrastingKeyboardFocus(page, link);

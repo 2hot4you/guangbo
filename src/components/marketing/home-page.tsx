@@ -1,13 +1,15 @@
 import {ArrowRight, ArrowUpRight} from "lucide-react";
 import Link from "next/link";
 import {getPageByPath} from "@/content";
-import type {ContentSection, MarketingPage, PublicPath} from "@/content";
+import type {ContentSection, MarketingPage, PublicPath, ResourceCard} from "@/content";
+import {bareMetalResources} from "@/content/resources/bare-metal";
 import {HomeHeroCarousel} from "./home-hero-carousel";
 import type {HomeHeroSlideContent} from "./home-hero-types";
 import {ModelEcosystemLoop} from "./model-ecosystem-loop";
 
 const supportingDomains = ["XINCHUANG", "LINK", "ENERGY"] as const;
 const supportingPaths = ["/madeinchina", "/network", "/energy"] as const satisfies readonly PublicPath[];
+const featuredSpecificationLabels = new Set(["处理器", "GPU", "内存", "存储"]);
 
 function sectionById(page: MarketingPage, id: string): ContentSection {
   const section = page.sections.find((entry) => entry.id === id);
@@ -50,6 +52,42 @@ function DomainVisual({label, variant}: {label: string; variant: string}) {
       <span className="home-domain__nodes" />
       <span className="home-domain__label">{label}</span>
     </div>
+  );
+}
+
+function HomeFeaturedResource({resource}: {resource: ResourceCard}) {
+  const specifications = resource.specifications.filter(({label}) => featuredSpecificationLabels.has(label));
+
+  return (
+    <article aria-labelledby={`home-${resource.id}-title`} className="home-idc__resource">
+      <header className="home-idc__resource-header">
+        <div>
+          <p className="home-idc__resource-eyebrow">AVAILABLE / GPU BARE METAL</p>
+          <h3 id={`home-${resource.id}-title`}>{resource.name}</h3>
+        </div>
+        <span>{resource.category}</span>
+      </header>
+      <p className="home-idc__resource-summary">{resource.summary}</p>
+      <dl className="home-idc__resource-specs">
+        {specifications.map((specification) => (
+          <div key={specification.label}>
+            <dt>{specification.label}</dt>
+            <dd>{specification.value}</dd>
+          </div>
+        ))}
+      </dl>
+      <section aria-labelledby={`home-${resource.id}-pricing`} className="home-idc__resource-pricing">
+        <h4 className="sr-only" id={`home-${resource.id}-pricing`}>参考租赁价格</h4>
+        {resource.pricing.map((price) => (
+          <p key={price.label}><span>{price.label}</span><strong>{price.value}</strong></p>
+        ))}
+      </section>
+      <div className="home-idc__resource-footer">
+        <p><span>咨询</span>{resource.contacts.join(" / ")}</p>
+        <Link href="/idc/bare-metal">查看 {resource.name} 详情 <ArrowRight aria-hidden="true" /></Link>
+      </div>
+      <p className="home-idc__resource-notice">{resource.notice}</p>
+    </article>
   );
 }
 
@@ -117,7 +155,10 @@ export function HomePage({page}: {page: MarketingPage}) {
             <p>{idc.body}</p>
             <DomainVisual label="COMPUTE" variant="compute" />
           </div>
-          <ServiceList section={idc} />
+          <div className="home-idc__content">
+            <ServiceList section={idc} />
+            <HomeFeaturedResource resource={bareMetalResources[0]} />
+          </div>
         </div>
       </section>
 

@@ -32,6 +32,7 @@ export interface ResourceCard {
   name: string;
   category: string;
   meta: string;
+  summary: string;
   specifications: readonly {
     label: string;
     value: string;
