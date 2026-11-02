@@ -1,0 +1,12 @@
+{
+  "id": "add-telecom-license-deploy",
+  "title": "页脚增加增值电信业务经营许可证编号并部署",
+  "status": "completed",
+  "complexity": "M",
+  "risk": "high",
+  "domain": "frontend-deployment",
+  "currentPhase": "completed",
+  "nextAction": "归档任务记录",
+  "createdAt": "2026-11-02T00:00:00+08:00",
+  "branch": "feat/frontend-foundation"
+}
