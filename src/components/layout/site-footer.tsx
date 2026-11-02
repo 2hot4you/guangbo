@@ -37,8 +37,14 @@ export function SiteFooter() {
       </div>
       <div className="site-container site-footer__legal">
         <p>Copyright © {new Date().getFullYear()} 成都光波互联科技有限公司</p>
-        <span aria-hidden="true">·</span>
-        <a href="https://beian.miit.gov.cn">蜀ICP备2026064955号-1</a>
+        <span className="site-footer__legal-item">
+          <span aria-hidden="true">·</span>
+          <a href="https://beian.miit.gov.cn">蜀ICP备2026064955号-1</a>
+        </span>
+        <span className="site-footer__legal-item">
+          <span aria-hidden="true">·</span>
+          <span>增值电信业务经营许可证编号 A2.B1-20201540</span>
+        </span>
       </div>
     </footer>
   );

@@ -555,7 +555,7 @@ describe("site footer", () => {
     expect(wordmark?.firstElementChild).toHaveTextContent("光波互联");
   });
 
-  it("places the copyright and MIIT filing link in the final footer row", () => {
+  it("places the copyright, MIIT filing link, and telecom license in the final footer row", () => {
     render(<SiteFooter />);
     const footer = screen.getByRole("contentinfo");
     const legal = footer.querySelector<HTMLElement>(".site-footer__legal");
@@ -566,5 +566,6 @@ describe("site footer", () => {
     const filingLink = within(legal!).getByRole("link", {name: "蜀ICP备2026064955号-1"});
     expect(filingLink).toHaveAttribute("href", "https://beian.miit.gov.cn");
     expect(filingLink).not.toHaveAttribute("target");
+    expect(within(legal!).getByText("增值电信业务经营许可证编号 A2.B1-20201540")).toBeInTheDocument();
   });
 });
