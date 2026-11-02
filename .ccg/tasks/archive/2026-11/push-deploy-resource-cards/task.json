@@ -1,0 +1,13 @@
+{
+  "id": "push-deploy-resource-cards",
+  "title": "推送并部署裸金属资源卡片更新",
+  "status": "completed",
+  "complexity": "M",
+  "risk": "high",
+  "domain": "deployment",
+  "currentPhase": "completed",
+  "nextAction": "归档部署任务并推送审计记录",
+  "createdAt": "2026-11-02T00:00:00+08:00",
+  "branch": "feat/frontend-foundation",
+  "targetCommit": "a04b049"
+}
