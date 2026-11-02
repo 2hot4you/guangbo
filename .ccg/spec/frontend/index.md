@@ -13,4 +13,4 @@
 
 ## Next.js verification cache
 
-- Do not run persistent `next dev` and `next build` against the same checkout at the same time. Both write generated `.next` state; concurrent verification can create duplicate type files and false TypeScript conflicts. Stop the local dev process before `pnpm verify`, then restart it after the build.
+- Do not run persistent `next dev` and `next build` against the same checkout at the same time. Both write generated `.next` state; concurrent verification or switching directly between development and production modes can leave duplicate type files and false TypeScript conflicts. Stop the local dev process and rotate the generated `.next` directory before `pnpm verify`, then restart development only after the build.
