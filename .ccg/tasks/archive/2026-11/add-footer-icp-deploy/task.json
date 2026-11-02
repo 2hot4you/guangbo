@@ -1,0 +1,12 @@
+{
+  "id": "add-footer-icp-deploy",
+  "title": "新增 Footer 备案号和版权并推送部署",
+  "status": "completed",
+  "complexity": "M",
+  "risk": "high",
+  "domain": "frontend-deployment",
+  "currentPhase": "completed",
+  "nextAction": "已完成并归档",
+  "createdAt": "2026-11-02T00:00:00+08:00",
+  "branch": "feat/frontend-foundation"
+}
