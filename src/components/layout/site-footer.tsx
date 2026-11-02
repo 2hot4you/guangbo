@@ -26,7 +26,6 @@ export function SiteFooter() {
         </div>
       </div>
       <div className="site-container site-footer__bottom">
-        <p>© {new Date().getFullYear()} 成都光波互联科技有限公司</p>
         <Link href="/about">了解公司 <ArrowUpRight aria-hidden="true" /></Link>
       </div>
       <div aria-hidden="true" className="site-footer__wordmark">
@@ -35,6 +34,11 @@ export function SiteFooter() {
           <span>AI</span>
           <span>Connected.</span>
         </div>
+      </div>
+      <div className="site-container site-footer__legal">
+        <p>Copyright © {new Date().getFullYear()} 成都光波互联科技有限公司</p>
+        <span aria-hidden="true">·</span>
+        <a href="https://beian.miit.gov.cn">蜀ICP备2026064955号-1</a>
       </div>
     </footer>
   );

@@ -554,4 +554,17 @@ describe("site footer", () => {
     expect(wordmark).toHaveTextContent("光波互联");
     expect(wordmark?.firstElementChild).toHaveTextContent("光波互联");
   });
+
+  it("places the copyright and MIIT filing link in the final footer row", () => {
+    render(<SiteFooter />);
+    const footer = screen.getByRole("contentinfo");
+    const legal = footer.querySelector<HTMLElement>(".site-footer__legal");
+
+    expect(legal).not.toBeNull();
+    expect(footer.lastElementChild).toBe(legal);
+    expect(legal).toHaveTextContent(`Copyright © ${new Date().getFullYear()} 成都光波互联科技有限公司`);
+    const filingLink = within(legal!).getByRole("link", {name: "蜀ICP备2026064955号-1"});
+    expect(filingLink).toHaveAttribute("href", "https://beian.miit.gov.cn");
+    expect(filingLink).not.toHaveAttribute("target");
+  });
 });
