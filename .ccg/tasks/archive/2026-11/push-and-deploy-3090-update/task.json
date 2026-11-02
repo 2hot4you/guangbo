@@ -1,0 +1,13 @@
+{
+  "id": "push-and-deploy-3090-update",
+  "title": "推送并远端部署3090裸金属资源更新",
+  "status": "completed",
+  "complexity": "M",
+  "risk": "high",
+  "domain": "deployment",
+  "currentPhase": "completed",
+  "nextAction": "归档部署任务",
+  "createdAt": "2026-11-02T00:00:00+08:00",
+  "branch": "feat/frontend-foundation",
+  "baseCommit": "5fd1753"
+}
