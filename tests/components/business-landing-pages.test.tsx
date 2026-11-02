@@ -173,7 +173,7 @@ describe("distinct business landing pages", () => {
     expect(screen.getByText(/成都光波互联科技有限公司成立于2019年/)).toBeInTheDocument();
     expect(screen.getByRole("figure", {name: "公司业务版图"})).toBeInTheDocument();
     expect(within(document.getElementById("ecosystem")!).getByRole("heading", {level: 3, name: "合作生态"})).toBeInTheDocument();
-    expect(within(document.getElementById("contact")!).getByText(/联系信息尚未确认/)).toBeInTheDocument();
+    expect(within(document.getElementById("contact")!).getByText(/本页面暂不设置统一联系入口/)).toBeInTheDocument();
     expect(document.querySelector("form")).toBeNull();
     expect(html).not.toContain("mailto:");
     expect(html).not.toContain("tel:");

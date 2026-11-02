@@ -142,8 +142,8 @@ test("mobile AI and IDC navigation exposes overview and children and closes afte
   await drawer.getByRole("button", {name: "展开大模型与AIGC子菜单"}).click();
   await expect(drawer.getByRole("link", {name: "LLM与多模态理解"})).toBeVisible();
   await drawer.getByRole("button", {name: "展开IDC与算力子菜单"}).click();
-  await expect(drawer.getByRole("link", {name: "全国机房机柜租赁"})).toBeVisible();
-  await drawer.getByRole("link", {name: "全国机房机柜租赁"}).click();
+  await expect(drawer.getByRole("link", {name: "机房机柜租赁"})).toBeVisible();
+  await drawer.getByRole("link", {name: "机房机柜租赁"}).click();
   await expect(page).toHaveURL(/\/idc\/colocation$/);
   await expect(drawer).not.toBeVisible();
   await expect(page.locator("#main-content")).toBeFocused();
@@ -262,7 +262,7 @@ test("mega menu Tab reaches child links and Escape returns focus to its trigger"
   const trigger = nav.locator('button[aria-controls="desktop-panel-idc"]');
   await expect(trigger).toBeFocused();
   await page.keyboard.press("Tab");
-  await expect(panel.getByRole("link", {name: "全国VPS租赁"})).toBeFocused();
+  await expect(panel.getByRole("link", {name: "VPS租赁"})).toBeFocused();
   await page.keyboard.press("Escape");
   await expect(panel).toBeHidden();
   await expect(trigger).toBeFocused();
@@ -278,7 +278,7 @@ test("mega menu keeps keyboard-focused child available after the pointer leaves"
   await page.keyboard.press("Tab");
   await page.keyboard.press("Tab");
   const panel = page.locator("#desktop-panel-idc");
-  const child = panel.getByRole("link", {name: "全国VPS租赁"});
+  const child = panel.getByRole("link", {name: "VPS租赁"});
   await expect(child).toBeFocused();
   const bounds = await overview.boundingBox();
   expect(bounds).not.toBeNull();
@@ -316,7 +316,7 @@ test("mega menu mobile Drawer exposes all five industry groups and closes on Esc
   await expect(drawer).toBeVisible();
   for (const [label, path, child] of [
     ["大模型与AIGC", "/ai", "LLM与多模态理解"],
-    ["IDC与算力", "/idc", "全国VPS租赁"],
+    ["IDC与算力", "/idc", "VPS租赁"],
     ["信创与企业数字化", "/madeinchina", "产品与能力图谱"],
     ["全国专线租赁", "/network", "产品矩阵"],
     ["绿电与清洁能源", "/energy", "服务矩阵"],
@@ -553,6 +553,23 @@ test("mega menu child destinations are present in server-rendered header HTML", 
   for (const {path} of industryGroups) {
     expect(industryHrefs.filter((href) => href.startsWith(`${path}#`)), `${path} SSR hashes`).toHaveLength(12);
   }
+});
+
+test("bare-metal navigation and RTX 3090 resource are present in public HTML", async ({request}) => {
+  const home = await request.get("/");
+  expect(home.status()).toBe(200);
+  const header = (await home.text()).match(/<header[\s\S]*?<\/header>/)?.[0] ?? "";
+  expect(header).toContain("裸金属服务器租赁");
+  expect(header).not.toContain("全国裸金属服务器租赁");
+
+  const response = await request.get("/idc/bare-metal");
+  expect(response.status()).toBe(200);
+  const html = await response.text();
+  expect(html).toContain('id="available-resource"');
+  expect(html).toContain("DeepBlue bz-4002");
+  expect(html).toContain("15390073913");
+  expect(html).toContain("19382091612");
+  expect(html).toContain("库存、价格、端口与开通条件以实际确认为准");
 });
 
 test("dark footer links and home energy link have contrasting keyboard outlines", async ({page}) => {

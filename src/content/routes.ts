@@ -58,8 +58,8 @@ export const routeEntries = [
   {
     key: "idcVps",
     path: "/idc/vps",
-    navLabel: "全国VPS租赁",
-    title: "全国VPS租赁｜光波互联",
+    navLabel: "VPS租赁",
+    title: "VPS租赁｜光波互联",
     description: "面向网站、接口服务、开发测试和轻量业务提供VPS选型与租赁咨询。",
     template: "solution",
     relatedPaths: ["/idc", "/idc/bare-metal", "/idc/colocation", "/idc/gpu"],
@@ -67,8 +67,8 @@ export const routeEntries = [
   {
     key: "idcBareMetal",
     path: "/idc/bare-metal",
-    navLabel: "全国裸金属服务器租赁",
-    title: "全国裸金属服务器租赁｜光波互联",
+    navLabel: "裸金属服务器租赁",
+    title: "裸金属服务器租赁｜光波互联",
     description: "面向数据库、企业应用和持续计算任务提供独享物理服务器选型。",
     template: "solution",
     relatedPaths: ["/idc", "/idc/vps", "/idc/colocation", "/idc/gpu"],
@@ -76,8 +76,8 @@ export const routeEntries = [
   {
     key: "idcColocation",
     path: "/idc/colocation",
-    navLabel: "全国机房机柜租赁",
-    title: "全国机房机柜租赁｜光波互联",
+    navLabel: "机房机柜租赁",
+    title: "机房机柜租赁｜光波互联",
     description: "面向服务器、网络设备及计算集群提供机柜、托管、网络和配套服务对接。",
     template: "solution",
     relatedPaths: ["/idc", "/idc/vps", "/idc/bare-metal", "/idc/gpu"],

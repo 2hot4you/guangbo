@@ -26,6 +26,25 @@ describe("public route registry", () => {
     expect(getRouteByPath("/ai").description).not.toContain("使用管理入口");
   });
 
+  it("names compute rental pages without a nationwide scope while preserving the network brand", () => {
+    expect(getRouteByPath("/idc/vps")).toMatchObject({
+      navLabel: "VPS租赁",
+      title: "VPS租赁｜光波互联",
+    });
+    expect(getRouteByPath("/idc/bare-metal")).toMatchObject({
+      navLabel: "裸金属服务器租赁",
+      title: "裸金属服务器租赁｜光波互联",
+    });
+    expect(getRouteByPath("/idc/colocation")).toMatchObject({
+      navLabel: "机房机柜租赁",
+      title: "机房机柜租赁｜光波互联",
+    });
+    expect(getRouteByPath("/network")).toMatchObject({
+      navLabel: "全国专线租赁",
+      title: "全国专线租赁｜光波互联",
+    });
+  });
+
   it("makes all five business destinations expandable while Home and About remain direct links", () => {
     expect(navigationGroups.map((item) => [item.kind, item.kind === "group" ? item.overviewPath : item.path])).toEqual([
       ["link", "/"],

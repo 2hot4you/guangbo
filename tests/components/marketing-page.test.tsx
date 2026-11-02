@@ -193,6 +193,41 @@ describe("marketing page templates", () => {
     expect(screen.getByRole("heading", {name: "制冷条件"})).toBeInTheDocument();
   });
 
+  it("publishes the RTX 3090 bare-metal resource with complete specifications and caveats", () => {
+    const page = getPageByPath("/idc/bare-metal");
+    render(<MarketingPageView page={page} />);
+
+    const resource = document.getElementById("available-resource");
+    expect(resource).not.toBeNull();
+    expect(resource).toHaveTextContent("DeepBlue bz-4002");
+    expect(resource).toHaveTextContent("Intel® Xeon® Gold 6133");
+    expect(resource).toHaveTextContent("2.5 GHz、20 核 40 线程");
+    expect(resource).toHaveTextContent("RTX 3090 涡轮版 × 2");
+    expect(resource).toHaveTextContent("DDR4 512 GB（64 GB × 8）");
+    expect(resource).toHaveTextContent("480 GB M.2 SSD × 1");
+    expect(resource).toHaveTextContent("4 TB U.2 NVMe SSD（2.5 英寸）× 1");
+    expect(resource).toHaveTextContent("1GbE 电口 × 1");
+    expect(resource).toHaveTextContent("10GbE 光口 × 4");
+    expect(resource).toHaveTextContent("CentOS 7.9");
+    expect(resource).toHaveTextContent("Edgeray IaaS");
+    expect(resource).toHaveTextContent("整机双卡参考价 ¥1,200/月");
+    expect(resource).toHaveTextContent("单卡参考价 ¥600/月或 ¥20/天");
+    expect(resource).toHaveTextContent("LoRA");
+    expect(resource).toHaveTextContent("Stable Diffusion");
+    expect(resource).toHaveTextContent("SDXL");
+    expect(resource).toHaveTextContent("Flux");
+    expect(resource).toHaveTextContent("RAG");
+    expect(resource).toHaveTextContent("视频剪辑、渲染及 3D 建模");
+    expect(resource).toHaveTextContent("15390073913");
+    expect(resource).toHaveTextContent("19382091612");
+    expect(resource).toHaveTextContent("库存、价格、端口与开通条件以实际确认为准");
+
+    const html = renderToStaticMarkup(<MarketingPageView page={page} />);
+    expect(html).toContain("DeepBlue bz-4002");
+    expect(html).toContain("15390073913");
+    expect(html).toContain("19382091612");
+  });
+
   it("places the public copy and links in server-rendered HTML", () => {
     const html = renderToStaticMarkup(<MarketingPageView page={getPageByPath("/")} />);
     expect(html).toContain("让大模型走进应用，让创意成为内容");

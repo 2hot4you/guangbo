@@ -39,8 +39,9 @@ describe("visitor content", () => {
     }
   });
 
-  it("does not expose unconfirmed contact methods", () => {
-    expect(serialized).not.toMatch(/\b1[3-9]\d{9}\b/);
+  it("exposes only the confirmed consultation phone numbers and no other contact methods", () => {
+    const phoneNumbers = serialized.match(/\b1[3-9]\d{9}\b/g) ?? [];
+    expect(phoneNumbers).toEqual(["15390073913", "19382091612"]);
     expect(serialized).not.toContain("@guangbo");
     expect(serialized).not.toContain("环球中心W3区2011号");
   });
