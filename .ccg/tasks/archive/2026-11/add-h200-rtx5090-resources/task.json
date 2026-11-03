@@ -1,0 +1,12 @@
+{
+  "id": "add-h200-rtx5090-resources",
+  "title": "新增 H200 与 8 卡 RTX 5090 裸金属资源并部署",
+  "status": "completed",
+  "complexity": "L+",
+  "risk": "high",
+  "domain": "frontend-deployment",
+  "currentPhase": "completed",
+  "nextAction": "归档任务记录",
+  "createdAt": "2026-11-03T00:00:00+08:00",
+  "branch": "feat/frontend-foundation"
+}
