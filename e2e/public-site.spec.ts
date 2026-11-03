@@ -576,13 +576,64 @@ test("DeepBlue Server is promoted without exposing its internal SKU in public HT
   expect(html).toContain("15390073913");
   expect(html).toContain("19382091612");
   expect(html).toContain("库存、价格、端口与开通条件以实际确认为准");
+  const resources = [
+    {id: "deepblue-server-dual-rtx3090", name: "DeepBlue Server", prices: ["¥1,200/月", "¥600/月"], excluded: ["¥170,000/台/月", "¥16,500/月", "¥13,500/月"]},
+    {id: "h200-eight-gpu-cluster-node", name: "H200 8卡集群节点", prices: ["¥170,000/台/月"], excluded: ["¥1,200/月", "¥600/月", "¥16,500/月", "¥13,500/月"]},
+    {id: "rtx5090-eight-gpu-bare-metal", name: "8× RTX 5090 裸金属节点", prices: ["¥16,500/月", "¥13,500/月"], excluded: ["¥1,200/月", "¥600/月", "¥170,000/台/月"]},
+  ];
+  for (const [markup, prefix] of [[homeHtml, "home-"], [html, ""]] as const) {
+    const mainStart = markup.indexOf("<main");
+    const mainEnd = markup.indexOf("</main>", mainStart);
+    expect(mainStart).toBeGreaterThanOrEqual(0);
+    expect(mainEnd).toBeGreaterThan(mainStart);
+    const main = markup.slice(mainStart, mainEnd + "</main>".length);
+    expect(main).not.toContain("bz-4002");
+    expect(main).not.toContain("4090");
+    const articles = [...main.matchAll(/<article\b[^>]*>[\s\S]*?<\/article>/g)].map((match) => match[0]);
+    for (const {id, name, prices, excluded} of resources) {
+      const matches = articles.filter((article) => article.includes(`aria-labelledby="${prefix}${id}-title"`));
+      expect(matches, `${prefix}${id}`).toHaveLength(1);
+      const article = matches[0];
+      expect(article).toContain(name);
+      for (const price of prices) expect(article).toContain(price);
+      for (const price of excluded) expect(article).not.toContain(price);
+    }
+  }
+});
+
+test("bare-metal resource cards fit their containers at all target widths", async ({page}) => {
+  for (const width of [360, 640, 768, 896, 1280, 1440]) {
+    await page.setViewportSize({width, height: 900});
+    for (const [path, section] of [["/", "#idc"], ["/idc/bare-metal", "#available-resource"]] as const) {
+      await page.goto(path);
+      const cards = page.locator(section).getByRole("article");
+      await expect(cards, `${path} at ${width}px`).toHaveCount(3);
+      for (const name of ["DeepBlue Server", "H200 8卡集群节点", "8× RTX 5090 裸金属节点"]) {
+        await expect(page.locator(section).getByRole("article", {name})).toBeVisible();
+      }
+      await expectNoHorizontalOverflow(page);
+      const clipped = await cards.evaluateAll((items) => items.flatMap((card) => {
+        const bounds = card.getBoundingClientRect();
+        return [card, ...card.querySelectorAll("*")].flatMap((element) => {
+          if (element.closest(".sr-only")) return [];
+          const rect = element.getBoundingClientRect();
+          return rect.left < bounds.left - 1 || rect.right > bounds.right + 1 || element.scrollWidth > element.clientWidth + 1
+            ? [`${element.tagName}: ${rect.left}..${rect.right}, ${element.scrollWidth}/${element.clientWidth}`]
+            : [];
+        });
+      }));
+      expect(clipped, `${path} resource clipping at ${width}px`).toEqual([]);
+    }
+  }
 });
 
 test("dark footer links and home dark-surface actions have contrasting keyboard outlines", async ({page}) => {
   await page.emulateMedia({reducedMotion: "reduce"});
   await page.goto("/");
   await expectContrastingKeyboardFocus(page, page.locator(".home-domain--energy a"));
-  await expectContrastingKeyboardFocus(page, page.getByRole("link", {name: "查看 DeepBlue Server 详情"}));
+  for (const name of ["DeepBlue Server", "H200 8卡集群节点", "8× RTX 5090 裸金属节点"]) {
+    await expectContrastingKeyboardFocus(page, page.getByRole("link", {name: `查看 ${name} 详情`}));
+  }
   for (const path of topLevelPaths) {
     await page.goto(path);
     for (const link of await page.locator("footer a").all()) await expectContrastingKeyboardFocus(page, link);

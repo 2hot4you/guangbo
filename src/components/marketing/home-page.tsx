@@ -9,7 +9,7 @@ import {ModelEcosystemLoop} from "./model-ecosystem-loop";
 
 const supportingDomains = ["XINCHUANG", "LINK", "ENERGY"] as const;
 const supportingPaths = ["/madeinchina", "/network", "/energy"] as const satisfies readonly PublicPath[];
-const featuredSpecificationLabels = new Set(["处理器", "GPU", "内存", "存储"]);
+const featuredSpecificationLabels = new Set(["处理器", "GPU", "内存"]);
 
 function sectionById(page: MarketingPage, id: string): ContentSection {
   const section = page.sections.find((entry) => entry.id === id);
@@ -56,7 +56,8 @@ function DomainVisual({label, variant}: {label: string; variant: string}) {
 }
 
 function HomeFeaturedResource({resource}: {resource: ResourceCard}) {
-  const specifications = resource.specifications.filter(({label}) => featuredSpecificationLabels.has(label));
+  const fourthSpecificationLabel = resource.id === "deepblue-server-dual-rtx3090" ? "存储" : "网络";
+  const specifications = resource.specifications.filter(({label}) => featuredSpecificationLabels.has(label) || label === fourthSpecificationLabel);
 
   return (
     <article aria-labelledby={`home-${resource.id}-title`} className="home-idc__resource">
@@ -83,7 +84,7 @@ function HomeFeaturedResource({resource}: {resource: ResourceCard}) {
         ))}
       </section>
       <div className="home-idc__resource-footer">
-        <p><span>咨询</span>{resource.contacts.join(" / ")}</p>
+        {resource.contacts.length > 0 && <p><span>咨询</span>{resource.contacts.join(" / ")}</p>}
         <Link href="/idc/bare-metal">查看 {resource.name} 详情 <ArrowRight aria-hidden="true" /></Link>
       </div>
       <p className="home-idc__resource-notice">{resource.notice}</p>
@@ -157,7 +158,9 @@ export function HomePage({page}: {page: MarketingPage}) {
           </div>
           <div className="home-idc__content">
             <ServiceList section={idc} />
-            <HomeFeaturedResource resource={bareMetalResources[0]} />
+            <div className="home-idc__resources">
+              {bareMetalResources.map((resource) => <HomeFeaturedResource key={resource.id} resource={resource} />)}
+            </div>
           </div>
         </div>
       </section>

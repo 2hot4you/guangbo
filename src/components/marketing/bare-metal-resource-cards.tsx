@@ -38,7 +38,7 @@ export function BareMetalResourceCards({resources}: {resources: readonly Resourc
           </div>
 
           <footer className="bare-metal-resource__footer">
-            <p><span>咨询</span>{resource.contacts.join(" / ")}</p>
+            {resource.contacts.length > 0 && <p><span>咨询</span>{resource.contacts.join(" / ")}</p>}
             <p>{resource.notice}</p>
           </footer>
         </article>

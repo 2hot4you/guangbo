@@ -205,8 +205,8 @@ describe("marketing page templates", () => {
     expect(within(resource!).getByRole("heading", {level: 2, name: "裸金属资源配置"})).toBeInTheDocument();
 
     const cards = within(resource!).getAllByRole("article");
-    expect(cards).toHaveLength(1);
-    const card = cards[0];
+    expect(cards).toHaveLength(3);
+    const card = within(resource!).getByRole("article", {name: "DeepBlue Server"});
     expect(within(card).getByRole("heading", {level: 3, name: "DeepBlue Server"})).toBeInTheDocument();
     expect(card).toHaveTextContent("Intel® Xeon® Gold 6133");
     expect(card).toHaveTextContent("2.5 GHz、20 核 40 线程");
@@ -235,6 +235,39 @@ describe("marketing page templates", () => {
     expect(html).not.toContain("bz-4002");
     expect(html).toContain("15390073913");
     expect(html).toContain("19382091612");
+  });
+
+  it.each([
+    ["H200 8卡集群节点", [
+      "128 台", "IB", "风冷", "五年合作周期", "¥170,000/台/月", "可议价",
+      "2 × Intel Xeon Platinum 8558", "48 核", "96 线程", "2.1GHz",
+      "32 × 64GB", "DDR5-5600 ECC RDIMM", "2TB", "实际运行速率以平台配置为准",
+      "1 × 960GB", "2 × 3.84TB", "U.2 NVMe PCIe 5.0", "企业级 SSD",
+      "8 × NVIDIA H200 SXM 141GB HBM3e", "8 × NVIDIA ConnectX-7 200Gb/s",
+      "GPU Direct RDMA", "1 × NVIDIA ConnectX-6 100Gb/s", "6 × 3000W", "钛金",
+      "8U", "加固", "风扇墙", "导轨", "免工具维护", "3 年", "7×24", "上门维护", "硬件响应", "系统调优", "驱动升级",
+    ], ["¥16,500/月", "¥13,500/月"]],
+    ["8× RTX 5090 裸金属节点", [
+      "128 台", "西南", "1 个月", "2 × Intel Xeon Gold 6530", "8 × 64GB", "DDR5", "512GB",
+      "1 × 960GB", "1 × 3.84TB", "25Gb", "双口", "8 × RTX 5090 32GB", "涡轮", "4 × 2500W",
+      "机房", "电", "网", "最低", "¥16,500/月", "¥13,500/月", "自备",
+    ], ["¥170,000/台/月", "4090"]],
+  ] as const)("renders complete isolated details for %s", (name, values, excluded) => {
+    render(<MarketingPageView page={getPageByPath("/idc/bare-metal")} />);
+    const resource = document.getElementById("available-resource")!;
+    const card = within(resource).getByRole("article", {name});
+    for (const value of values) expect(card).toHaveTextContent(value);
+    for (const value of excluded) expect(card).not.toHaveTextContent(value);
+    expect(card).toHaveTextContent("以实际确认为准");
+    if (name === "8× RTX 5090 裸金属节点") {
+      const pricing = within(card).getByRole("region", {name: "参考租赁价格"});
+      const rows = [...pricing.querySelectorAll("p")];
+      expect(rows.some((row) => /机房/.test(row.textContent ?? "") && /¥16,500\/月/.test(row.textContent ?? "") && /最低/.test(row.textContent ?? ""))).toBe(true);
+      expect(rows.some((row) => /自备/.test(row.textContent ?? "") && /¥13,500\/月/.test(row.textContent ?? "") && /最低/.test(row.textContent ?? ""))).toBe(true);
+    }
+    expect(card).not.toHaveTextContent("咨询");
+    expect(card).not.toHaveTextContent("15390073913");
+    expect(card).not.toHaveTextContent("19382091612");
   });
 
   it("keeps multiple bare-metal resources isolated in their own cards", () => {
@@ -293,6 +326,28 @@ describe("marketing page templates", () => {
     for (const html of [homeHtml, detailHtml]) {
       expect(html).toContain("DeepBlue Server");
       expect(html).not.toContain("bz-4002");
+    }
+  });
+
+  it("renders three separate resource summaries in the home compute section", () => {
+    render(<MarketingPageView page={getPageByPath("/")} />);
+    const compute = document.getElementById("idc")!;
+    expect(within(compute).getAllByRole("article")).toHaveLength(3);
+    const cases = [
+      {name: "DeepBlue Server", summary: "双 RTX 3090 GPU 裸金属资源", specs: ["Intel® Xeon® Gold 6133", "RTX 3090", "512 GB", "4 TB"], prices: ["¥1,200/月", "¥600/月"], excluded: ["¥170,000/台/月", "¥16,500/月", "¥13,500/月"]},
+      {name: "H200 8卡集群节点", summary: "128 台", specs: ["Intel Xeon Platinum 8558", "H200", "2TB", "ConnectX-7"], prices: ["¥170,000/台/月"], excluded: ["¥1,200/月", "¥16,500/月", "¥13,500/月"]},
+      {name: "8× RTX 5090 裸金属节点", summary: "128 台", specs: ["Intel Xeon Gold 6530", "RTX 5090", "512GB", "25Gb"], prices: ["¥16,500/月", "¥13,500/月"], excluded: ["¥1,200/月", "¥170,000/台/月"]},
+    ];
+    for (const {name, summary, specs, prices, excluded} of cases) {
+      const card = within(compute).getByRole("article", {name});
+      expect(card.querySelector(".home-idc__resource-summary")).toHaveTextContent(summary);
+      const specifications = card.querySelector(".home-idc__resource-specs")!;
+      expect(specifications.querySelectorAll("dt")).toHaveLength(4);
+      for (const value of specs) expect(specifications).toHaveTextContent(value);
+      for (const value of prices) expect(card).toHaveTextContent(value);
+      for (const value of excluded) expect(card).not.toHaveTextContent(value);
+      expect(within(card).getByRole("link", {name: `查看 ${name} 详情`})).toHaveAttribute("href", "/idc/bare-metal");
+      if (name !== "DeepBlue Server") expect(card).not.toHaveTextContent("咨询");
     }
   });
 
